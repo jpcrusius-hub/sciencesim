@@ -2,7 +2,6 @@
 """
 Scannt alle info.md Dateien und generiert simulations.json
 """
-
 import os
 import json
 import yaml
@@ -50,17 +49,20 @@ def main():
     root = Path('.')
     simulations = []
     
+    # Erlaubte Fächer/Kategorien (inkl. Tools)
+    ERLAUBTE_FAECHER = ['physik', 'chemie', 'informatik', 'tools']
+    
     # Alle info.md Dateien finden
     for info_path in root.rglob('info.md'):
         folder = info_path.parent
         
-        # Nur in Fach-Unterordnern (physik/, chemie/, informatik/)
+        # Nur in Fach-Unterordnern
         parts = folder.parts
         if len(parts) < 2:
             continue
         
         fach = parts[0]
-        if fach not in ['physik', 'chemie', 'informatik']:
+        if fach not in ERLAUBTE_FAECHER:
             continue
         
         # info.md parsen
