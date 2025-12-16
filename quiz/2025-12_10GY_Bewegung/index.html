@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stundenleistung Bewegungslehre – Klasse 10</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; padding: 10px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 1.2em; font-weight: 600; color: #222; margin-bottom: 10px; text-align: center; }
+        .box { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 6px; }
+        .box h2 { font-size: 1em; font-weight: 600; color: #222; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #2c5aa0; }
+        
+        /* PROGRESS BARS */
+        .progress-container { background: #fff; border: 1px solid #ddd; padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; }
+        .time-section { margin-bottom: 12px; }
+        .time-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .time-label { font-size: 0.85em; color: #666; font-weight: 500; }
+        .time-display { font-size: 1.4em; font-weight: 700; font-family: "SF Mono", Monaco, monospace; color: #222; }
+        .time-display.warning { color: #e65100; }
+        .time-display.critical { color: #c62828; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .time-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+        .time-bar-fill { height: 100%; background: linear-gradient(90deg, #4caf50, #8bc34a); transition: width 1s linear, background 0.5s; border-radius: 4px; }
+        .time-bar-fill.warning { background: linear-gradient(90deg, #ff9800, #ffc107); }
+        .time-bar-fill.critical { background: linear-gradient(90deg, #f44336, #ff5722); }
+        .progress-section { }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .progress-label { font-size: 0.85em; color: #666; font-weight: 500; }
+        .progress-display { font-size: 1.1em; font-weight: 600; color: #2c5aa0; }
+        .progress-display span { font-size: 0.85em; color: #888; font-weight: 400; }
+        .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #2c5aa0, #5c9ce6); transition: width 0.3s ease; border-radius: 4px; }
+        
+        /* QUESTION DOTS */
+        .question-overview { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px; background: #fff; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 6px; }
+        .q-dot { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.75em; font-weight: 600; border: 2px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px; transition: all 0.15s; }
+        .q-dot:hover { background: #f0f0f0; }
+        .q-dot.answered { background: #4caf50; color: #fff; border-color: #4caf50; }
+        .q-dot.partial { background: #ff9800; color: #fff; border-color: #ff9800; }
+        .q-dot.current { border-color: #2c5aa0; box-shadow: 0 0 0 2px rgba(44,90,160,0.3); }
+        
+        /* SETUP */
+        .seat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 12px auto; max-width: 320px; }
+        .seat-btn { padding: 10px 4px; font-size: 0.8em; font-weight: 600; border: 2px solid #ddd; background: #fff; cursor: pointer; border-radius: 4px; transition: all 0.15s; }
+        .seat-btn:hover { background: #e3f2fd; border-color: #90caf9; }
+        .seat-btn.selected { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
+        
+        button { padding: 10px 20px; font-size: 0.9em; border: 1px solid #ccc; background: #fff; cursor: pointer; font-family: inherit; border-radius: 4px; transition: all 0.15s; }
+        button:hover:not(:disabled) { background: #f0f0f0; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        button.primary { background: #2c5aa0; color: #fff; border-color: #2c5aa0; font-weight: 600; }
+        button.primary:hover:not(:disabled) { background: #234a80; }
+        
+        .quiz-screen { display: none; }
+        .question-box { background: #fff; border: 1px solid #ddd; padding: 18px; margin-bottom: 10px; border-radius: 6px; }
+        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .question-num { font-size: 0.85em; color: #666; font-weight: 500; }
+        .question-points { background: #f0f0f0; padding: 4px 10px; font-weight: 600; font-size: 0.8em; border-radius: 4px; }
+        .afb-badge { display: inline-block; padding: 2px 6px; font-size: 0.7em; font-weight: 600; border-radius: 3px; margin-left: 6px; }
+        .afb-1 { background: #e8f5e9; color: #2e7d32; }
+        .afb-2 { background: #fff8e1; color: #f57f17; }
+        .afb-3 { background: #fce4ec; color: #c2185b; }
+        .question-text { font-size: 1em; line-height: 1.5; color: #222; margin-bottom: 15px; }
+        
+        .diagram-container { background: #fafafa; border: 1px solid #e0e0e0; padding: 15px; margin: 15px 0; border-radius: 6px; overflow-x: auto; }
+        .diagram-container svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        
+        .dropdown-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin: 15px 0; }
+        .dropdown-item { display: flex; flex-direction: column; gap: 4px; }
+        .dropdown-item label { font-size: 0.85em; font-weight: 600; color: #333; }
+        .dropdown-item select { padding: 8px 10px; font-size: 0.9em; border: 2px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; }
+        .dropdown-item select:focus { outline: none; border-color: #2c5aa0; }
+        .dropdown-item select.answered { border-color: #4caf50; background: #f1f8e9; }
+        
+        .options { display: flex; flex-direction: column; gap: 6px; }
+        .option { display: flex; align-items: center; padding: 12px; background: #fff; border: 2px solid #e0e0e0; cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+        .option:hover { background: #f5f5f5; border-color: #bdbdbd; }
+        .option.selected { background: #e3f2fd; border-color: #2c5aa0; }
+        .option-letter { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; border: 2px solid #ddd; font-weight: 700; font-size: 0.85em; margin-right: 10px; flex-shrink: 0; border-radius: 4px; }
+        .option.selected .option-letter { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
+        .option-text { flex: 1; font-size: 0.9em; }
+        
+        .input-group { background: #f8f9fa; border: 1px solid #e0e0e0; padding: 12px; border-radius: 6px; margin: 8px 0; }
+        .input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .input-row label { font-size: 0.9em; color: #333; font-weight: 500; min-width: 70px; }
+        .numeric-input { width: 120px; padding: 10px 12px; font-size: 1em; border: 2px solid #ddd; background: #fff; font-family: "SF Mono", Monaco, monospace; text-align: right; border-radius: 4px; }
+        .unit-select { padding: 10px 12px; font-size: 0.95em; border: 2px solid #ddd; background: #fff; min-width: 90px; border-radius: 4px; cursor: pointer; }
+        .numeric-input:focus, .unit-select:focus { outline: none; border-color: #2c5aa0; }
+        .numeric-input.answered, .unit-select.answered { border-color: #4caf50; background: #f1f8e9; }
+        
+        .nav-buttons { display: flex; justify-content: space-between; gap: 10px; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 6px; }
+        .nav-buttons button { flex: 1; max-width: 180px; }
+        
+        .result-screen, .feedback-screen { display: none; }
+        .submitted-box { background: #e8f5e9; border: 2px solid #4caf50; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 12px; }
+        .submitted-box h2 { color: #2e7d32; border: none; padding: 0; margin-bottom: 6px; }
+        
+        .unlock-section { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border: 2px solid #ff9800; padding: 20px; margin: 12px 0; text-align: center; border-radius: 8px; }
+        .unlock-timer { font-size: 2.5em; font-weight: 700; color: #e65100; font-family: "SF Mono", Monaco, monospace; margin: 10px 0; }
+        .unlock-progress { width: 100%; max-width: 280px; height: 6px; background: #ffcc80; border-radius: 3px; margin: 8px auto; overflow: hidden; }
+        .unlock-progress-bar { height: 100%; background: #ff9800; transition: width 1s linear; }
+        .unlock-input { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+        .unlock-input input { width: 120px; padding: 12px; font-size: 1.2em; text-align: center; border: 2px solid #ffcc80; border-radius: 4px; text-transform: uppercase; font-family: monospace; background: #fff; }
+        .unlock-input input:focus { outline: none; border-color: #ff9800; }
+        .unlock-input input.error { border-color: #f44336; animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        .feedback-summary { padding: 20px; text-align: center; margin-bottom: 15px; border-radius: 8px; }
+        .feedback-summary.good { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; }
+        .feedback-summary.medium { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ff9800; }
+        .feedback-summary.poor { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); border: 2px solid #f44336; }
+        .feedback-grade { font-size: 2.5em; font-weight: 700; }
+        .feedback-summary.good .feedback-grade { color: #2e7d32; }
+        .feedback-summary.medium .feedback-grade { color: #e65100; }
+        .feedback-summary.poor .feedback-grade { color: #c62828; }
+        
+        .feedback-item { background: #fff; border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 6px; border-left-width: 4px; }
+        .feedback-item.correct { border-left-color: #4caf50; }
+        .feedback-item.partial { border-left-color: #ff9800; }
+        .feedback-item.incorrect { border-left-color: #f44336; }
+        
+        .info-box { background: #e3f2fd; border-left: 4px solid #2c5aa0; padding: 10px 12px; margin: 10px 0; font-size: 0.9em; border-radius: 0 4px 4px 0; }
+        
+        @media (max-width: 600px) {
+            .seat-grid { grid-template-columns: repeat(5, 1fr); }
+            .dropdown-grid { grid-template-columns: repeat(3, 1fr); }
+            .input-row { flex-direction: column; align-items: stretch; }
+            .numeric-input, .unit-select { width: 100%; }
+            .nav-buttons { flex-direction: column; }
+            .nav-buttons button { max-width: none; }
+        }
+        
+        @media print {
+            body { background: #fff; }
+            .box, .feedback-item { break-inside: avoid; }
+            button { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📐 Stundenleistung Bewegungslehre – Klasse 10</h1>
+        
+        <!-- SETUP SCREEN -->
+        <div id="setupScreen">
+            <div class="box">
+                <h2>👋 Sitzplatz wählen</h2>
+                <div class="seat-grid" id="seatGrid"></div>
+            </div>
+            <div class="box">
+                <h2>ℹ️ Informationen</h2>
+                <p style="font-size:0.9em; margin-bottom:8px;"><strong>Physik Klasse 10</strong> · Gleichförmige & beschleunigte Bewegung, Freier Fall</p>
+                <p style="font-size:0.9em; margin-bottom:8px;"><strong>85 Punkte</strong> · <strong>90 Minuten</strong> (Doppelstunde)</p>
+                <div class="info-box">
+                    <strong>✅ Hilfsmittel erlaubt:</strong> Aufzeichnungen, Buch<br>
+                    <strong>📝 Eingabe:</strong> Wert + Einheit getrennt · g = 10 m/s²
+                </div>
+                <p style="text-align:center; margin-top:15px;">
+                    <button class="primary" id="startBtn" disabled style="padding:14px 35px; font-size:1.05em;">▶️ Test starten</button>
+                </p>
+            </div>
+        </div>
+        
+        <!-- QUIZ SCREEN -->
+        <div class="quiz-screen" id="quizScreen">
+            <div class="progress-container">
+                <div class="time-section">
+                    <div class="time-header">
+                        <span class="time-label">⏱️ Verbleibende Zeit</span>
+                        <span class="time-display" id="timeDisplay">90:00</span>
+                    </div>
+                    <div class="time-bar">
+                        <div class="time-bar-fill" id="timeBarFill" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span class="progress-label">📊 Bearbeitet</span>
+                        <span class="progress-display" id="progressDisplay">0% <span>(0 / 85 P)</span></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-overview" id="questionOverview"></div>
+            <div class="question-box" id="questionBox"></div>
+            <div class="nav-buttons">
+                <button id="prevBtn">← Zurück</button>
+                <button class="primary" id="nextBtn">Weiter →</button>
+            </div>
+        </div>
+        
+        <!-- RESULT SCREEN -->
+        <div class="result-screen" id="resultScreen">
+            <div class="submitted-box">
+                <h2>✅ Abgegeben!</h2>
+                <p>Deine Antworten wurden gespeichert.</p>
+            </div>
+            <div class="box">
+                <p style="text-align:center; font-size:0.95em;"><strong>Zeige diesen QR-Code deiner Lehrkraft:</strong></p>
+                <div style="text-align:center; margin:15px 0;">
+                    <div id="qrcode" style="display:inline-block; padding:12px; background:#fff; border:2px solid #ddd; border-radius:6px;"></div>
+                </div>
+                <p style="text-align:center; font-size:0.85em; color:#666;">
+                    Platz: <strong id="resultSeat"></strong> · Zeit: <strong id="resultTime"></strong>
+                </p>
+            </div>
+            <div class="unlock-section" id="unlockSection">
+                <h3 style="color:#e65100; margin-bottom:8px;">🔒 Musterlösung</h3>
+                <div class="unlock-timer" id="unlockTimer">5:00</div>
+                <div class="unlock-progress">
+                    <div class="unlock-progress-bar" id="unlockProgress" style="width:100%"></div>
+                </div>
+                <p style="font-size:0.85em; color:#bf360c; margin:10px 0;">
+                    Warte auf den Timer oder gib den Lehrer-Code ein:
+                </p>
+                <div class="unlock-input">
+                    <input type="text" id="unlockCode" placeholder="CODE" maxlength="6" autocomplete="off">
+                    <button class="primary" id="unlockBtn">🔓 Entsperren</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FEEDBACK SCREEN -->
+        <div class="feedback-screen" id="feedbackScreen">
+            <div class="feedback-summary" id="feedbackSummary">
+                <div class="feedback-grade" id="feedbackGrade">-- NP</div>
+                <div style="font-size:1em; color:#555; margin-top:6px;" id="feedbackPoints">-- / 85 Punkte</div>
+            </div>
+            <div class="box">
+                <h2>📝 Auswertung</h2>
+                <div style="display:flex; justify-content:center; gap:15px; margin:10px 0; font-size:0.85em; flex-wrap:wrap;">
+                    <span>✅ Richtig</span>
+                    <span>⚠️ Teilweise</span>
+                    <span>❌ Falsch</span>
+                </div>
+                <div id="feedbackList"></div>
+            </div>
+            <div class="box" style="text-align:center;">
+                <button onclick="window.print()">🖨️ Drucken</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+    // =============================================================================
+    // KONFIGURATION
+    // Lehrer-Code: PHYSIK (für sofortige Freischaltung der Musterlösung)
+    // =============================================================================
+    const CONFIG = {
+        TOTAL_POINTS: 85,
+        TEST_DURATION: 90,      // Minuten
+        UNLOCK_TIME: 300,       // 5 Minuten bis Auto-Unlock
+        UNLOCK_CODE: "PHYSIK"   // Lehrer-Code für sofortige Freischaltung
+    };
+
+    // =============================================================================
+    // FRAGEN-DATENBANK (V4 - Verifiziert)
+    // =============================================================================
+    const QUESTIONS = [
+        // ═══════════════════════════════════════════════════════════════════════
+        // BLOCK 1: MC GRUNDWISSEN (10 × 2P = 20P)
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "F1", type: "mc", points: 2, afb: 1, 
+          text: "Was ist das Merkmal einer gleichförmigen Bewegung?",
+          options: ["v steigt", "s ~ t (proportional)", "a ≠ 0", "s ~ t²"], 
+          correct: 1 },  // B: s ~ t
+        
+        { id: "F2", type: "mc", points: 2, afb: 1, 
+          text: "Welche Einheit hat die Beschleunigung?",
+          options: ["m/s", "m/s²", "m", "s"], 
+          correct: 1 },  // B: m/s²
+        
+        { id: "F3", type: "mc", points: 2, afb: 1, 
+          text: "Was bedeutet der Anstieg im s(t)-Diagramm?",
+          options: ["Beschleunigung", "Geschwindigkeit", "Kraft", "Masse"], 
+          correct: 1 },  // B: Geschwindigkeit
+        
+        { id: "F4", type: "mc", points: 2, afb: 1, 
+          text: "Was bedeutet der Anstieg im v(t)-Diagramm?",
+          options: ["Geschwindigkeit", "Weg", "Beschleunigung", "Zeit"], 
+          correct: 2 },  // C: Beschleunigung
+        
+        { id: "F5", type: "mc", points: 2, afb: 1, 
+          text: "Was stellt die Fläche unter dem v(t)-Diagramm dar?",
+          options: ["Geschwindigkeit", "Beschleunigung", "Zurückgelegter Weg", "Zeit"], 
+          correct: 2 },  // C: Weg
+        
+        { id: "F6", type: "mc", points: 2, afb: 1, 
+          text: "Was stellt die Fläche unter dem a(t)-Diagramm dar?",
+          options: ["Weg", "Geschwindigkeitsänderung Δv", "Beschleunigung", "Zeit"], 
+          correct: 1 },  // B: Δv
+        
+        { id: "F7", type: "mc", points: 2, afb: 1, 
+          text: "Was bedeutet eine waagerechte Linie im v(t)-Diagramm?",
+          options: ["Gleichförmige Bewegung", "Beschleunigung", "Stillstand", "Bremsung"], 
+          correct: 0 },  // A: Gleichförmig
+        
+        { id: "F8", type: "mc", points: 2, afb: 1, 
+          text: "Was bedeutet eine Parabel im s(t)-Diagramm?",
+          options: ["Gleichförmige Bewegung", "Gleichmäßig beschleunigte Bewegung", "Stillstand", "Stopp"], 
+          correct: 1 },  // B: Beschl. Bewegung
+        
+        { id: "F9", type: "mc", points: 2, afb: 1, 
+          text: "Was bedeutet v(t) = Gerade durch den Ursprung?",
+          options: ["Konstante Beschleunigung aus der Ruhe", "Gleichförmige Bewegung", "Bremsung", "Freier Fall mit v₀"], 
+          correct: 0 },  // A: Const. a aus Ruhe
+        
+        { id: "F10", type: "mc", points: 2, afb: 1, 
+          text: "Was bedeutet eine negative Fläche im v(t)-Diagramm?",
+          options: ["Bremsung", "Rückwärtsbewegung", "Stillstand", "Beschleunigung"], 
+          correct: 1 },  // B: Rückwärts
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // BLOCK 2: BERECHNUNGEN (8 × 2P = 16P)
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "F11", type: "calc", points: 2, afb: 2, 
+          text: "Rechne um: 108 km/h = ? m/s", 
+          correctValue: 30, correctUnit: "m/s", 
+          unitOptions: ["m/s", "km/h", "m", "s"] },
+        // Lösung: 108 ÷ 3,6 = 30
+        
+        { id: "F12", type: "calc", points: 2, afb: 2, 
+          text: "Berechne den Weg s bei v = 25 m/s und t = 40 s.", 
+          correctValue: 1000, correctUnit: "m", 
+          unitOptions: ["m", "km", "m/s", "s"] },
+        // Lösung: s = v·t = 25·40 = 1000
+        
+        { id: "F13", type: "calc", points: 2, afb: 2, 
+          text: "Berechne v nach 6 s bei a = 5 m/s² (Start aus Ruhe).", 
+          correctValue: 30, correctUnit: "m/s", 
+          unitOptions: ["m/s", "m/s²", "m", "s"] },
+        // Lösung: v = a·t = 5·6 = 30
+        
+        { id: "F14", type: "calc", points: 2, afb: 2, 
+          text: "Berechne den Weg s bei a = 4 m/s² und t = 5 s (aus Ruhe).", 
+          correctValue: 50, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "m/s²", "s"] },
+        // Lösung: s = ½·a·t² = ½·4·25 = 50
+        
+        { id: "F15", type: "calc", points: 2, afb: 2, 
+          text: "Berechne die Fallhöhe h nach t = 4 s (g = 10 m/s²).", 
+          correctValue: 80, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] },
+        // Lösung: h = ½·g·t² = ½·10·16 = 80
+        
+        { id: "F16", type: "calc", points: 2, afb: 2, 
+          text: "Berechne die Aufprallgeschwindigkeit bei Fallhöhe h = 45 m.", 
+          correctValue: 30, correctUnit: "m/s", 
+          unitOptions: ["m/s", "m", "s", "m/s²"] },
+        // Lösung: v = √(2gh) = √(2·10·45) = √900 = 30
+        
+        { id: "F17", type: "calc", points: 2, afb: 2, 
+          text: "Berechne den Bremsweg bei v₀ = 40 m/s und a = −8 m/s².", 
+          correctValue: 100, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] },
+        // Lösung: s = v₀²/(2|a|) = 1600/16 = 100
+        
+        { id: "F18", type: "calc", points: 2, afb: 2, 
+          text: "Berechne die Bremszeit bei v₀ = 30 m/s und a = −6 m/s².", 
+          correctValue: 5, correctUnit: "s", 
+          unitOptions: ["s", "m", "m/s", "m/s²"] },
+        // Lösung: t = v₀/|a| = 30/6 = 5
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // AUFGABE A: v(t)-Diagramm - 7 Phasen (7P)
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "A", type: "diagram-dropdown", points: 7, afb: 2,
+          text: "Stadtverkehr: Wähle für jede Phase (1-7) die Bewegungsart.",
+          diagram: "vt-bus",
+          phases: 7,
+          options: ["Beschleunigung", "Gleichförmig", "Verzögerung", "Stillstand"],
+          correct: [0, 1, 0, 2, 3, 0, 1]
+          // Phase 1: 0→20 = Beschl.(0)
+          // Phase 2: 20 konst = Gleichf.(1)
+          // Phase 3: 20→30 = Beschl.(0)
+          // Phase 4: 30→0 = Verzög.(2)
+          // Phase 5: 0 konst = Stillst.(3)
+          // Phase 6: 0→15 = Beschl.(0)
+          // Phase 7: 15 konst = Gleichf.(1)
+        },
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // AUFGABE B: s(t)-Diagramm - 5 Phasen (5P)
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "B", type: "diagram-dropdown", points: 5, afb: 2,
+          text: "Radtour: Wähle für jeden Abschnitt (A-E) die Bewegungsart.",
+          diagram: "st-radfahrer",
+          phases: 5,
+          labels: ["A", "B", "C", "D", "E"],
+          options: ["Beschleunigung", "Gleichförmig", "Verzögerung", "Stillstand"],
+          correct: [0, 1, 3, 2, 1]
+          // A: Parabel steiler = Beschl.(0)
+          // B: Gerade = Gleichf.(1)
+          // C: waagerecht = Stillst.(3)
+          // D: Kurve flacher = Verzög.(2)
+          // E: Gerade = Gleichf.(1)
+        },
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // AUFGABE C: a(t)-Diagramm - 6 Phasen (6P)
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "C", type: "diagram-dropdown", points: 6, afb: 2,
+          text: "Aufzugfahrt: Wähle für jede Phase (1-6) die Bewegungsart.",
+          diagram: "at-aufzug",
+          phases: 6,
+          options: ["Beschleunigung", "Gleichförmig", "Verzögerung", "Stillstand"],
+          correct: [0, 1, 0, 1, 2, 3]
+          // Phase 1: a>0 = Beschl.(0)
+          // Phase 2: a=0,v>0 = Gleichf.(1)
+          // Phase 3: a>0 = Beschl.(0)
+          // Phase 4: a=0,v>0 = Gleichf.(1)
+          // Phase 5: a<0 = Verzög.(2)
+          // Phase 6: a=0,v=0 = Stillst.(3)
+        },
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // AUFGABE D: Zuordnung v(t) ↔ s(t) (5P)
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "D", type: "matching", points: 5, afb: 3,
+          text: "Ordne jedem v(t)-Diagramm das passende s(t)-Diagramm zu.",
+          diagram: "matching",
+          pairs: 5,
+          options: ["A", "B", "C", "D", "E"],
+          correct: [0, 1, 2, 3, 4]
+          // I (v=const) → A (Gerade)
+          // II (v steigt) → B (Parabel steiler)
+          // III (Dreieck) → C (S-Kurve)
+          // IV (v fällt) → D (Parabel flacher)
+          // V (v=0) → E (waagerecht)
+        },
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // AUFGABE E: v(t)-Analyse mit Berechnungen (8 × 2P = 16P)
+        // Diagramm: Phase I (0-4s): 0→40, Phase II (4-10s): 40, Phase III (10-12s): 40→0
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "E1", type: "calc", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Beschleunigung in Phase I berechnen.", 
+          correctValue: 10, correctUnit: "m/s²", 
+          unitOptions: ["m/s²", "m/s", "m", "s"] },
+        // Lösung: a = Δv/Δt = 40/4 = 10
+        
+        { id: "E2", type: "calc", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Weg in Phase I berechnen (Dreiecksfläche).", 
+          correctValue: 80, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] },
+        // Lösung: s = ½·4·40 = 80
+        
+        { id: "E3", type: "calc", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Weg in Phase II berechnen (Rechtecksfläche).", 
+          correctValue: 240, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] },
+        // Lösung: s = 40·6 = 240 (Phase II dauert 6s!)
+        
+        { id: "E4", type: "calc", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Verzögerung in Phase III berechnen.", 
+          correctValue: -20, correctUnit: "m/s²", 
+          unitOptions: ["m/s²", "m/s", "m", "s"] },
+        // Lösung: a = Δv/Δt = -40/2 = -20
+        
+        { id: "E5", type: "calc", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Weg in Phase III berechnen.", 
+          correctValue: 40, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] },
+        // Lösung: s = ½·2·40 = 40
+        
+        { id: "E6", type: "calc", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Durchschnittsgeschwindigkeit berechnen (s_ges = 360 m).", 
+          correctValue: 30, correctUnit: "m/s", 
+          unitOptions: ["m/s", "m", "s", "m/s²"] },
+        // Lösung: v̄ = s/t = 360/12 = 30
+        
+        { id: "E7", type: "calc", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Geschwindigkeit v bei t = 11 s ablesen.", 
+          correctValue: 20, correctUnit: "m/s", 
+          unitOptions: ["m/s", "m", "s", "m/s²"] },
+        // Lösung: v = 40 - 20·(11-10) = 40 - 20 = 20
+        
+        { id: "E8", type: "calc-double", points: 2, afb: 3, context: "diagram-e",
+          text: "Aufgabe E: Wann ist v = 20 m/s? (2 Zeitpunkte angeben)", 
+          correctValues: [2, 11], correctUnit: "s", 
+          unitOptions: ["s", "m", "m/s"] },
+        // Lösung: t₁ = 2s (Phase I), t₂ = 11s (Phase III)
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // AUFGABE F: Szenario Ampelstart (5 × 2P = 10P)
+        // Szenario: Beschl.(a=4,t=5s) → Gleichf.(v=20,t=10s) → Brems.(a=-8)
+        // ═══════════════════════════════════════════════════════════════════════
+        { id: "F1s", type: "calc", points: 2, afb: 3,
+          text: "Ampelstart: Geschwindigkeit nach Beschleunigung? (a = 4 m/s², t = 5 s)", 
+          correctValue: 20, correctUnit: "m/s", 
+          unitOptions: ["m/s", "m", "s", "m/s²"] },
+        // Lösung: v = a·t = 4·5 = 20
+        
+        { id: "F2s", type: "calc", points: 2, afb: 3,
+          text: "Ampelstart: Weg während Beschleunigung?", 
+          correctValue: 50, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] },
+        // Lösung: s = ½·a·t² = ½·4·25 = 50
+        
+        { id: "F3s", type: "calc", points: 2, afb: 3,
+          text: "Ampelstart: Weg während gleichförmiger Phase? (v = 20 m/s, t = 10 s)", 
+          correctValue: 200, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] },
+        // Lösung: s = v·t = 20·10 = 200
+        
+        { id: "F4s", type: "calc", points: 2, afb: 3,
+          text: "Ampelstart: Bremszeit? (v₀ = 20 m/s, a = −8 m/s²)", 
+          correctValue: 2.5, correctUnit: "s", 
+          unitOptions: ["s", "m", "m/s", "m/s²"] },
+        // Lösung: t = v₀/|a| = 20/8 = 2,5
+        
+        { id: "F5s", type: "calc", points: 2, afb: 3,
+          text: "Ampelstart: Bremsweg?", 
+          correctValue: 25, correctUnit: "m", 
+          unitOptions: ["m", "m/s", "s", "m/s²"] }
+        // Lösung: s = v₀²/(2|a|) = 400/16 = 25
+    ];
+
+    // =============================================================================
+    // GLOBALE VARIABLEN
+    // =============================================================================
+    let currentQuestion = 0;
+    let answers = {};
+    let seatNumber = null;
+    let startTime = null;
+    let timerInterval = null;
+    let remainingSeconds = CONFIG.TEST_DURATION * 60;
+    let gradedAnswers = [];
+    let totalEarned = 0;
+    let unlockInterval = null;
+
+    // =============================================================================
+    // INITIALISIERUNG
+    // =============================================================================
+    function init() {
+        createSeatGrid();
+        createQuestionDots();
+        
+        document.getElementById('startBtn').addEventListener('click', startQuiz);
+        document.getElementById('prevBtn').addEventListener('click', () => navigate(-1));
+        document.getElementById('nextBtn').addEventListener('click', () => navigate(1));
+        document.getElementById('unlockBtn').addEventListener('click', checkUnlockCode);
+        document.getElementById('unlockCode').addEventListener('keypress', e => { 
+            if(e.key === 'Enter') checkUnlockCode(); 
+        });
+    }
+
+    function createSeatGrid() {
+        const grid = document.getElementById('seatGrid');
+        for (let i = 1; i <= 30; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'seat-btn';
+            btn.textContent = 'P' + String(i).padStart(2, '0');
+            btn.addEventListener('click', () => selectSeat(i, btn));
+            grid.appendChild(btn);
+        }
+    }
+
+    function selectSeat(num, btn) {
+        document.querySelectorAll('.seat-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        seatNumber = 'P' + String(num).padStart(2, '0');
+        document.getElementById('startBtn').disabled = false;
+    }
+
+    function createQuestionDots() {
+        const overview = document.getElementById('questionOverview');
+        overview.innerHTML = '';
+        QUESTIONS.forEach((q, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'q-dot';
+            dot.textContent = i + 1;
+            dot.addEventListener('click', () => goToQuestion(i));
+            overview.appendChild(dot);
+        });
+    }
+
+    // =============================================================================
+    // QUIZ STARTEN
+    // =============================================================================
+    function startQuiz() {
+        document.getElementById('setupScreen').style.display = 'none';
+        document.getElementById('quizScreen').style.display = 'block';
+        startTime = Date.now();
+        startTimer();
+        showQuestion(0);
+    }
+
+    function startTimer() {
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            remainingSeconds--;
+            updateTimerDisplay();
+            if (remainingSeconds <= 0) {
+                clearInterval(timerInterval);
+                submitQuiz();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const mins = Math.floor(remainingSeconds / 60);
+        const secs = remainingSeconds % 60;
+        const display = document.getElementById('timeDisplay');
+        const bar = document.getElementById('timeBarFill');
+        
+        display.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+        
+        const percent = (remainingSeconds / (CONFIG.TEST_DURATION * 60)) * 100;
+        bar.style.width = percent + '%';
+        
+        display.classList.remove('warning', 'critical');
+        bar.classList.remove('warning', 'critical');
+        
+        if (remainingSeconds <= 300) {
+            display.classList.add('critical');
+            bar.classList.add('critical');
+        } else if (remainingSeconds <= 900) {
+            display.classList.add('warning');
+            bar.classList.add('warning');
+        }
+    }
+
+    // =============================================================================
+    // FORTSCHRITTSANZEIGE
+    // =============================================================================
+    function updateProgress() {
+        let earnedPoints = 0;
+        
+        QUESTIONS.forEach((q, i) => {
+            earnedPoints += getAnsweredPoints(q, i);
+        });
+        
+        const percent = Math.round((earnedPoints / CONFIG.TOTAL_POINTS) * 100);
+        
+        document.getElementById('progressDisplay').innerHTML = 
+            `${percent}% <span>(${earnedPoints} / ${CONFIG.TOTAL_POINTS} P)</span>`;
+        document.getElementById('progressBarFill').style.width = percent + '%';
+        
+        document.querySelectorAll('.q-dot').forEach((dot, i) => {
+            dot.classList.remove('answered', 'partial', 'current');
+            if (i === currentQuestion) dot.classList.add('current');
+            
+            const q = QUESTIONS[i];
+            const pts = getAnsweredPoints(q, i);
+            if (pts === q.points) {
+                dot.classList.add('answered');
+            } else if (pts > 0) {
+                dot.classList.add('partial');
+            }
+        });
+    }
+
+    function getAnsweredPoints(q, idx) {
+        const ans = answers[idx];
+        if (!ans) return 0;
+        
+        if (q.type === 'mc') {
+            return ans.selected !== undefined ? q.points : 0;
+        } else if (q.type === 'calc') {
+            return (ans.value !== '' && ans.unit) ? q.points : 0;
+        } else if (q.type === 'calc-double') {
+            return (ans.value1 !== '' && ans.value2 !== '' && ans.unit) ? q.points : 0;
+        } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+            if (!ans.selections) return 0;
+            const count = q.phases || q.pairs;
+            const filled = ans.selections.filter(s => s !== null && s !== undefined && s !== '').length;
+            return Math.round((filled / count) * q.points);
+        }
+        return 0;
+    }
+
+    // =============================================================================
+    // FRAGEN ANZEIGEN
+    // =============================================================================
+    function showQuestion(idx) {
+        currentQuestion = idx;
+        const q = QUESTIONS[idx];
+        const box = document.getElementById('questionBox');
+        
+        let html = `
+            <div class="question-header">
+                <span class="question-num">Frage ${idx + 1} / ${QUESTIONS.length}</span>
+                <span class="question-points">${q.points} P <span class="afb-badge afb-${q.afb}">AFB ${q.afb}</span></span>
+            </div>
+            <div class="question-text">${q.text}</div>
+        `;
+        
+        // Diagramm E anzeigen
+        if (q.context === 'diagram-e') {
+            const firstE = QUESTIONS.findIndex(x => x.id === 'E1');
+            if (idx === firstE) {
+                html += getDiagramE();
+            } else {
+                html += `<div class="info-box">📊 Siehe Diagramm bei Frage ${firstE + 1}</div>`;
+            }
+        }
+        
+        if (q.diagram) {
+            html += getDiagramSVG(q.diagram);
+        }
+        
+        // Eingabefelder
+        if (q.type === 'mc') {
+            html += renderMC(q, idx);
+        } else if (q.type === 'calc') {
+            html += renderCalc(q, idx);
+        } else if (q.type === 'calc-double') {
+            html += renderCalcDouble(q, idx);
+        } else if (q.type === 'diagram-dropdown') {
+            html += renderDiagramDropdown(q, idx);
+        } else if (q.type === 'matching') {
+            html += renderMatching(q, idx);
+        }
+        
+        box.innerHTML = html;
+        attachEventListeners(q, idx);
+        updateProgress();
+        
+        document.getElementById('prevBtn').disabled = idx === 0;
+        document.getElementById('nextBtn').textContent = idx === QUESTIONS.length - 1 ? '✅ Abgeben' : 'Weiter →';
+    }
+
+    function renderMC(q, idx) {
+        const ans = answers[idx] || {};
+        const letters = ['A', 'B', 'C', 'D'];
+        let html = '<div class="options">';
+        q.options.forEach((opt, i) => {
+            const sel = ans.selected === i ? 'selected' : '';
+            html += `<div class="option ${sel}" data-idx="${i}">
+                <span class="option-letter">${letters[i]}</span>
+                <span class="option-text">${opt}</span>
+            </div>`;
+        });
+        html += '</div>';
+        return html;
+    }
+
+    function renderCalc(q, idx) {
+        const ans = answers[idx] || { value: '', unit: '' };
+        return `<div class="input-group"><div class="input-row">
+            <label>Ergebnis:</label>
+            <input type="text" class="numeric-input ${ans.value ? 'answered' : ''}" id="calcValue" value="${ans.value}" placeholder="Zahl" inputmode="decimal">
+            <select class="unit-select ${ans.unit ? 'answered' : ''}" id="calcUnit">
+                <option value="">Einheit</option>
+                ${q.unitOptions.map(u => `<option value="${u}" ${ans.unit === u ? 'selected' : ''}>${u}</option>`).join('')}
+            </select>
+        </div></div>`;
+    }
+
+    function renderCalcDouble(q, idx) {
+        const ans = answers[idx] || { value1: '', value2: '', unit: '' };
+        return `<div class="input-group">
+            <div class="input-row" style="margin-bottom:8px;">
+                <label>t₁ =</label>
+                <input type="text" class="numeric-input ${ans.value1 ? 'answered' : ''}" id="calcValue1" value="${ans.value1}" placeholder="Zahl" inputmode="decimal">
+                <select class="unit-select ${ans.unit ? 'answered' : ''}" id="calcUnit">
+                    <option value="">Einheit</option>
+                    ${q.unitOptions.map(u => `<option value="${u}" ${ans.unit === u ? 'selected' : ''}>${u}</option>`).join('')}
+                </select>
+            </div>
+            <div class="input-row">
+                <label>t₂ =</label>
+                <input type="text" class="numeric-input ${ans.value2 ? 'answered' : ''}" id="calcValue2" value="${ans.value2}" placeholder="Zahl" inputmode="decimal">
+            </div>
+        </div>`;
+    }
+
+    function renderDiagramDropdown(q, idx) {
+        const ans = answers[idx] || { selections: [] };
+        const labels = q.labels || Array.from({length: q.phases}, (_, i) => String(i + 1));
+        
+        let html = '<div class="dropdown-grid">';
+        for (let i = 0; i < q.phases; i++) {
+            const sel = ans.selections[i];
+            html += `<div class="dropdown-item">
+                <label>Phase ${labels[i]}</label>
+                <select class="phase-select ${sel !== undefined && sel !== '' ? 'answered' : ''}" data-phase="${i}">
+                    <option value="">-- wählen --</option>
+                    ${q.options.map((opt, j) => `<option value="${j}" ${sel == j ? 'selected' : ''}>${opt}</option>`).join('')}
+                </select>
+            </div>`;
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function renderMatching(q, idx) {
+        const ans = answers[idx] || { selections: [] };
+        const labels = ['I', 'II', 'III', 'IV', 'V'];
+        
+        let html = '<div class="dropdown-grid">';
+        for (let i = 0; i < q.pairs; i++) {
+            const sel = ans.selections[i];
+            html += `<div class="dropdown-item">
+                <label>v(t) ${labels[i]} →</label>
+                <select class="phase-select ${sel !== undefined && sel !== '' ? 'answered' : ''}" data-phase="${i}">
+                    <option value="">-- s(t) --</option>
+                    ${q.options.map((opt, j) => `<option value="${j}" ${sel == j ? 'selected' : ''}>s(t) ${opt}</option>`).join('')}
+                </select>
+            </div>`;
+        }
+        html += '</div>';
+        return html;
+    }
+
+    // =============================================================================
+    // EVENT LISTENER
+    // =============================================================================
+    function attachEventListeners(q, idx) {
+        if (q.type === 'mc') {
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    answers[idx] = { selected: parseInt(opt.dataset.idx) };
+                    updateProgress();
+                });
+            });
+        } else if (q.type === 'calc') {
+            const valInput = document.getElementById('calcValue');
+            const unitSelect = document.getElementById('calcUnit');
+            const save = () => {
+                answers[idx] = { value: valInput.value.trim(), unit: unitSelect.value };
+                valInput.classList.toggle('answered', valInput.value.trim() !== '');
+                unitSelect.classList.toggle('answered', unitSelect.value !== '');
+                updateProgress();
+            };
+            valInput.addEventListener('input', save);
+            unitSelect.addEventListener('change', save);
+        } else if (q.type === 'calc-double') {
+            const v1 = document.getElementById('calcValue1');
+            const v2 = document.getElementById('calcValue2');
+            const unit = document.getElementById('calcUnit');
+            const save = () => {
+                answers[idx] = { value1: v1.value.trim(), value2: v2.value.trim(), unit: unit.value };
+                v1.classList.toggle('answered', v1.value.trim() !== '');
+                v2.classList.toggle('answered', v2.value.trim() !== '');
+                unit.classList.toggle('answered', unit.value !== '');
+                updateProgress();
+            };
+            v1.addEventListener('input', save);
+            v2.addEventListener('input', save);
+            unit.addEventListener('change', save);
+        } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+            document.querySelectorAll('.phase-select').forEach(sel => {
+                sel.addEventListener('change', () => {
+                    if (!answers[idx]) answers[idx] = { selections: [] };
+                    const phase = parseInt(sel.dataset.phase);
+                    answers[idx].selections[phase] = sel.value !== '' ? parseInt(sel.value) : null;
+                    sel.classList.toggle('answered', sel.value !== '');
+                    updateProgress();
+                });
+            });
+        }
+    }
+
+    // =============================================================================
+    // DIAGRAMME
+    // =============================================================================
+    function getDiagramE() {
+        return `<div class="diagram-container">
+            <svg viewBox="0 0 400 180" style="max-width:400px;">
+                <!-- Achsen -->
+                <line x1="40" y1="150" x2="380" y2="150" stroke="#333" stroke-width="2"/>
+                <line x1="40" y1="150" x2="40" y2="20" stroke="#333" stroke-width="2"/>
+                <!-- Gitter -->
+                <g stroke="#e0e0e0" stroke-width="1">
+                    <line x1="40" y1="120" x2="370" y2="120"/>
+                    <line x1="40" y1="90" x2="370" y2="90"/>
+                    <line x1="40" y1="60" x2="370" y2="60"/>
+                    <line x1="40" y1="30" x2="370" y2="30"/>
+                    <line x1="95" y1="150" x2="95" y2="25"/>
+                    <line x1="150" y1="150" x2="150" y2="25"/>
+                    <line x1="205" y1="150" x2="205" y2="25"/>
+                    <line x1="260" y1="150" x2="260" y2="25"/>
+                    <line x1="315" y1="150" x2="315" y2="25"/>
+                    <line x1="370" y1="150" x2="370" y2="25"/>
+                </g>
+                <!-- Phasengrenzen (gestrichelt) -->
+                <line x1="150" y1="150" x2="150" y2="20" stroke="#999" stroke-dasharray="5,3" stroke-width="1.5"/>
+                <line x1="315" y1="150" x2="315" y2="20" stroke="#999" stroke-dasharray="5,3" stroke-width="1.5"/>
+                <!-- v(t)-Kurve: 0-4s(0→40), 4-10s(40), 10-12s(40→0) -->
+                <path d="M40,150 L150,30 L315,30 L370,150" fill="none" stroke="#2c5aa0" stroke-width="3"/>
+                <!-- Flächen -->
+                <path d="M40,150 L150,30 L150,150 Z" fill="rgba(33,150,243,0.15)"/>
+                <path d="M150,150 L150,30 L315,30 L315,150 Z" fill="rgba(76,175,80,0.15)"/>
+                <path d="M315,150 L315,30 L370,150 Z" fill="rgba(244,67,54,0.15)"/>
+                <!-- Labels -->
+                <text x="95" y="100" font-size="14" font-weight="bold" fill="#1565c0">I</text>
+                <text x="232" y="100" font-size="14" font-weight="bold" fill="#2e7d32">II</text>
+                <text x="342" y="100" font-size="14" font-weight="bold" fill="#c62828">III</text>
+                <!-- Achsenbeschriftung -->
+                <text x="385" y="155" font-size="12" fill="#333">t/s</text>
+                <text x="20" y="15" font-size="12" fill="#333">v/(m/s)</text>
+                <!-- Werte y-Achse -->
+                <text x="35" y="155" font-size="10" text-anchor="end" fill="#666">0</text>
+                <text x="35" y="125" font-size="10" text-anchor="end" fill="#666">10</text>
+                <text x="35" y="95" font-size="10" text-anchor="end" fill="#666">20</text>
+                <text x="35" y="65" font-size="10" text-anchor="end" fill="#666">30</text>
+                <text x="35" y="35" font-size="10" text-anchor="end" fill="#666">40</text>
+                <!-- Werte x-Achse -->
+                <text x="40" y="165" font-size="10" text-anchor="middle" fill="#666">0</text>
+                <text x="95" y="165" font-size="10" text-anchor="middle" fill="#666">2</text>
+                <text x="150" y="165" font-size="10" text-anchor="middle" fill="#666">4</text>
+                <text x="205" y="165" font-size="10" text-anchor="middle" fill="#666">6</text>
+                <text x="260" y="165" font-size="10" text-anchor="middle" fill="#666">8</text>
+                <text x="315" y="165" font-size="10" text-anchor="middle" fill="#666">10</text>
+                <text x="370" y="165" font-size="10" text-anchor="middle" fill="#666">12</text>
+            </svg>
+        </div>`;
+    }
+
+    function getDiagramSVG(type) {
+        if (type === 'vt-bus') {
+            // v(t)-Diagramm Stadtverkehr: 7 Phasen
+            return `<div class="diagram-container">
+                <svg viewBox="0 0 450 160" style="max-width:450px;">
+                    <line x1="40" y1="130" x2="430" y2="130" stroke="#333" stroke-width="2"/>
+                    <line x1="40" y1="130" x2="40" y2="20" stroke="#333" stroke-width="2"/>
+                    <!-- Phasengrenzen -->
+                    ${[95,150,205,260,315,370].map(x => `<line x1="${x}" y1="130" x2="${x}" y2="25" stroke="#ccc" stroke-dasharray="4,2"/>`).join('')}
+                    <!-- v(t): 7 Phasen -->
+                    <!-- P1: 0→20 | P2: 20 | P3: 20→30 | P4: 30→0 | P5: 0 | P6: 0→15 | P7: 15 -->
+                    <path d="M40,130 L95,70 L150,70 L205,40 L260,130 L315,130 L370,85 L425,85" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <!-- Phasen-Nummern -->
+                    ${[67,122,177,232,287,342,397].map((x,i) => `<text x="${x}" y="18" font-size="11" font-weight="bold" fill="#1565c0">${i+1}</text>`).join('')}
+                    <!-- Achsen -->
+                    <text x="435" y="135" font-size="11" fill="#333">t/s</text>
+                    <text x="25" y="15" font-size="11" fill="#333">v</text>
+                    <text x="35" y="135" font-size="9" text-anchor="end" fill="#666">0</text>
+                    <text x="35" y="75" font-size="9" text-anchor="end" fill="#666">20</text>
+                    <text x="35" y="45" font-size="9" text-anchor="end" fill="#666">30</text>
+                    ${[0,5,10,15,20,25,30,35].map((t,i) => `<text x="${40+i*55}" y="142" font-size="9" text-anchor="middle" fill="#666">${t}</text>`).join('')}
+                </svg>
+            </div>`;
+        } else if (type === 'st-radfahrer') {
+            // s(t)-Diagramm Radtour: 5 Phasen
+            return `<div class="diagram-container">
+                <svg viewBox="0 0 380 160" style="max-width:380px;">
+                    <line x1="40" y1="130" x2="360" y2="130" stroke="#333" stroke-width="2"/>
+                    <line x1="40" y1="130" x2="40" y2="20" stroke="#333" stroke-width="2"/>
+                    <!-- Phasengrenzen -->
+                    ${[104,168,232,296].map(x => `<line x1="${x}" y1="130" x2="${x}" y2="25" stroke="#ccc" stroke-dasharray="4,2"/>`).join('')}
+                    <!-- s(t): 5 Phasen -->
+                    <!-- A: Parabel steiler | B: Gerade | C: waagerecht | D: abflachend | E: Gerade -->
+                    <path d="M40,130 Q72,130 104,80" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <path d="M104,80 L168,40" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <path d="M168,40 L232,40" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <path d="M232,40 Q264,30 296,28" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <path d="M296,28 L360,22" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <!-- Phasen-Buchstaben -->
+                    ${[72,136,200,264,328].map((x,i) => `<text x="${x}" y="18" font-size="11" font-weight="bold" fill="#1565c0">${['A','B','C','D','E'][i]}</text>`).join('')}
+                    <!-- Achsen -->
+                    <text x="365" y="135" font-size="11" fill="#333">t</text>
+                    <text x="25" y="15" font-size="11" fill="#333">s</text>
+                </svg>
+            </div>`;
+        } else if (type === 'at-aufzug') {
+            // a(t)-Diagramm Aufzug: 6 Phasen
+            return `<div class="diagram-container">
+                <svg viewBox="0 0 400 140" style="max-width:400px;">
+                    <line x1="40" y1="90" x2="380" y2="90" stroke="#333" stroke-width="2"/>
+                    <line x1="40" y1="130" x2="40" y2="30" stroke="#333" stroke-width="2"/>
+                    <!-- Nulllinie -->
+                    <line x1="40" y1="90" x2="370" y2="90" stroke="#999" stroke-dasharray="3,2"/>
+                    <!-- Phasengrenzen -->
+                    ${[95,150,205,260,315].map(x => `<line x1="${x}" y1="125" x2="${x}" y2="35" stroke="#ccc" stroke-dasharray="4,2"/>`).join('')}
+                    <!-- a(t): 6 Phasen -->
+                    <!-- P1: a>0 | P2: a=0 | P3: a>0 | P4: a=0 | P5: a<0 | P6: a=0,v=0 -->
+                    <rect x="40" y="50" width="55" height="40" fill="rgba(33,150,243,0.2)" stroke="#2196f3"/>
+                    <line x1="95" y1="90" x2="150" y2="90" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <rect x="150" y="50" width="55" height="40" fill="rgba(33,150,243,0.2)" stroke="#2196f3"/>
+                    <line x1="205" y1="90" x2="260" y2="90" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <rect x="260" y="90" width="55" height="30" fill="rgba(244,67,54,0.2)" stroke="#f44336"/>
+                    <line x1="315" y1="90" x2="370" y2="90" stroke="#2c5aa0" stroke-width="2.5"/>
+                    <!-- Phasen-Nummern -->
+                    ${[67,122,177,232,287,342].map((x,i) => `<text x="${x}" y="25" font-size="11" font-weight="bold" fill="#1565c0">${i+1}</text>`).join('')}
+                    <!-- Achsen -->
+                    <text x="385" y="95" font-size="11" fill="#333">t/s</text>
+                    <text x="25" y="25" font-size="11" fill="#333">a</text>
+                    <text x="35" y="55" font-size="9" text-anchor="end" fill="#666">+</text>
+                    <text x="35" y="95" font-size="9" text-anchor="end" fill="#666">0</text>
+                    <text x="35" y="125" font-size="9" text-anchor="end" fill="#666">−</text>
+                </svg>
+            </div>`;
+        } else if (type === 'matching') {
+            // Zuordnung v(t) ↔ s(t)
+            return `<div class="diagram-container">
+                <svg viewBox="0 0 520 180" style="max-width:520px;">
+                    <!-- v(t) Diagramme -->
+                    <text x="52" y="12" font-size="10" font-weight="bold" fill="#333">v(t)</text>
+                    ${[0,1,2,3,4].map(i => {
+                        const x = 10 + i * 102;
+                        const paths = [
+                            'M5,35 L45,35',           // I: konstant (oben)
+                            'M5,45 L45,25',           // II: steigend
+                            'M5,45 L25,25 L45,45',    // III: Dreieck
+                            'M5,25 L45,45',           // IV: fallend
+                            'M5,45 L45,45'            // V: null (unten)
+                        ];
+                        return `<g transform="translate(${x},15)">
+                            <rect x="0" y="0" width="50" height="50" fill="#fff" stroke="#ddd"/>
+                            <line x1="5" y1="45" x2="45" y2="45" stroke="#ccc" stroke-width="0.5"/>
+                            <path d="${paths[i]}" fill="none" stroke="#2c5aa0" stroke-width="2"/>
+                            <text x="25" y="65" font-size="10" text-anchor="middle" font-weight="bold">${['I','II','III','IV','V'][i]}</text>
+                        </g>`;
+                    }).join('')}
+                    <!-- s(t) Diagramme -->
+                    <text x="52" y="102" font-size="10" font-weight="bold" fill="#333">s(t)</text>
+                    ${[0,1,2,3,4].map(i => {
+                        const x = 10 + i * 102;
+                        const paths = [
+                            'M5,45 L45,20',                    // A: Gerade steigend
+                            'M5,45 Q25,45 45,15',              // B: Parabel wird steiler
+                            'M5,45 Q15,35 25,25 Q35,18 45,15', // C: S-Kurve
+                            'M5,45 Q20,20 45,15',              // D: Parabel wird flacher
+                            'M5,30 L45,30'                     // E: waagerecht
+                        ];
+                        return `<g transform="translate(${x},105)">
+                            <rect x="0" y="0" width="50" height="50" fill="#fff" stroke="#ddd"/>
+                            <path d="${paths[i]}" fill="none" stroke="#c62828" stroke-width="2"/>
+                            <text x="25" y="65" font-size="10" text-anchor="middle" font-weight="bold">${['A','B','C','D','E'][i]}</text>
+                        </g>`;
+                    }).join('')}
+                </svg>
+            </div>`;
+        }
+        return '';
+    }
+
+    // =============================================================================
+    // NAVIGATION
+    // =============================================================================
+    function navigate(dir) {
+        if (dir === 1 && currentQuestion === QUESTIONS.length - 1) {
+            if (confirm('Quiz abgeben? Du kannst danach keine Änderungen mehr vornehmen.')) {
+                submitQuiz();
+            }
+            return;
+        }
+        goToQuestion(currentQuestion + dir);
+    }
+
+    function goToQuestion(idx) {
+        if (idx >= 0 && idx < QUESTIONS.length) {
+            showQuestion(idx);
+        }
+    }
+
+    // =============================================================================
+    // ABGABE & BEWERTUNG
+    // =============================================================================
+    function submitQuiz() {
+        clearInterval(timerInterval);
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        
+        document.getElementById('quizScreen').style.display = 'none';
+        document.getElementById('resultScreen').style.display = 'block';
+        document.getElementById('resultSeat').textContent = seatNumber;
+        document.getElementById('resultTime').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+        
+        // Bewertung durchführen
+        gradeAllAnswers();
+        
+        // QR-Code generieren
+        const data = generateSubmissionData(elapsed);
+        const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+        
+        try {
+            new QRCode(document.getElementById('qrcode'), { 
+                text: compressed, 
+                width: 180, 
+                height: 180,
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        } catch(e) {
+            document.getElementById('qrcode').innerHTML = '<p style="color:#c00; font-size:0.85em;">QR-Code konnte nicht erstellt werden.</p>';
+        }
+        
+        // Unlock-Timer starten
+        startUnlockTimer();
+    }
+
+    function gradeAllAnswers() {
+        gradedAnswers = [];
+        totalEarned = 0;
+        
+        QUESTIONS.forEach((q, idx) => {
+            const ans = answers[idx];
+            const result = gradeQuestion(q, ans);
+            gradedAnswers.push(result);
+            totalEarned += result.points;
+        });
+    }
+
+    function gradeQuestion(q, ans) {
+        const result = {
+            qId: q.id,
+            type: q.type,
+            maxPoints: q.points,
+            points: 0,
+            correct: false,
+            userAnswer: null,
+            correctAnswer: null
+        };
+        
+        if (!ans) return result;
+        
+        if (q.type === 'mc') {
+            result.userAnswer = ans.selected;
+            result.correctAnswer = q.correct;
+            if (ans.selected === q.correct) {
+                result.points = q.points;
+                result.correct = true;
+            }
+        } else if (q.type === 'calc') {
+            result.userAnswer = { value: ans.value, unit: ans.unit };
+            result.correctAnswer = { value: q.correctValue, unit: q.correctUnit };
+            
+            const userVal = parseFloat(String(ans.value).replace(',', '.'));
+            const correctVal = q.correctValue;
+            const tolerance = Math.abs(correctVal * 0.02) + 0.05;
+            
+            const valueCorrect = !isNaN(userVal) && Math.abs(userVal - correctVal) <= tolerance;
+            const unitCorrect = ans.unit === q.correctUnit;
+            
+            if (valueCorrect) result.points += 1;
+            if (unitCorrect) result.points += 1;
+            result.correct = valueCorrect && unitCorrect;
+        } else if (q.type === 'calc-double') {
+            const v1 = parseFloat(String(ans.value1 || '').replace(',', '.'));
+            const v2 = parseFloat(String(ans.value2 || '').replace(',', '.'));
+            result.userAnswer = { value1: ans.value1, value2: ans.value2, unit: ans.unit };
+            result.correctAnswer = { values: q.correctValues, unit: q.correctUnit };
+            
+            const vals = q.correctValues;
+            const match1 = !isNaN(v1) && (Math.abs(v1 - vals[0]) < 0.5 || Math.abs(v1 - vals[1]) < 0.5);
+            const match2 = !isNaN(v2) && (Math.abs(v2 - vals[0]) < 0.5 || Math.abs(v2 - vals[1]) < 0.5);
+            
+            if (match1) result.points += 1;
+            if (match2) result.points += 1;
+            result.correct = match1 && match2;
+        } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+            const numItems = q.phases || q.pairs;
+            const selections = ans.selections || [];
+            result.userAnswer = [...selections];
+            result.correctAnswer = [...q.correct];
+            
+            let correctCount = 0;
+            for (let i = 0; i < numItems; i++) {
+                if (selections[i] === q.correct[i]) correctCount++;
+            }
+            result.points = correctCount;
+            result.correct = correctCount === numItems;
+        }
+        
+        return result;
+    }
+
+    function generateSubmissionData(duration) {
+        const ans = gradedAnswers.map((g, idx) => ({
+            q: idx + 1,
+            p: g.points,
+            c: g.correct,
+            a: g.userAnswer,
+            ca: g.correctAnswer
+        }));
+        
+        return {
+            v: 4,
+            sid: seatNumber,
+            tid: 'SL-BEW-10-V4',
+            lvl: 'GY10',
+            mp: CONFIG.TOTAL_POINTS,
+            dur: duration,
+            ts: Date.now(),
+            ans: ans
+        };
+    }
+
+    // =============================================================================
+    // UNLOCK & FEEDBACK
+    // =============================================================================
+    let unlockRemaining = CONFIG.UNLOCK_TIME;
+    
+    function startUnlockTimer() {
+        unlockRemaining = CONFIG.UNLOCK_TIME;
+        updateUnlockDisplay();
+        unlockInterval = setInterval(() => {
+            unlockRemaining--;
+            updateUnlockDisplay();
+            if (unlockRemaining <= 0) {
+                clearInterval(unlockInterval);
+                showFeedback();
+            }
+        }, 1000);
+    }
+
+    function updateUnlockDisplay() {
+        const mins = Math.floor(unlockRemaining / 60);
+        const secs = unlockRemaining % 60;
+        document.getElementById('unlockTimer').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+        document.getElementById('unlockProgress').style.width = (unlockRemaining / CONFIG.UNLOCK_TIME * 100) + '%';
+    }
+
+    function checkUnlockCode() {
+        const input = document.getElementById('unlockCode').value.toUpperCase().trim();
+        if (input === CONFIG.UNLOCK_CODE) {
+            clearInterval(unlockInterval);
+            showFeedback();
+        } else {
+            const inputEl = document.getElementById('unlockCode');
+            inputEl.classList.add('error');
+            inputEl.value = '';
+            setTimeout(() => inputEl.classList.remove('error'), 500);
+        }
+    }
+
+    function showFeedback() {
+        document.getElementById('resultScreen').style.display = 'none';
+        document.getElementById('feedbackScreen').style.display = 'block';
+        
+        const pct = (totalEarned / CONFIG.TOTAL_POINTS) * 100;
+        const grade = calculateGrade(pct);
+        
+        const summary = document.getElementById('feedbackSummary');
+        summary.classList.remove('good', 'medium', 'poor');
+        if (grade >= 10) {
+            summary.classList.add('good');
+        } else if (grade >= 5) {
+            summary.classList.add('medium');
+        } else {
+            summary.classList.add('poor');
+        }
+        
+        document.getElementById('feedbackGrade').textContent = grade + ' NP';
+        document.getElementById('feedbackPoints').textContent = `${totalEarned} / ${CONFIG.TOTAL_POINTS} Punkte (${pct.toFixed(1)}%)`;
+        
+        renderFeedbackList();
+    }
+
+    function calculateGrade(pct) {
+        const thresholds = [98.67, 97.33, 96, 90.67, 85.33, 80, 73.33, 66.67, 60, 53.33, 46.67, 40, 33.33, 26.67, 20];
+        const grades = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        
+        for (let i = 0; i < thresholds.length; i++) {
+            if (pct >= thresholds[i]) return grades[i];
+        }
+        return 0;
+    }
+
+    function renderFeedbackList() {
+        const list = document.getElementById('feedbackList');
+        let html = '';
+        
+        gradedAnswers.forEach((g, idx) => {
+            const q = QUESTIONS[idx];
+            const statusIcon = g.correct ? '✅' : (g.points > 0 ? '⚠️' : '❌');
+            const statusClass = g.correct ? 'correct' : (g.points > 0 ? 'partial' : 'incorrect');
+            const bgColor = g.correct ? '#e8f5e9' : (g.points > 0 ? '#fff8e1' : '#ffebee');
+            
+            html += `<div class="feedback-item ${statusClass}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong>${statusIcon} Frage ${idx + 1} (${q.id})</strong>
+                    <span style="background:${bgColor}; padding:3px 8px; border-radius:4px; font-weight:600; font-size:0.85em;">
+                        ${g.points} / ${g.maxPoints} P
+                    </span>
+                </div>
+                <div style="font-size:0.9em; color:#555; margin-bottom:8px;">${q.text}</div>`;
+            
+            // Antwort-Details
+            if (q.type === 'mc') {
+                const letters = ['A', 'B', 'C', 'D'];
+                const userLetter = g.userAnswer !== null && g.userAnswer !== undefined ? letters[g.userAnswer] : '–';
+                const correctLetter = letters[g.correctAnswer];
+                html += `<div style="font-size:0.85em;">
+                    <span style="color:#666;">Deine Antwort:</span> 
+                    <code style="background:#e0e0e0; padding:2px 6px; border-radius:3px;">${userLetter}</code>`;
+                if (!g.correct) {
+                    html += ` → <span style="color:#2e7d32; font-weight:600;">${correctLetter}: ${q.options[g.correctAnswer]}</span>`;
+                }
+                html += '</div>';
+            } else if (q.type === 'calc') {
+                const userVal = g.userAnswer?.value || '–';
+                const userUnit = g.userAnswer?.unit || '–';
+                html += `<div style="font-size:0.85em;">
+                    <span style="color:#666;">Deine Antwort:</span> 
+                    <code style="background:#e0e0e0; padding:2px 6px; border-radius:3px;">${userVal} ${userUnit}</code>`;
+                if (!g.correct) {
+                    html += ` → <span style="color:#2e7d32; font-weight:600;">${g.correctAnswer.value} ${g.correctAnswer.unit}</span>`;
+                }
+                html += '</div>';
+            } else if (q.type === 'calc-double') {
+                const v1 = g.userAnswer?.value1 || '–';
+                const v2 = g.userAnswer?.value2 || '–';
+                html += `<div style="font-size:0.85em;">
+                    <span style="color:#666;">Deine Antwort:</span> 
+                    <code style="background:#e0e0e0; padding:2px 6px; border-radius:3px;">t₁=${v1}, t₂=${v2}</code>`;
+                if (!g.correct) {
+                    html += ` → <span style="color:#2e7d32; font-weight:600;">t₁=${g.correctAnswer.values[0]} s, t₂=${g.correctAnswer.values[1]} s</span>`;
+                }
+                html += '</div>';
+            } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+                const labels = q.labels || (q.type === 'matching' ? ['I','II','III','IV','V'] : Array.from({length: q.phases || q.pairs}, (_,i) => String(i+1)));
+                const optLabels = q.type === 'matching' ? ['A','B','C','D','E'] : q.options;
+                
+                html += `<div style="font-size:0.85em; display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;">`;
+                for (let i = 0; i < (q.phases || q.pairs); i++) {
+                    const userSel = g.userAnswer?.[i];
+                    const correctSel = g.correctAnswer[i];
+                    const isCorrect = userSel === correctSel;
+                    const userLabel = userSel !== null && userSel !== undefined ? (q.type === 'matching' ? optLabels[userSel] : optLabels[userSel]) : '–';
+                    const correctLabel = q.type === 'matching' ? optLabels[correctSel] : optLabels[correctSel];
+                    
+                    html += `<span style="background:${isCorrect ? '#e8f5e9' : '#ffebee'}; padding:2px 6px; border-radius:3px; border:1px solid ${isCorrect ? '#a5d6a7' : '#ef9a9a'}; font-size:0.9em;">
+                        ${labels[i]}: ${userLabel}${!isCorrect ? ' → <b>' + correctLabel + '</b>' : ''}
+                    </span>`;
+                }
+                html += '</div>';
+            }
+            
+            html += '</div>';
+        });
+        
+        list.innerHTML = html;
+    }
+
+    // =============================================================================
+    // START
+    // =============================================================================
+    document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

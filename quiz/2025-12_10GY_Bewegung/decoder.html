@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoder V4 – Bewegungslehre Klasse 10</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { font-size: 1.4em; font-weight: 600; color: #222; margin-bottom: 15px; }
+        .box { background: #fff; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 6px; }
+        .box h2 { font-size: 1.1em; font-weight: 600; color: #222; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #2c5aa0; }
+        button { padding: 10px 20px; font-size: 0.9em; border: 1px solid #ccc; background: #fff; cursor: pointer; font-family: inherit; margin: 3px; border-radius: 4px; }
+        button:hover { background: #f5f5f5; }
+        button.primary { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
+        button.primary:hover { background: #234a80; }
+        button.success { background: #2a7a4b; color: #fff; border-color: #2a7a4b; }
+        textarea { width: 100%; height: 100px; padding: 10px; font-family: monospace; font-size: 0.85em; border: 1px solid #ccc; resize: vertical; border-radius: 4px; }
+        textarea:focus { outline: none; border-color: #2c5aa0; }
+        
+        .scale-table { width: 100%; border-collapse: collapse; font-size: 0.75em; margin: 10px 0; }
+        .scale-table th, .scale-table td { border: 1px solid #ddd; padding: 3px 5px; text-align: center; }
+        .scale-table th { background: #2c5aa0; color: #fff; }
+        
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .results-table th, .results-table td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; font-size: 0.9em; }
+        .results-table th { background: #f5f5f5; font-weight: 600; }
+        .results-table tr:hover { background: #fafafa; }
+        
+        .grade { font-weight: 700; }
+        .grade-good { color: #2a7a4b; }
+        .grade-ok { color: #b35c00; }
+        .grade-bad { color: #c00; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin: 15px 0; }
+        .stat-box { background: #f5f5f5; border: 1px solid #ddd; padding: 10px; text-align: center; border-radius: 4px; }
+        .stat-box .value { font-size: 1.4em; font-weight: 700; color: #2c5aa0; }
+        .stat-box .label { font-size: 0.75em; color: #666; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto; padding: 20px; }
+        .modal.active { display: block; }
+        .modal-content { background: #fff; max-width: 800px; margin: 0 auto; border-radius: 6px; }
+        .modal-header { background: #2c5aa0; color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px 6px 0 0; }
+        .modal-header h3 { font-size: 1.1em; }
+        .close-btn { background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer; padding: 0; margin: 0; }
+        .modal-body { padding: 15px; max-height: 70vh; overflow-y: auto; }
+        
+        .answer-row { display: flex; align-items: flex-start; padding: 8px 10px; margin: 4px 0; border-radius: 4px; border-left: 3px solid #ddd; flex-wrap: wrap; }
+        .answer-row.correct { background: #e8f5e9; border-left-color: #2a7a4b; }
+        .answer-row.incorrect { background: #ffebee; border-left-color: #c00; }
+        .answer-row.partial { background: #fff8e1; border-left-color: #f57f17; }
+        .answer-row .q-num { width: 45px; font-weight: 600; color: #666; font-size: 0.85em; flex-shrink: 0; }
+        .answer-row .q-info { flex: 1; font-size: 0.85em; min-width: 200px; }
+        .answer-row .q-points { font-weight: 600; min-width: 60px; text-align: right; font-size: 0.85em; flex-shrink: 0; }
+        
+        .info-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.75em; font-weight: 600; margin-left: 5px; }
+        .info-badge.version { background: #e3f2fd; color: #1565c0; }
+        
+        @media print { 
+            body { background: #fff; padding: 10px; font-size: 9pt; } 
+            .box { border: 1px solid #000; page-break-inside: avoid; } 
+            button, textarea, .modal { display: none !important; }
+            .results-table { font-size: 8pt; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Decoder V4 – Bewegungslehre Klasse 10 <span class="info-badge version">85 Punkte</span></h1>
+        
+        <div class="box">
+            <h2>📥 Code(s) eingeben</h2>
+            <textarea id="codeInput" placeholder="Füge hier einen oder mehrere Codes ein (einer pro Zeile)..."></textarea>
+            <p style="margin-top: 10px;">
+                <button class="primary" onclick="decodeAll()">🔓 Dekodieren</button>
+                <button onclick="clearAll()">🗑️ Löschen</button>
+                <button onclick="exportCSV()">📊 CSV Export</button>
+            </p>
+        </div>
+        
+        <div class="box">
+            <h2>📏 Bewertungsskala (15-NP, Sonstige Leistungen)</h2>
+            <p style="margin-bottom: 8px; font-size: 0.9em;">Gesamt: <strong>85 Punkte</strong> | Hilfsmittel: Aufzeichnungen, Buch | g = 10 m/s²</p>
+            <table class="scale-table">
+                <tr>
+                    <th>NP</th><th>15</th><th>14</th><th>13</th><th>12</th><th>11</th><th>10</th><th>9</th><th>8</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th>
+                </tr>
+                <tr>
+                    <td>%</td><td>98,7</td><td>97,3</td><td>96</td><td>90,7</td><td>85,3</td><td>80</td><td>73,3</td><td>66,7</td><td>60</td><td>53,3</td><td>46,7</td><td>40</td><td>33,3</td><td>26,7</td><td>20</td>
+                </tr>
+                <tr>
+                    <td>P</td><td>84</td><td>83</td><td>82</td><td>77</td><td>73</td><td>68</td><td>62</td><td>57</td><td>51</td><td>45</td><td>40</td><td>34</td><td>29</td><td>23</td><td>17</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="box" id="resultsBox" style="display:none;">
+            <h2>📊 Ergebnisse</h2>
+            <div class="stats-grid" id="statsGrid"></div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Platz</th>
+                        <th>Punkte</th>
+                        <th>%</th>
+                        <th>Note</th>
+                        <th>Zeit</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+            <p style="margin-top: 15px; text-align: center;">
+                <button onclick="printResults()">🖨️ Drucken</button>
+                <button class="success" onclick="generateAllSheets()">📄 Alle Feedbackbögen</button>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Detail</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script>
+    // =============================================================================
+    // KONFIGURATION
+    // =============================================================================
+    const MAX_POINTS = 85;
+    
+    const SCALE = {
+        thresholds: [98.67, 97.33, 96, 90.67, 85.33, 80, 73.33, 66.67, 60, 53.33, 46.67, 40, 33.33, 26.67, 20],
+        grades: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    };
+
+    // Fragen-Referenz für Detail-Ansicht
+    const QUESTIONS = [
+        { id: "F1", text: "Merkmal gleichförmige Bewegung", type: "mc", points: 2, afb: 1 },
+        { id: "F2", text: "Einheit Beschleunigung", type: "mc", points: 2, afb: 1 },
+        { id: "F3", text: "Anstieg im s(t)-Diagramm", type: "mc", points: 2, afb: 1 },
+        { id: "F4", text: "Anstieg im v(t)-Diagramm", type: "mc", points: 2, afb: 1 },
+        { id: "F5", text: "Fläche unter v(t)", type: "mc", points: 2, afb: 1 },
+        { id: "F6", text: "Fläche unter a(t)", type: "mc", points: 2, afb: 1 },
+        { id: "F7", text: "Waagerechte im v(t)", type: "mc", points: 2, afb: 1 },
+        { id: "F8", text: "Parabel im s(t)", type: "mc", points: 2, afb: 1 },
+        { id: "F9", text: "v(t) Gerade durch Ursprung", type: "mc", points: 2, afb: 1 },
+        { id: "F10", text: "Negative Fläche im v(t)", type: "mc", points: 2, afb: 1 },
+        { id: "F11", text: "Umrechnung 108 km/h", type: "calc", points: 2, afb: 2 },
+        { id: "F12", text: "Weg bei v=25, t=40", type: "calc", points: 2, afb: 2 },
+        { id: "F13", text: "v nach 6s bei a=5", type: "calc", points: 2, afb: 2 },
+        { id: "F14", text: "Weg bei a=4, t=5", type: "calc", points: 2, afb: 2 },
+        { id: "F15", text: "Fallhöhe nach t=4s", type: "calc", points: 2, afb: 2 },
+        { id: "F16", text: "Aufprallgeschw. h=45m", type: "calc", points: 2, afb: 2 },
+        { id: "F17", text: "Bremsweg v₀=40, a=-8", type: "calc", points: 2, afb: 2 },
+        { id: "F18", text: "Bremszeit v₀=30, a=-6", type: "calc", points: 2, afb: 2 },
+        { id: "A", text: "v(t)-Diagramm Stadtverkehr (7 Phasen)", type: "dropdown", points: 7, afb: 2 },
+        { id: "B", text: "s(t)-Diagramm Radtour (5 Phasen)", type: "dropdown", points: 5, afb: 2 },
+        { id: "C", text: "a(t)-Diagramm Aufzug (6 Phasen)", type: "dropdown", points: 6, afb: 2 },
+        { id: "D", text: "Zuordnung v(t)↔s(t)", type: "matching", points: 5, afb: 3 },
+        { id: "E1", text: "Beschleunigung Phase I", type: "calc", points: 2, afb: 3 },
+        { id: "E2", text: "Weg Phase I", type: "calc", points: 2, afb: 3 },
+        { id: "E3", text: "Weg Phase II", type: "calc", points: 2, afb: 3 },
+        { id: "E4", text: "Verzögerung Phase III", type: "calc", points: 2, afb: 3 },
+        { id: "E5", text: "Weg Phase III", type: "calc", points: 2, afb: 3 },
+        { id: "E6", text: "Durchschnittsgeschwindigkeit", type: "calc", points: 2, afb: 3 },
+        { id: "E7", text: "v bei t=11s", type: "calc", points: 2, afb: 3 },
+        { id: "E8", text: "Wann ist v=20 m/s?", type: "calc-double", points: 2, afb: 3 },
+        { id: "F1s", text: "Ampelstart: v nach Beschl.", type: "calc", points: 2, afb: 3 },
+        { id: "F2s", text: "Ampelstart: Weg Beschl.", type: "calc", points: 2, afb: 3 },
+        { id: "F3s", text: "Ampelstart: Weg gleichf.", type: "calc", points: 2, afb: 3 },
+        { id: "F4s", text: "Ampelstart: Bremszeit", type: "calc", points: 2, afb: 3 },
+        { id: "F5s", text: "Ampelstart: Bremsweg", type: "calc", points: 2, afb: 3 }
+    ];
+
+    let results = [];
+
+    // =============================================================================
+    // DEKODIERUNG
+    // =============================================================================
+    function decodeAll() {
+        const input = document.getElementById('codeInput').value.trim();
+        if (!input) {
+            alert('Bitte Code(s) eingeben!');
+            return;
+        }
+        
+        const codes = input.split(/\n+/).filter(c => c.trim());
+        let newCount = 0;
+        
+        codes.forEach(code => {
+            try {
+                const decoded = LZString.decompressFromEncodedURIComponent(code.trim());
+                if (!decoded) throw new Error('Dekomprimierung fehlgeschlagen');
+                
+                const data = JSON.parse(decoded);
+                
+                // Duplikat-Prüfung
+                if (results.some(r => r.seatId === data.sid && r.timestamp === data.ts)) {
+                    return;
+                }
+                
+                const processed = processResult(data);
+                results.push(processed);
+                newCount++;
+            } catch (e) {
+                console.error('Fehler bei Code:', code.substring(0, 50), e);
+            }
+        });
+        
+        if (newCount > 0) {
+            renderResults();
+            document.getElementById('codeInput').value = '';
+        } else {
+            alert('Keine neuen gültigen Codes gefunden!');
+        }
+    }
+
+    function processResult(data) {
+        const mp = data.mp || MAX_POINTS;
+        const totalPoints = data.ans.reduce((sum, a) => sum + (a.p || 0), 0);
+        const pct = totalPoints / mp * 100;
+        
+        // AFB-Analyse
+        const afbPoints = {1: 0, 2: 0, 3: 0};
+        const afbMax = {1: 0, 2: 0, 3: 0};
+        data.ans.forEach((a, i) => {
+            const q = QUESTIONS[i];
+            if (q) {
+                afbPoints[q.afb] += a.p || 0;
+                afbMax[q.afb] += q.points;
+            }
+        });
+        
+        return {
+            seatId: data.sid,
+            testId: data.tid,
+            level: data.lvl,
+            version: data.v || 1,
+            answers: data.ans,
+            duration: data.dur,
+            timestamp: data.ts,
+            totalPoints,
+            maxPoints: mp,
+            percentage: pct,
+            grade: calcGrade(pct),
+            afbPoints,
+            afbMax
+        };
+    }
+
+    function calcGrade(pct) {
+        for (let i = 0; i < SCALE.thresholds.length; i++) {
+            if (pct >= SCALE.thresholds[i]) return SCALE.grades[i];
+        }
+        return 0;
+    }
+
+    // =============================================================================
+    // ANZEIGE
+    // =============================================================================
+    function renderResults() {
+        document.getElementById('resultsBox').style.display = 'block';
+        results.sort((a, b) => a.seatId.localeCompare(b.seatId));
+        
+        const pts = results.map(r => r.totalPoints);
+        const gds = results.map(r => r.grade);
+        
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-box"><div class="value">${results.length}</div><div class="label">Abgaben</div></div>
+            <div class="stat-box"><div class="value">${(pts.reduce((a,b)=>a+b,0)/pts.length).toFixed(1)}</div><div class="label">Ø Punkte</div></div>
+            <div class="stat-box"><div class="value">${(gds.reduce((a,b)=>a+b,0)/gds.length).toFixed(1)}</div><div class="label">Ø NP</div></div>
+            <div class="stat-box"><div class="value">${Math.max(...pts)}</div><div class="label">Max</div></div>
+            <div class="stat-box"><div class="value">${Math.min(...pts)}</div><div class="label">Min</div></div>`;
+        
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = '';
+        results.forEach((r, i) => {
+            const gc = r.grade >= 10 ? 'grade-good' : (r.grade >= 5 ? 'grade-ok' : 'grade-bad');
+            const dur = `${Math.floor(r.duration/60)}:${String(r.duration%60).padStart(2,'0')}`;
+            tbody.innerHTML += `<tr>
+                <td><strong>${r.seatId}</strong></td>
+                <td>${r.totalPoints} / ${r.maxPoints}</td>
+                <td>${r.percentage.toFixed(1)}%</td>
+                <td class="grade ${gc}">${r.grade} NP</td>
+                <td>${dur}</td>
+                <td>
+                    <button onclick="showDetail(${i})" style="padding:5px 10px;">📋 Detail</button>
+                </td>
+            </tr>`;
+        });
+    }
+
+    function showDetail(idx) {
+        const r = results[idx];
+        document.getElementById('modalTitle').textContent = `${r.seatId} – ${r.totalPoints}/${r.maxPoints} P (${r.grade} NP)`;
+        
+        let html = `
+            <div style="background:#f5f5f5; padding:10px; margin-bottom:15px; border-radius:4px;">
+                <strong>AFB-Verteilung:</strong><br>
+                <span style="color:#2e7d32;">AFB I: ${r.afbPoints[1]}/${r.afbMax[1]} P</span> · 
+                <span style="color:#f57f17;">AFB II: ${r.afbPoints[2]}/${r.afbMax[2]} P</span> · 
+                <span style="color:#c2185b;">AFB III: ${r.afbPoints[3]}/${r.afbMax[3]} P</span>
+            </div>
+            <hr style="margin:10px 0; border:none; border-top:1px solid #ddd;">`;
+        
+        r.answers.forEach((a, i) => {
+            const q = QUESTIONS[i];
+            if (!q) return;
+            
+            const rowClass = a.c ? 'correct' : (a.p > 0 ? 'partial' : 'incorrect');
+            const icon = a.c ? '✅' : (a.p > 0 ? '⚠️' : '❌');
+            
+            html += `<div class="answer-row ${rowClass}">
+                <div class="q-num">${icon} ${a.q}.</div>
+                <div class="q-info">
+                    <strong>${q.id}</strong>: ${q.text}<br>
+                    <span style="color:#666; font-size:0.9em;">`;
+            
+            // Antwort-Details
+            if (a.a !== null && a.a !== undefined) {
+                if (typeof a.a === 'object') {
+                    if (a.a.value !== undefined) {
+                        html += `Antwort: ${a.a.value} ${a.a.unit || ''}`;
+                    } else if (a.a.value1 !== undefined) {
+                        html += `Antwort: t₁=${a.a.value1}, t₂=${a.a.value2}`;
+                    } else if (Array.isArray(a.a)) {
+                        html += `Antwort: [${a.a.join(', ')}]`;
+                    }
+                } else {
+                    html += `Antwort: ${a.a}`;
+                }
+                
+                if (!a.c && a.ca) {
+                    html += ` → <span style="color:#2e7d32; font-weight:600;">`;
+                    if (typeof a.ca === 'object') {
+                        if (a.ca.value !== undefined) {
+                            html += `${a.ca.value} ${a.ca.unit || ''}`;
+                        } else if (a.ca.values !== undefined) {
+                            html += `${a.ca.values.join(', ')} ${a.ca.unit || ''}`;
+                        } else if (Array.isArray(a.ca)) {
+                            html += `[${a.ca.join(', ')}]`;
+                        }
+                    } else {
+                        html += a.ca;
+                    }
+                    html += `</span>`;
+                }
+            }
+            
+            html += `</span>
+                </div>
+                <div class="q-points">${a.p}/${q.points} P</div>
+            </div>`;
+        });
+        
+        document.getElementById('modalBody').innerHTML = html;
+        document.getElementById('detailModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('detailModal').classList.remove('active');
+    }
+
+    // =============================================================================
+    // EXPORT
+    // =============================================================================
+    function clearAll() {
+        results = [];
+        document.getElementById('resultsBox').style.display = 'none';
+        document.getElementById('codeInput').value = '';
+    }
+
+    function printResults() {
+        window.print();
+    }
+
+    function exportCSV() {
+        if (results.length === 0) {
+            alert('Keine Ergebnisse zum Exportieren!');
+            return;
+        }
+        
+        let csv = 'Platz;Punkte;Max;Prozent;NP;Zeit_Min\n';
+        results.forEach(r => {
+            csv += `${r.seatId};${r.totalPoints};${r.maxPoints};${r.percentage.toFixed(1)};${r.grade};${Math.floor(r.duration/60)}\n`;
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Ergebnisse_Bewegungslehre_10.csv';
+        link.click();
+    }
+
+    function generateAllSheets() {
+        const win = window.open('', '_blank');
+        let html = `<!DOCTYPE html><html><head>
+            <meta charset="UTF-8">
+            <title>Feedbackbögen - Bewegungslehre</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 15px; }
+                .sheet { page-break-after: always; border: 1px solid #000; padding: 15px; margin-bottom: 20px; }
+                .sheet:last-child { page-break-after: auto; }
+                h2 { font-size: 14pt; margin: 0 0 10px 0; border-bottom: 2px solid #000; padding-bottom: 5px; }
+                .info { display: flex; justify-content: space-between; margin-bottom: 10px; }
+                .grade-box { font-size: 24pt; font-weight: bold; text-align: center; padding: 10px; border: 2px solid #000; width: 80px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                th, td { border: 1px solid #999; padding: 4px 6px; text-align: left; font-size: 9pt; }
+                th { background: #f0f0f0; }
+                .correct { background: #d4edda; }
+                .partial { background: #fff3cd; }
+                .incorrect { background: #f8d7da; }
+            </style>
+        </head><body>`;
+        
+        results.forEach(r => {
+            html += `<div class="sheet">
+                <h2>Feedback: Bewegungslehre Klasse 10</h2>
+                <div class="info">
+                    <div><strong>Platz:</strong> ${r.seatId}<br><strong>Zeit:</strong> ${Math.floor(r.duration/60)}:${String(r.duration%60).padStart(2,'0')}</div>
+                    <div class="grade-box">${r.grade}<br><small>NP</small></div>
+                    <div style="text-align:right;"><strong>Punkte:</strong> ${r.totalPoints} / ${r.maxPoints}<br><strong>Prozent:</strong> ${r.percentage.toFixed(1)}%</div>
+                </div>
+                <table>
+                    <tr><th>#</th><th>Aufgabe</th><th>Deine Antwort</th><th>Lösung</th><th>P</th></tr>`;
+            
+            r.answers.forEach((a, i) => {
+                const q = QUESTIONS[i];
+                if (!q) return;
+                const rowClass = a.c ? 'correct' : (a.p > 0 ? 'partial' : 'incorrect');
+                
+                let userAns = '–';
+                let correctAns = '–';
+                
+                if (a.a !== null && a.a !== undefined) {
+                    if (typeof a.a === 'object') {
+                        if (a.a.value !== undefined) userAns = `${a.a.value} ${a.a.unit || ''}`;
+                        else if (a.a.value1 !== undefined) userAns = `t₁=${a.a.value1}, t₂=${a.a.value2}`;
+                        else if (Array.isArray(a.a)) userAns = a.a.join(', ');
+                    } else {
+                        userAns = String(a.a);
+                    }
+                }
+                
+                if (a.ca !== null && a.ca !== undefined) {
+                    if (typeof a.ca === 'object') {
+                        if (a.ca.value !== undefined) correctAns = `${a.ca.value} ${a.ca.unit || ''}`;
+                        else if (a.ca.values !== undefined) correctAns = `${a.ca.values.join(', ')} ${a.ca.unit || ''}`;
+                        else if (Array.isArray(a.ca)) correctAns = a.ca.join(', ');
+                    } else {
+                        correctAns = String(a.ca);
+                    }
+                }
+                
+                html += `<tr class="${rowClass}">
+                    <td>${a.q}</td>
+                    <td>${q.text}</td>
+                    <td>${userAns}</td>
+                    <td>${a.c ? '✓' : correctAns}</td>
+                    <td>${a.p}/${q.points}</td>
+                </tr>`;
+            });
+            
+            html += `</table></div>`;
+        });
+        
+        html += '</body></html>';
+        win.document.write(html);
+        win.document.close();
+    }
+
+    // Modal schließen bei Klick außerhalb
+    document.getElementById('detailModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    </script>
+</body>
+</html>
