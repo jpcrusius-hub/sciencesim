@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stundenleistung Bewegungslehre – Klasse 10 GY</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #f5f5f5; 
+            min-height: 100vh; 
+            padding: 10px; 
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { font-size: 1.2em; font-weight: 600; color: #222; margin-bottom: 10px; text-align: center; }
+        .box { 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin-bottom: 10px; 
+            border-radius: 6px; 
+        }
+        .box h2 { 
+            font-size: 1em; 
+            font-weight: 600; 
+            color: #222; 
+            margin-bottom: 8px; 
+            padding-bottom: 6px; 
+            border-bottom: 2px solid #2c5aa0; 
+        }
+        
+        /* Progress Container */
+        .progress-container { 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 12px 15px; 
+            margin-bottom: 10px; 
+            border-radius: 6px;
+            position: relative;
+        }
+        .reset-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border: 1px solid #ddd;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .reset-btn:hover { background: #eee; color: #666; }
+        
+        .time-section { margin-bottom: 12px; }
+        .time-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .time-label { font-size: 0.85em; color: #666; font-weight: 500; }
+        .time-display { 
+            font-size: 1.4em; 
+            font-weight: 700; 
+            font-family: "SF Mono", Monaco, monospace; 
+            color: #222; 
+        }
+        .time-display.warning { color: #e65100; }
+        .time-display.critical { color: #c62828; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        
+        .time-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+        .time-bar-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, #4caf50, #8bc34a); 
+            transition: width 1s linear, background 0.5s; 
+            border-radius: 4px; 
+        }
+        .time-bar-fill.warning { background: linear-gradient(90deg, #ff9800, #ffc107); }
+        .time-bar-fill.critical { background: linear-gradient(90deg, #f44336, #ff5722); }
+        
+        .progress-section { margin-top: 10px; }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .progress-label { font-size: 0.85em; color: #666; font-weight: 500; }
+        .progress-display { font-size: 1.1em; font-weight: 600; color: #2c5aa0; }
+        .progress-display span { font-size: 0.85em; color: #888; font-weight: 400; }
+        .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+        .progress-bar-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, #2c5aa0, #5c9ce6); 
+            transition: width 0.3s ease; 
+            border-radius: 4px; 
+        }
+        
+        /* Question Dots */
+        .question-overview { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 4px; 
+            padding: 10px; 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            margin-bottom: 10px; 
+            border-radius: 6px; 
+        }
+        .q-dot { 
+            width: 28px; 
+            height: 28px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.75em; 
+            font-weight: 600; 
+            border: 2px solid #ddd; 
+            background: #fff; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            transition: all 0.15s; 
+        }
+        .q-dot:hover { background: #f0f0f0; }
+        .q-dot.answered { background: #4caf50; color: #fff; border-color: #4caf50; }
+        .q-dot.partial { background: #ff9800; color: #fff; border-color: #ff9800; }
+        .q-dot.current { border-color: #2c5aa0; box-shadow: 0 0 0 2px rgba(44,90,160,0.3); }
+        .q-dot.bonus { background: linear-gradient(135deg, #9c27b0, #e91e63); color: #fff; border-color: #9c27b0; }
+        
+        /* Setup Screen */
+        .seat-grid { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 5px; 
+            margin: 12px auto; 
+            max-width: 320px; 
+        }
+        .seat-btn { 
+            padding: 10px 4px; 
+            font-size: 0.8em; 
+            font-weight: 600; 
+            border: 2px solid #ddd; 
+            background: #fff; 
+            cursor: pointer; 
+            border-radius: 4px; 
+            transition: all 0.15s; 
+        }
+        .seat-btn:hover { background: #e3f2fd; border-color: #90caf9; }
+        .seat-btn.selected { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
+        
+        button { 
+            padding: 10px 20px; 
+            font-size: 0.9em; 
+            border: 1px solid #ccc; 
+            background: #fff; 
+            cursor: pointer; 
+            font-family: inherit; 
+            border-radius: 4px; 
+            transition: all 0.15s; 
+        }
+        button:hover:not(:disabled) { background: #f0f0f0; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        button.primary { background: #2c5aa0; color: #fff; border-color: #2c5aa0; font-weight: 600; }
+        button.primary:hover:not(:disabled) { background: #234a80; }
+        
+        .info-box { 
+            background: #e3f2fd; 
+            border-left: 4px solid #2c5aa0; 
+            padding: 10px 12px; 
+            margin: 10px 0; 
+            font-size: 0.9em; 
+            border-radius: 0 4px 4px 0; 
+        }
+        .warning-box {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 10px 12px;
+            margin: 10px 0;
+            font-size: 0.85em;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        /* Quiz Screen */
+        .quiz-screen { display: none; }
+        .question-box { 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 18px; 
+            margin-bottom: 10px; 
+            border-radius: 6px; 
+        }
+        .question-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 10px; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+        }
+        .question-num { font-size: 0.85em; color: #666; font-weight: 500; }
+        .question-points { 
+            background: #f0f0f0; 
+            padding: 4px 10px; 
+            font-weight: 600; 
+            font-size: 0.8em; 
+            border-radius: 4px; 
+        }
+        .afb-badge { 
+            display: inline-block; 
+            padding: 2px 6px; 
+            font-size: 0.7em; 
+            font-weight: 600; 
+            border-radius: 3px; 
+            margin-left: 6px; 
+        }
+        .afb-1 { background: #e8f5e9; color: #2e7d32; }
+        .afb-2 { background: #fff8e1; color: #f57f17; }
+        .afb-3 { background: #fce4ec; color: #c2185b; }
+        .question-text { font-size: 1em; line-height: 1.5; color: #222; margin-bottom: 15px; }
+        
+        /* Diagram Container */
+        .diagram-container { 
+            background: #fafafa; 
+            border: 1px solid #e0e0e0; 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+        }
+        .diagram-container svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        
+        /* Dropdown Grid */
+        .dropdown-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 8px; 
+            margin: 15px 0; 
+        }
+        .dropdown-item { display: flex; flex-direction: column; gap: 4px; }
+        .dropdown-item label { font-size: 0.85em; font-weight: 600; color: #333; }
+        .dropdown-item select { 
+            padding: 8px 10px; 
+            font-size: 0.9em; 
+            border: 2px solid #ddd; 
+            border-radius: 4px; 
+            background: #fff; 
+            cursor: pointer; 
+        }
+        .dropdown-item select:focus { outline: none; border-color: #2c5aa0; }
+        .dropdown-item select.answered { border-color: #4caf50; background: #f1f8e9; }
+        
+        /* MC Options */
+        .options { display: flex; flex-direction: column; gap: 6px; }
+        .option { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px; 
+            background: #fff; 
+            border: 2px solid #e0e0e0; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            transition: all 0.15s; 
+        }
+        .option:hover { background: #f5f5f5; border-color: #bdbdbd; }
+        .option.selected { background: #e3f2fd; border-color: #2c5aa0; }
+        .option-letter { 
+            width: 26px; 
+            height: 26px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: #f5f5f5; 
+            border: 2px solid #ddd; 
+            font-weight: 700; 
+            font-size: 0.85em; 
+            margin-right: 10px; 
+            flex-shrink: 0; 
+            border-radius: 4px; 
+        }
+        .option.selected .option-letter { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
+        .option-text { flex: 1; font-size: 0.9em; }
+        
+        /* Input Groups */
+        .input-group { 
+            background: #f8f9fa; 
+            border: 1px solid #e0e0e0; 
+            padding: 12px; 
+            border-radius: 6px; 
+            margin: 8px 0; 
+        }
+        .input-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .input-row label { font-size: 0.9em; color: #333; font-weight: 500; min-width: 70px; }
+        .numeric-input { 
+            width: 120px; 
+            padding: 10px 12px; 
+            font-size: 1em; 
+            border: 2px solid #ddd; 
+            background: #fff; 
+            font-family: "SF Mono", Monaco, monospace; 
+            text-align: right; 
+            border-radius: 4px; 
+        }
+        .unit-select { 
+            padding: 10px 12px; 
+            font-size: 0.95em; 
+            border: 2px solid #ddd; 
+            background: #fff; 
+            min-width: 90px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        .numeric-input:focus, .unit-select:focus { outline: none; border-color: #2c5aa0; }
+        .numeric-input.answered, .unit-select.answered { border-color: #4caf50; background: #f1f8e9; }
+        
+        /* Multi-Calc Fields */
+        .multi-calc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .calc-field {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .calc-field label {
+            display: block;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .calc-field .input-row {
+            justify-content: flex-start;
+        }
+        .calc-field .numeric-input {
+            width: 100px;
+        }
+        
+        /* Mixed Question (Dropdown + Calc) */
+        .mixed-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .mixed-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        .mixed-item .item-label {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .mixed-item .item-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        /* Navigation */
+        .nav-buttons { 
+            display: flex; 
+            justify-content: space-between; 
+            gap: 10px; 
+            padding: 12px; 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+        }
+        .nav-buttons button { flex: 1; max-width: 180px; }
+        
+        /* Result Screen */
+        .result-screen { display: none; }
+        .submitted-box { 
+            background: #e8f5e9; 
+            border: 2px solid #4caf50; 
+            padding: 20px; 
+            text-align: center; 
+            border-radius: 8px; 
+            margin-bottom: 12px; 
+        }
+        .submitted-box h2 { color: #2e7d32; border: none; padding: 0; margin-bottom: 6px; }
+        
+        /* Unlock Section */
+        .unlock-section { 
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); 
+            border: 2px solid #ff9800; 
+            padding: 20px; 
+            margin: 12px 0; 
+            text-align: center; 
+            border-radius: 8px; 
+        }
+        .unlock-timer { 
+            font-size: 2.5em; 
+            font-weight: 700; 
+            color: #e65100; 
+            font-family: "SF Mono", Monaco, monospace; 
+            margin: 10px 0; 
+        }
+        .unlock-progress { 
+            width: 100%; 
+            max-width: 280px; 
+            height: 6px; 
+            background: #ffcc80; 
+            border-radius: 3px; 
+            margin: 8px auto; 
+            overflow: hidden; 
+        }
+        .unlock-progress-bar { height: 100%; background: #ff9800; transition: width 1s linear; }
+        .unlock-input { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+        .unlock-input input { 
+            width: 120px; 
+            padding: 12px; 
+            font-size: 1.2em; 
+            text-align: center; 
+            border: 2px solid #ffcc80; 
+            border-radius: 4px; 
+            text-transform: uppercase; 
+            font-family: monospace; 
+            background: #fff; 
+        }
+        .unlock-input input:focus { outline: none; border-color: #ff9800; }
+        .unlock-input input.error { border-color: #f44336; animation: shake 0.3s; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        /* Feedback Screen */
+        .feedback-screen { display: none; }
+        .feedback-summary { 
+            padding: 20px; 
+            text-align: center; 
+            margin-bottom: 15px; 
+            border-radius: 8px; 
+        }
+        .feedback-summary.good { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 2px solid #4caf50; }
+        .feedback-summary.medium { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: 2px solid #ff9800; }
+        .feedback-summary.poor { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); border: 2px solid #f44336; }
+        .feedback-grade { font-size: 2.5em; font-weight: 700; }
+        .feedback-summary.good .feedback-grade { color: #2e7d32; }
+        .feedback-summary.medium .feedback-grade { color: #e65100; }
+        .feedback-summary.poor .feedback-grade { color: #c62828; }
+        
+        .feedback-item { 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            border-left-width: 4px; 
+        }
+        .feedback-item.correct { border-left-color: #4caf50; }
+        .feedback-item.partial { border-left-color: #ff9800; }
+        .feedback-item.incorrect { border-left-color: #f44336; }
+        .feedback-item.bonus-item { background: #fce4ec; border-left-color: #9c27b0; }
+        
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .feedback-points {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .feedback-question {
+            font-size: 0.95em;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .feedback-options {
+            margin: 10px 0;
+        }
+        .feedback-option {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .feedback-option.user-selected { background: #e3f2fd; border: 1px solid #2c5aa0; }
+        .feedback-option.correct-answer { background: #e8f5e9; border: 1px solid #4caf50; }
+        .feedback-option.user-wrong { background: #ffebee; border: 1px solid #f44336; }
+        .feedback-answer {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .feedback-answer .correct { color: #2e7d32; font-weight: 600; }
+        .feedback-answer .wrong { color: #c62828; }
+        
+        .points-overview {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .points-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .points-row:last-child { border-bottom: none; }
+        .points-row.total { font-weight: 700; border-top: 2px solid #2c5aa0; margin-top: 8px; padding-top: 12px; }
+        
+        /* Modal */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 1000; 
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-content { 
+            background: #fff; 
+            max-width: 400px; 
+            width: 100%;
+            border-radius: 8px; 
+            overflow: hidden;
+        }
+        .modal-header { 
+            background: #ff9800; 
+            color: #fff; 
+            padding: 15px; 
+            font-weight: 600;
+        }
+        .modal-body { padding: 20px; text-align: center; }
+        .modal-body input {
+            width: 150px;
+            padding: 12px;
+            font-size: 1.3em;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 15px 0;
+        }
+        .modal-body input:focus { outline: none; border-color: #2c5aa0; }
+        .modal-body input.error { border-color: #f44336; animation: shake 0.3s; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .modal-buttons button { min-width: 100px; }
+        
+        /* Bonus Card */
+        .bonus-card {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 3px solid #c41e3a;
+        }
+        .bonus-card h3 { color: #ffd700; margin-bottom: 10px; }
+        .bonus-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body { background: #fff; font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .container { max-width: 100%; }
+            .box, .feedback-item { break-inside: avoid; page-break-inside: avoid; border: 1px solid #000; }
+            .feedback-item.correct { border-left: 4px solid #4caf50 !important; }
+            .feedback-item.partial { border-left: 4px solid #ff9800 !important; }
+            .feedback-item.incorrect { border-left: 4px solid #f44336 !important; }
+            .feedback-item.bonus-item { background: #fce4ec !important; }
+            .diagram-container svg { max-width: 100%; height: auto; }
+            .feedback-summary { break-after: avoid; }
+        }
+        
+        @media (max-width: 600px) {
+            .seat-grid { grid-template-columns: repeat(5, 1fr); }
+            .dropdown-grid { grid-template-columns: repeat(2, 1fr); }
+            .multi-calc-grid { grid-template-columns: 1fr; }
+            .input-row { flex-direction: column; align-items: stretch; }
+            .numeric-input, .unit-select { width: 100%; }
+            .nav-buttons { flex-direction: column; }
+            .nav-buttons button { max-width: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📐 Stundenleistung Bewegungslehre – Klasse 10 GY</h1>
+        
+        <!-- SETUP SCREEN -->
+        <div id="setupScreen">
+            <div class="box">
+                <h2>👋 Sitzplatz wählen</h2>
+                <div class="seat-grid" id="seatGrid"></div>
+            </div>
+            <div class="box">
+                <h2>ℹ️ Informationen</h2>
+                <p style="font-size:0.9em; margin-bottom:8px;"><strong>Physik Klasse 10 GY</strong> · Gleichförmige & beschleunigte Bewegung</p>
+                <p style="font-size:0.9em; margin-bottom:8px;"><strong>108 Punkte + 3 Bonus</strong> · <strong>90 Minuten</strong></p>
+                <div class="info-box">
+                    <strong>📝 Hilfsmittel:</strong> Keine (alle Werte kopfrechenbar)<br>
+                    <strong>📐 Konstante:</strong> g = 10 m/s²
+                </div>
+                <div class="warning-box">
+                    ⚠️ Nach dem Start kann das Quiz nicht neu gestartet werden.<br>
+                    Dein Fortschritt wird automatisch gespeichert.
+                </div>
+                <p style="text-align:center; margin-top:15px;">
+                    <button class="primary" id="startBtn" disabled style="padding:14px 35px; font-size:1.05em;">▶️ Test starten</button>
+                </p>
+            </div>
+        </div>
+        
+        <!-- QUIZ SCREEN -->
+        <div class="quiz-screen" id="quizScreen">
+            <div class="progress-container">
+                <button class="reset-btn no-print" onclick="showResetModal()" title="Quiz zurücksetzen">🔄</button>
+                <div class="time-section">
+                    <div class="time-header">
+                        <span class="time-label">⏱️ Verbleibende Zeit</span>
+                        <span class="time-display" id="timeDisplay">90:00</span>
+                    </div>
+                    <div class="time-bar">
+                        <div class="time-bar-fill" id="timeBarFill" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <span class="progress-label">📊 Bearbeitet</span>
+                        <span class="progress-display" id="progressDisplay">0% <span>(0 / 108 P)</span></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-overview" id="questionOverview"></div>
+            <div class="question-box" id="questionBox"></div>
+            <div class="nav-buttons no-print">
+                <button id="prevBtn">← Zurück</button>
+                <button class="primary" id="nextBtn">Weiter →</button>
+            </div>
+        </div>
+        
+        <!-- RESULT SCREEN -->
+        <div class="result-screen" id="resultScreen">
+            <div class="submitted-box">
+                <h2>✅ Abgegeben!</h2>
+                <p>Deine Antworten wurden gespeichert.</p>
+            </div>
+            <div class="box">
+                <p style="text-align:center; font-size:0.95em;"><strong>Zeige diesen QR-Code deiner Lehrkraft:</strong></p>
+                <div style="text-align:center; margin:15px 0;">
+                    <div id="qrcode" style="display:inline-block; padding:12px; background:#fff; border:2px solid #ddd; border-radius:6px;"></div>
+                </div>
+                <p style="text-align:center; font-size:0.85em; color:#666;">
+                    Platz: <strong id="resultSeat"></strong> · Zeit: <strong id="resultTime"></strong>
+                </p>
+            </div>
+            <div class="unlock-section" id="unlockSection">
+                <h3 style="color:#e65100; margin-bottom:8px;">🔒 Musterlösung</h3>
+                <div class="unlock-timer" id="unlockTimer">5:00</div>
+                <div class="unlock-progress">
+                    <div class="unlock-progress-bar" id="unlockProgress" style="width:100%"></div>
+                </div>
+                <p style="font-size:0.85em; color:#bf360c; margin:10px 0;">
+                    Warte auf den Timer oder gib den Lehrer-Code ein:
+                </p>
+                <div class="unlock-input">
+                    <input type="text" id="unlockCode" placeholder="CODE" maxlength="10" autocomplete="off">
+                    <button class="primary" id="unlockBtn">🔓</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FEEDBACK SCREEN -->
+        <div class="feedback-screen" id="feedbackScreen">
+            <div class="feedback-summary" id="feedbackSummary">
+                <div style="margin-bottom:10px;">
+                    <span style="font-size:0.9em; color:#666;">Name: </span>
+                    <span style="border-bottom:1px solid #999; display:inline-block; width:200px;">&nbsp;</span>
+                    <span style="font-size:0.9em; color:#666; margin-left:20px;">Platz: </span>
+                    <strong id="feedbackSeat"></strong>
+                    <span style="font-size:0.9em; color:#666; margin-left:20px;">Datum: </span>
+                    <strong id="feedbackDate"></strong>
+                </div>
+                <div class="feedback-grade" id="feedbackGrade">-- NP</div>
+                <div style="font-size:1.1em; color:#555; margin-top:6px;" id="feedbackPoints">-- / 108 Punkte (---%)</div>
+                <div style="font-size:0.95em; color:#666; margin-top:6px;" id="feedbackBonus"></div>
+                <div style="font-size:0.85em; color:#888; margin-top:8px;" id="feedbackTime"></div>
+            </div>
+            
+            <div class="box no-print" style="text-align:center; margin-bottom:15px;">
+                <button onclick="window.print()">🖨️ Als PDF speichern</button>
+            </div>
+            
+            <div id="feedbackList"></div>
+            
+            <div class="points-overview" id="pointsOverview"></div>
+            
+            <div class="box" style="text-align:center;">
+                <p style="font-size:0.9em; color:#666; margin-bottom:10px;">Unterschrift Lehrkraft: _________________ Datum: _________</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reset Modal -->
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <div class="modal-header">⚠️ Quiz zurücksetzen</div>
+            <div class="modal-body">
+                <p style="font-size:0.9em; color:#666; margin-bottom:10px;">
+                    Diese Aktion löscht ALLE Antworten und startet das Quiz komplett neu.
+                    Dies kann nicht rückgängig gemacht werden!
+                </p>
+                <p style="font-weight:600;">Lehrer-Code eingeben:</p>
+                <input type="text" id="resetCodeInput" maxlength="10" autocomplete="off">
+                <div class="modal-buttons">
+                    <button onclick="closeResetModal()">Abbrechen</button>
+                    <button class="primary" onclick="attemptReset()">🔓 Zurücksetzen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// =============================================================================
+// KONFIGURATION
+// =============================================================================
+const CONFIG = {
+    VERSION: 5,
+    STORAGE_KEY: 'quiz_v5_bewegung_10gy',
+    TOTAL_POINTS: 108,
+    BONUS_POINTS: 3,
+    TEST_DURATION: 90,
+    UNLOCK_TIME: 300,
+    UNLOCK_CODE: 'PHYSIK',
+    RESET_CODE: '3141'
+};
+
+// =============================================================================
+// FRAGEN-DATENBANK (108P Basis + 3P Bonus)
+// =============================================================================
+const QUESTIONS = [
+    // =========================================================================
+    // BLOCK 1: MC GRUNDWISSEN (F1-F10) - 20P
+    // =========================================================================
+    { id: 'F1', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Auto fährt mit konstanter Geschwindigkeit auf einer geraden Straße. Wie verändert sich der zurückgelegte Weg s mit der Zeit t?',
+      options: ['s nimmt quadratisch zu (s ~ t²)', 's nimmt linear zu (s ~ t)', 's bleibt konstant', 's nimmt ab'],
+      correct: 1 },
+    { id: 'F2', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Fahrrad beschleunigt gleichmäßig aus dem Stand. In welcher Einheit wird die Beschleunigung a angegeben?',
+      options: ['m/s', 'm/s²', 'm²/s', 's/m²'],
+      correct: 1 },
+    { id: 'F3', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Zug fährt eine Strecke. Was gibt der Anstieg (die Steigung) im s(t)-Diagramm an?',
+      options: ['Die Beschleunigung', 'Die Geschwindigkeit', 'Den Weg', 'Die Zeit'],
+      correct: 1 },
+    { id: 'F4', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Motorrad beschleunigt an einer Ampel. Was gibt der Anstieg im v(t)-Diagramm an?',
+      options: ['Die Geschwindigkeit', 'Den Weg', 'Die Beschleunigung', 'Die Zeit'],
+      correct: 2 },
+    { id: 'F5', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Läufer sprintet 100 Meter. Was entspricht der Fläche unter dem v(t)-Diagramm?',
+      options: ['Der Beschleunigung', 'Der Geschwindigkeit', 'Dem zurückgelegten Weg', 'Der Zeit'],
+      correct: 2 },
+    { id: 'F6', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Aufzug fährt nach oben und bremst dann ab. Was entspricht der Fläche unter dem a(t)-Diagramm?',
+      options: ['Dem Weg', 'Der Geschwindigkeitsänderung Δv', 'Der Beschleunigung', 'Der Zeit'],
+      correct: 1 },
+    { id: 'F7', type: 'mc', points: 2, afb: 1,
+      text: 'Ein ICE fährt auf freier Strecke. Eine waagerechte Linie im v(t)-Diagramm bedeutet:',
+      options: ['Gleichförmige Bewegung (v = konstant)', 'Beschleunigte Bewegung', 'Stillstand', 'Verzögerung'],
+      correct: 0 },
+    { id: 'F8', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Ball rollt eine schiefe Ebene hinunter. Eine nach oben gekrümmte Parabel im s(t)-Diagramm deutet auf:',
+      options: ['Gleichförmige Bewegung', 'Beschleunigte Bewegung', 'Verzögerte Bewegung', 'Stillstand'],
+      correct: 1 },
+    { id: 'F9', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Rennauto startet aus dem Stand. Eine Gerade durch den Ursprung im v(t)-Diagramm zeigt:',
+      options: ['Konstante Beschleunigung aus der Ruhe', 'Gleichförmige Bewegung', 'Verzögerung', 'Wechselnde Beschleunigung'],
+      correct: 0 },
+    { id: 'F10', type: 'mc', points: 2, afb: 1,
+      text: 'Ein Gabelstapler fährt vorwärts und dann rückwärts. Was bedeutet eine negative Fläche im v(t)-Diagramm?',
+      options: ['Beschleunigung', 'Bewegung in negativer Richtung (Rückwärts)', 'Stillstand', 'Positive Beschleunigung'],
+      correct: 1 },
+
+    // =========================================================================
+    // BLOCK 2: BERECHNUNGEN (F11-F18) - 16P
+    // =========================================================================
+    { id: 'F11', type: 'calc', points: 2, afb: 2,
+      text: 'Ein Sportwagen fährt auf der Autobahn mit 108 km/h. Rechne diese Geschwindigkeit in m/s um.',
+      accepted: [
+          { value: 30, unit: 'm/s', tolerance: 0.5 },
+          { value: 108, unit: 'km/h', tolerance: 1 }
+      ],
+      unitOptions: ['m/s', 'km/h', 'm', 's'] },
+    { id: 'F12', type: 'calc', points: 2, afb: 2,
+      text: 'Ein Radfahrer fährt mit konstanten 25 m/s. Welche Strecke s legt er in 40 Sekunden zurück?',
+      accepted: [
+          { value: 1000, unit: 'm', tolerance: 1 },
+          { value: 1, unit: 'km', tolerance: 0.01 }
+      ],
+      unitOptions: ['m', 'km', 'm/s', 's'] },
+    { id: 'F13', type: 'calc', points: 2, afb: 2,
+      text: 'Ein E-Scooter beschleunigt gleichmäßig mit a = 5 m/s² aus dem Stand. Welche Geschwindigkeit v erreicht er nach 6 Sekunden?',
+      accepted: [
+          { value: 30, unit: 'm/s', tolerance: 0.5 },
+          { value: 108, unit: 'km/h', tolerance: 1 }
+      ],
+      unitOptions: ['m/s', 'km/h', 'm/s²', 's'] },
+    { id: 'F14', type: 'calc', points: 2, afb: 2,
+      text: 'Ein Skateboard rollt eine Rampe hinunter mit konstanter Beschleunigung a = 4 m/s². Welchen Weg s legt es in den ersten 5 Sekunden zurück? (Start aus der Ruhe)',
+      accepted: [
+          { value: 50, unit: 'm', tolerance: 0.5 },
+          { value: 0.05, unit: 'km', tolerance: 0.001 }
+      ],
+      unitOptions: ['m', 'km', 'm/s', 'm/s²'] },
+    { id: 'F15', type: 'calc', points: 2, afb: 2,
+      text: 'Ein Stein fällt von einer Brücke (freier Fall, g ≈ 10 m/s²). Welche Höhe h hat er nach 4 Sekunden zurückgelegt?',
+      accepted: [
+          { value: 80, unit: 'm', tolerance: 1 },
+          { value: 0.08, unit: 'km', tolerance: 0.001 }
+      ],
+      unitOptions: ['m', 'km', 's', 'm/s²'] },
+    { id: 'F16', type: 'calc', points: 2, afb: 2,
+      text: 'Ein Taucher springt von einer 45 m hohen Klippe. Mit welcher Geschwindigkeit v trifft er auf das Wasser? (g = 10 m/s²)',
+      accepted: [
+          { value: 30, unit: 'm/s', tolerance: 0.5 },
+          { value: 108, unit: 'km/h', tolerance: 1 }
+      ],
+      unitOptions: ['m/s', 'km/h', 'm', 'm/s²'] },
+    { id: 'F17', type: 'calc', points: 2, afb: 2,
+      text: 'Ein PKW fährt mit 40 m/s und bremst mit a = -8 m/s². Welchen Bremsweg s benötigt er bis zum Stillstand?',
+      accepted: [
+          { value: 100, unit: 'm', tolerance: 1 },
+          { value: 0.1, unit: 'km', tolerance: 0.001 }
+      ],
+      unitOptions: ['m', 'km', 's', 'm/s²'] },
+    { id: 'F18', type: 'calc', points: 2, afb: 2,
+      text: 'Ein LKW fährt mit 30 m/s und muss eine Vollbremsung machen (a = -6 m/s²). Wie lange dauert es, bis er steht?',
+      accepted: [
+          { value: 5, unit: 's', tolerance: 0.1 },
+          { value: 300, unit: 'ms', tolerance: 10 }
+      ],
+      unitOptions: ['s', 'min', 'm', 'm/s'] },
+
+    // =========================================================================
+    // BLOCK 3: DIAGRAMME (A-D) - 42P
+    // =========================================================================
+    
+    // AUFGABE A: v(t)-Diagramm Auto - 8 Phasen (16P) - NEU!
+    { id: 'A', type: 'diagram-dropdown', points: 16, afb: 2,
+      text: 'Das Diagramm zeigt die Geschwindigkeit eines Autos über 40 Sekunden. Wähle für jeden Abschnitt die passende Bewegungsart aus dem Dropdown.',
+      diagram: 'vt-auto-8',
+      phases: 8,
+      options: ['Beschleunigung', 'Gleichförmige Bewegung', 'Verzögerung/Bremsung', 'Stillstand'],
+      correct: [0, 1, 0, 1, 2, 1, 2, 3] },
+
+    // AUFGABE B: s(t)-Diagramm Radfahrer - 6 Phasen (12P) - NEU!
+    { id: 'B', type: 'diagram-dropdown', points: 12, afb: 2,
+      text: 'Das Diagramm zeigt den Weg eines Radfahrers. Wähle für jeden Abschnitt die passende Bewegungsart.',
+      diagram: 'st-radfahrer-6',
+      phases: 6,
+      labels: ['A', 'B', 'C', 'D', 'E', 'F'],
+      options: ['Beschleunigung aus der Ruhe', 'Gleichförmige Bewegung', 'Stillstand/Pause', 'Verzögerung/Bremsung'],
+      correct: [0, 1, 2, 1, 3, 1] },
+
+    // AUFGABE C: a(t)-Diagramm Aufzug - 6 Phasen (6P) - BLEIBT
+    { id: 'C', type: 'diagram-dropdown', points: 6, afb: 2,
+      text: 'Ein Aufzug fährt vom Erdgeschoss in den 5. Stock. Das a(t)-Diagramm zeigt 6 Phasen. Ordne jeder Phase die Bewegungsart zu.',
+      diagram: 'at-elevator',
+      phases: 6,
+      options: ['Beschleunigung', 'Gleichförmige Bewegung', 'Verzögerung', 'Stillstand'],
+      correct: [0, 1, 0, 1, 2, 3] },
+
+    // AUFGABE D: Zuordnung v(t) ↔ s(t) - 4 Paare (8P) - NEU!
+    { id: 'D', type: 'matching', points: 8, afb: 3,
+      text: 'Ordne jedem v(t)-Diagramm (I-IV) das passende s(t)-Diagramm (A-D) zu.',
+      diagram: 'matching-4',
+      pairs: 4,
+      labels: ['I', 'II', 'III', 'IV'],
+      options: ['A', 'B', 'C', 'D'],
+      correct: [0, 1, 2, 3] },
+
+    // =========================================================================
+    // BLOCK 4: KOMPLEXE AUFGABEN (E-F) - 30P
+    // =========================================================================
+    
+    // AUFGABE E: Komplexe Diagramm-Analyse (20P) - NEU!
+    { id: 'E', type: 'mixed-analysis', points: 20, afb: 3,
+      text: 'Analysiere das v(t)-Diagramm und beantworte die Fragen.',
+      diagram: 'vt-complex-4',
+      fields: [
+        { id: 'e1', label: '1. Phase I: Bewegungsart?', type: 'dropdown', options: ['Beschleunigung', 'Gleichförmig', 'Verzögerung', 'Stillstand'], correct: 0 },
+        { id: 'e2', label: '2. Beschleunigung in Phase I:', type: 'calc', accepted: [{ value: 10, unit: 'm/s²', tolerance: 0.5 }], unitOptions: ['m/s²', 'm/s', 'm', 's'] },
+        { id: 'e3', label: '3. Phase II: Bewegungsart?', type: 'dropdown', options: ['Beschleunigung', 'Gleichförmig', 'Verzögerung', 'Stillstand'], correct: 1 },
+        { id: 'e4', label: '4. Weg in Phase II (Rechteck):', type: 'calc', accepted: [{ value: 90, unit: 'm', tolerance: 1 }, { value: 0.09, unit: 'km', tolerance: 0.001 }], unitOptions: ['m', 'km', 'm/s', 's'] },
+        { id: 'e5', label: '5. Phase III: Bewegungsart?', type: 'dropdown', options: ['Beschleunigung', 'Gleichförmig', 'Verzögerung', 'Stillstand'], correct: 2 },
+        { id: 'e6', label: '6. Verzögerung in Phase III:', type: 'calc', accepted: [{ value: -5, unit: 'm/s²', tolerance: 0.5 }, { value: 5, unit: 'm/s²', tolerance: 0.5 }], unitOptions: ['m/s²', 'm/s', 'm', 's'], acceptNegative: true },
+        { id: 'e7', label: '7. Weg in Phase III (Trapez):', type: 'calc', accepted: [{ value: 67.5, unit: 'm', tolerance: 1 }, { value: 67, unit: 'm', tolerance: 1 }, { value: 68, unit: 'm', tolerance: 1 }], unitOptions: ['m', 'km', 'm/s', 's'] },
+        { id: 'e8', label: '8. Phase IV: Bewegungsart?', type: 'dropdown', options: ['Beschleunigung', 'Gleichförmig', 'Verzögerung', 'Stillstand'], correct: 1 },
+        { id: 'e9', label: '9. Weg in Phase I (Dreieck):', type: 'calc', accepted: [{ value: 45, unit: 'm', tolerance: 1 }], unitOptions: ['m', 'km', 'm/s', 's'] },
+        { id: 'e10', label: '10. Gesamtstrecke (0-12 s):', type: 'calc', accepted: [{ value: 247.5, unit: 'm', tolerance: 2 }, { value: 248, unit: 'm', tolerance: 2 }, { value: 247, unit: 'm', tolerance: 2 }, { value: 0.2475, unit: 'km', tolerance: 0.003 }], unitOptions: ['m', 'km', 'm/s', 's'] }
+      ] },
+
+    // AUFGABE F: Ampelstart - 5 Felder (10P) - BLEIBT
+    { id: 'F', type: 'multi-calc', points: 10, afb: 3,
+      text: 'Ein PKW startet an einer Ampel:\n• Phase 1: a₁ = 4 m/s² für 5 s\n• Phase 2: v konstant für 10 s\n• Phase 3: Bremsung mit a₃ = -8 m/s²',
+      fields: [
+        { id: 'a', label: 'a) v nach Phase 1', accepted: [{ value: 20, unit: 'm/s', tolerance: 0.5 }, { value: 72, unit: 'km/h', tolerance: 1 }], unitOptions: ['m/s', 'km/h', 'm', 's'] },
+        { id: 'b', label: 'b) Weg Phase 1', accepted: [{ value: 50, unit: 'm', tolerance: 0.5 }, { value: 0.05, unit: 'km', tolerance: 0.001 }], unitOptions: ['m', 'km', 'm/s', 's'] },
+        { id: 'c', label: 'c) Weg Phase 2', accepted: [{ value: 200, unit: 'm', tolerance: 1 }, { value: 0.2, unit: 'km', tolerance: 0.01 }], unitOptions: ['m', 'km', 'm/s', 's'] },
+        { id: 'd', label: 'd) Bremszeit Phase 3', accepted: [{ value: 2.5, unit: 's', tolerance: 0.1 }], unitOptions: ['s', 'min', 'm', 'm/s'] },
+        { id: 'e', label: 'e) Bremsweg Phase 3', accepted: [{ value: 25, unit: 'm', tolerance: 0.5 }, { value: 0.025, unit: 'km', tolerance: 0.001 }], unitOptions: ['m', 'km', 'm/s', 's'] }
+      ] },
+
+    // =========================================================================
+    // BONUS: Weihnachtsmann MV - 3P
+    // =========================================================================
+    { id: 'BONUS', type: 'bonus', points: 3, afb: 3, isBonus: true,
+      text: '🎄 BONUS: Der Weihnachtsmann in Mecklenburg-Vorpommern',
+      intro: 'Der Weihnachtsmann muss in der Heiligen Nacht alle Haushalte in MV besuchen. Hilf ihm bei der Planung!',
+      data: { households: 800000, distance: 250, time: 2, soundSpeed: 340 },
+      fields: [
+        { id: 'a', label: 'a) Gesamtstrecke', accepted: [{ value: 200000, unit: 'km', tolerance: 1000 }, { value: 200000000, unit: 'm', tolerance: 1000000 }], unitOptions: ['km', 'm', 'm/s'] },
+        { id: 'b', label: 'b) Nötige Geschwindigkeit', accepted: [{ value: 27778, unit: 'm/s', tolerance: 500 }, { value: 28000, unit: 'm/s', tolerance: 500 }, { value: 100000, unit: 'km/h', tolerance: 2000 }], unitOptions: ['m/s', 'km/h', 'km'] },
+        { id: 'c', label: 'c) Mach-Zahl (≈v/340)', accepted: [{ value: 82, unit: 'Mach', tolerance: 3 }, { value: 81, unit: 'Mach', tolerance: 3 }, { value: 82, unit: '', tolerance: 3 }], unitOptions: ['Mach', ''] }
+      ] }
+];
+
+// =============================================================================
+// GLOBALE VARIABLEN
+// =============================================================================
+let state = {
+    seat: null,
+    currentQuestion: 0,
+    answers: {},
+    startTime: null,
+    timeRemaining: CONFIG.TEST_DURATION * 60,
+    submitted: false
+};
+
+let timerInterval = null;
+let unlockInterval = null;
+let gradedAnswers = [];
+let totalEarned = 0;
+let bonusEarned = 0;
+
+// =============================================================================
+// LOCAL STORAGE
+// =============================================================================
+function saveState() {
+    if (state.submitted) return;
+    try {
+        const saveData = {
+            version: CONFIG.VERSION,
+            seat: state.seat,
+            currentQuestion: state.currentQuestion,
+            answers: state.answers,
+            startTime: state.startTime,
+            timeRemaining: state.timeRemaining,
+            submitted: false
+        };
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(saveData));
+    } catch (e) {
+        console.warn('localStorage nicht verfügbar:', e);
+    }
+}
+
+function loadState() {
+    try {
+        const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
+        if (saved) {
+            return JSON.parse(saved);
+        }
+    } catch (e) {
+        console.warn('Fehler beim Laden:', e);
+    }
+    return null;
+}
+
+function clearState() {
+    try {
+        localStorage.removeItem(CONFIG.STORAGE_KEY);
+    } catch (e) {
+        console.warn('Fehler beim Löschen:', e);
+    }
+}
+
+function markAsSubmitted() {
+    try {
+        const data = { submitted: true, version: CONFIG.VERSION, seat: state.seat };
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.warn('localStorage nicht verfügbar:', e);
+    }
+}
+
+// =============================================================================
+// INITIALISIERUNG
+// =============================================================================
+function init() {
+    const saved = loadState();
+    
+    if (saved && saved.version === CONFIG.VERSION) {
+        if (saved.submitted) {
+            state.seat = saved.seat;
+            state.submitted = true;
+            showResultAfterReload();
+            return;
+        }
+        
+        if (saved.seat) {
+            state.seat = saved.seat;
+            state.currentQuestion = saved.currentQuestion || 0;
+            state.answers = saved.answers || {};
+            state.startTime = saved.startTime;
+            state.timeRemaining = saved.timeRemaining;
+            startQuiz(true);
+            return;
+        }
+    }
+    
+    createSeatGrid();
+    document.getElementById('startBtn').addEventListener('click', () => startQuiz(false));
+}
+
+function createSeatGrid() {
+    const grid = document.getElementById('seatGrid');
+    for (let i = 1; i <= 30; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'seat-btn';
+        btn.textContent = 'P' + String(i).padStart(2, '0');
+        btn.addEventListener('click', () => selectSeat(i, btn));
+        grid.appendChild(btn);
+    }
+}
+
+function selectSeat(num, btn) {
+    document.querySelectorAll('.seat-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.seat = 'P' + String(num).padStart(2, '0');
+    document.getElementById('startBtn').disabled = false;
+}
+
+// =============================================================================
+// QUIZ STARTEN
+// =============================================================================
+function startQuiz(isResume = false) {
+    if (!state.seat) return;
+    
+    if (!isResume) {
+        state.startTime = Date.now();
+        state.timeRemaining = CONFIG.TEST_DURATION * 60;
+        state.answers = {};
+        state.currentQuestion = 0;
+    }
+    
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('quizScreen').style.display = 'block';
+    
+    createQuestionDots();
+    showQuestion(state.currentQuestion);
+    startTimer();
+    saveState();
+    
+    document.getElementById('prevBtn').addEventListener('click', () => navigate(-1));
+    document.getElementById('nextBtn').addEventListener('click', () => navigate(1));
+}
+
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        state.timeRemaining--;
+        saveState();
+        updateTimerDisplay();
+        if (state.timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            submitQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const mins = Math.floor(state.timeRemaining / 60);
+    const secs = state.timeRemaining % 60;
+    const display = document.getElementById('timeDisplay');
+    const bar = document.getElementById('timeBarFill');
+    
+    display.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    
+    const percent = (state.timeRemaining / (CONFIG.TEST_DURATION * 60)) * 100;
+    bar.style.width = percent + '%';
+    
+    display.classList.remove('warning', 'critical');
+    bar.classList.remove('warning', 'critical');
+    
+    if (state.timeRemaining <= 300) {
+        display.classList.add('critical');
+        bar.classList.add('critical');
+    } else if (state.timeRemaining <= 900) {
+        display.classList.add('warning');
+        bar.classList.add('warning');
+    }
+}
+
+// =============================================================================
+// QUESTION DOTS & PROGRESS
+// =============================================================================
+function createQuestionDots() {
+    const overview = document.getElementById('questionOverview');
+    overview.innerHTML = '';
+    QUESTIONS.forEach((q, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'q-dot' + (q.isBonus ? ' bonus' : '');
+        dot.textContent = q.isBonus ? '🎄' : (i + 1);
+        dot.addEventListener('click', () => goToQuestion(i));
+        overview.appendChild(dot);
+    });
+    updateProgress();
+}
+
+function updateProgress() {
+    let bearbeitet = 0;
+    
+    QUESTIONS.forEach((q, i) => {
+        if (q.isBonus) return;
+        const ans = state.answers[q.id];
+        bearbeitet += getBearbeitetPoints(q, ans);
+    });
+    
+    const basePoints = CONFIG.TOTAL_POINTS;
+    const percent = Math.round((bearbeitet / basePoints) * 100);
+    
+    document.getElementById('progressDisplay').innerHTML = 
+        `${percent}% <span>(${bearbeitet} / ${basePoints} P)</span>`;
+    document.getElementById('progressBarFill').style.width = percent + '%';
+    
+    document.querySelectorAll('.q-dot').forEach((dot, i) => {
+        dot.classList.remove('answered', 'partial', 'current');
+        if (i === state.currentQuestion) dot.classList.add('current');
+        
+        const q = QUESTIONS[i];
+        if (q.isBonus) return;
+        
+        const pts = getBearbeitetPoints(q, state.answers[q.id]);
+        if (pts === q.points) {
+            dot.classList.add('answered');
+        } else if (pts > 0) {
+            dot.classList.add('partial');
+        }
+    });
+}
+
+function getBearbeitetPoints(q, ans) {
+    if (!ans) return 0;
+    
+    if (q.type === 'mc') {
+        return ans.selected !== undefined ? q.points : 0;
+    } else if (q.type === 'calc') {
+        return (ans.value !== '' && ans.value !== undefined && ans.unit) ? q.points : 0;
+    } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+        if (!ans.phases) return 0;
+        const count = q.phases || q.pairs;
+        const filled = ans.phases.filter(p => p !== null && p !== undefined && p !== '').length;
+        return Math.round((filled / count) * q.points);
+    } else if (q.type === 'multi-calc' || q.type === 'bonus') {
+        if (!ans.fields) return 0;
+        let filledCount = 0;
+        q.fields.forEach(f => {
+            const fa = ans.fields[f.id];
+            if (fa && fa.value !== '' && fa.value !== undefined && fa.unit) filledCount++;
+        });
+        return Math.round((filledCount / q.fields.length) * q.points);
+    } else if (q.type === 'mixed-analysis') {
+        if (!ans.fields) return 0;
+        let filledCount = 0;
+        q.fields.forEach(f => {
+            const fa = ans.fields[f.id];
+            if (f.type === 'dropdown') {
+                if (fa !== undefined && fa !== null && fa !== '') filledCount++;
+            } else {
+                if (fa && fa.value !== '' && fa.value !== undefined && fa.unit) filledCount++;
+            }
+        });
+        return Math.round((filledCount / q.fields.length) * q.points);
+    }
+    return 0;
+}
+
+// =============================================================================
+// FRAGEN ANZEIGEN
+// =============================================================================
+function showQuestion(idx) {
+    state.currentQuestion = idx;
+    const q = QUESTIONS[idx];
+    const box = document.getElementById('questionBox');
+    
+    let html = `
+        <div class="question-header">
+            <span class="question-num">${q.isBonus ? '🎄 Bonus' : `Frage ${idx + 1} / ${QUESTIONS.length}`}</span>
+            <span class="question-points">${q.points} P <span class="afb-badge afb-${q.afb}">AFB ${q.afb}</span></span>
+        </div>
+        <div class="question-text">${q.text.replace(/\n/g, '<br>')}</div>
+    `;
+    
+    if (q.type === 'bonus') {
+        html += `
+            <div class="bonus-card">
+                <h3>🎅 ${q.intro}</h3>
+                <div class="bonus-data">
+                    <div>Haushalte in MV: <strong>${q.data.households.toLocaleString('de-DE')}</strong></div>
+                    <div>Ø Entfernung: <strong>${q.data.distance} m</strong></div>
+                    <div>Verfügbare Zeit: <strong>${q.data.time} Stunden</strong></div>
+                    <div>Schallgeschwindigkeit: <strong>${q.data.soundSpeed} m/s</strong></div>
+                </div>
+            </div>
+        `;
+    }
+    
+    if (q.diagram) {
+        html += getDiagramSVG(q.diagram);
+    }
+    
+    html += renderAnswerArea(q, idx);
+    
+    box.innerHTML = html;
+    attachAnswerListeners(q, idx);
+    updateNavButtons();
+    updateProgress();
+    saveState();
+}
+
+function renderAnswerArea(q, idx) {
+    const ans = state.answers[q.id] || {};
+    let html = '';
+    
+    if (q.type === 'mc') {
+        html += '<div class="options">';
+        const letters = ['A', 'B', 'C', 'D'];
+        q.options.forEach((opt, i) => {
+            const selected = ans.selected === i ? ' selected' : '';
+            html += `
+                <div class="option${selected}" data-index="${i}">
+                    <div class="option-letter">${letters[i]}</div>
+                    <div class="option-text">${opt}</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    } else if (q.type === 'calc') {
+        const val = ans.value !== undefined ? ans.value : '';
+        const unit = ans.unit || '';
+        html += `
+            <div class="input-group">
+                <div class="input-row">
+                    <label>Ergebnis:</label>
+                    <input type="text" class="numeric-input${val && unit ? ' answered' : ''}" id="calcValue" value="${val}" placeholder="Wert">
+                    <select class="unit-select${val && unit ? ' answered' : ''}" id="calcUnit">
+                        <option value="">Einheit</option>
+                        ${q.unitOptions.map(u => `<option value="${u}"${unit === u ? ' selected' : ''}>${u}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+        `;
+    } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+        const count = q.phases || q.pairs;
+        const labels = q.labels || Array.from({length: count}, (_, i) => String(i + 1));
+        const phases = ans.phases || [];
+        
+        html += '<div class="dropdown-grid">';
+        for (let i = 0; i < count; i++) {
+            const selected = phases[i];
+            const answered = selected !== undefined && selected !== null && selected !== '' ? ' answered' : '';
+            html += `
+                <div class="dropdown-item">
+                    <label>${labels[i]}:</label>
+                    <select class="phase-select${answered}" data-index="${i}">
+                        <option value="">--</option>
+                        ${q.options.map((opt, oi) => `<option value="${oi}"${selected === oi ? ' selected' : ''}>${opt}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        }
+        html += '</div>';
+    } else if (q.type === 'multi-calc' || q.type === 'bonus') {
+        const fields = ans.fields || {};
+        html += '<div class="multi-calc-grid">';
+        q.fields.forEach(f => {
+            const fa = fields[f.id] || {};
+            const val = fa.value !== undefined ? fa.value : '';
+            const unit = fa.unit || '';
+            const answered = val && unit ? ' answered' : '';
+            html += `
+                <div class="calc-field">
+                    <label>${f.label}</label>
+                    <div class="input-row">
+                        <input type="text" class="numeric-input${answered}" data-field="${f.id}" value="${val}" placeholder="Wert">
+                        <select class="unit-select${answered}" data-field="${f.id}">
+                            <option value="">Einheit</option>
+                            ${f.unitOptions.map(u => `<option value="${u}"${unit === u ? ' selected' : ''}>${u}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+    } else if (q.type === 'mixed-analysis') {
+        const fields = ans.fields || {};
+        html += '<div class="mixed-grid">';
+        q.fields.forEach(f => {
+            const fa = fields[f.id];
+            if (f.type === 'dropdown') {
+                const selected = fa !== undefined ? fa : '';
+                const answered = selected !== '' ? ' answered' : '';
+                html += `
+                    <div class="mixed-item">
+                        <div class="item-label">${f.label}</div>
+                        <div class="item-input">
+                            <select class="phase-select${answered}" data-field="${f.id}" style="min-width:200px;">
+                                <option value="">--</option>
+                                ${f.options.map((opt, oi) => `<option value="${oi}"${selected === oi ? ' selected' : ''}>${opt}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const faObj = fa || {};
+                const val = faObj.value !== undefined ? faObj.value : '';
+                const unit = faObj.unit || '';
+                const answered = val && unit ? ' answered' : '';
+                html += `
+                    <div class="mixed-item">
+                        <div class="item-label">${f.label}</div>
+                        <div class="item-input">
+                            <input type="text" class="numeric-input${answered}" data-field="${f.id}" value="${val}" placeholder="Wert">
+                            <select class="unit-select${answered}" data-field="${f.id}">
+                                <option value="">Einheit</option>
+                                ${f.unitOptions.map(u => `<option value="${u}"${unit === u ? ' selected' : ''}>${u}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        html += '</div>';
+    }
+    
+    return html;
+}
+
+function attachAnswerListeners(q, idx) {
+    if (q.type === 'mc') {
+        document.querySelectorAll('.option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                if (!state.answers[q.id]) state.answers[q.id] = {};
+                state.answers[q.id].selected = parseInt(opt.dataset.index);
+                saveState();
+                updateProgress();
+            });
+        });
+    } else if (q.type === 'calc') {
+        const valInput = document.getElementById('calcValue');
+        const unitSelect = document.getElementById('calcUnit');
+        
+        const updateCalc = () => {
+            if (!state.answers[q.id]) state.answers[q.id] = {};
+            state.answers[q.id].value = valInput.value;
+            state.answers[q.id].unit = unitSelect.value;
+            
+            const answered = valInput.value && unitSelect.value;
+            valInput.classList.toggle('answered', answered);
+            unitSelect.classList.toggle('answered', answered);
+            
+            saveState();
+            updateProgress();
+        };
+        
+        valInput.addEventListener('input', updateCalc);
+        unitSelect.addEventListener('change', updateCalc);
+    } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+        document.querySelectorAll('.phase-select').forEach(sel => {
+            sel.addEventListener('change', () => {
+                if (!state.answers[q.id]) state.answers[q.id] = { phases: [] };
+                if (!state.answers[q.id].phases) state.answers[q.id].phases = [];
+                
+                const idx = parseInt(sel.dataset.index);
+                const val = sel.value === '' ? null : parseInt(sel.value);
+                state.answers[q.id].phases[idx] = val;
+                
+                sel.classList.toggle('answered', val !== null);
+                
+                saveState();
+                updateProgress();
+            });
+        });
+    } else if (q.type === 'multi-calc' || q.type === 'bonus') {
+        document.querySelectorAll('.calc-field input, .calc-field select').forEach(el => {
+            const updateField = () => {
+                if (!state.answers[q.id]) state.answers[q.id] = { fields: {} };
+                if (!state.answers[q.id].fields) state.answers[q.id].fields = {};
+                
+                const fieldId = el.dataset.field;
+                if (!state.answers[q.id].fields[fieldId]) state.answers[q.id].fields[fieldId] = {};
+                
+                if (el.tagName === 'SELECT') {
+                    state.answers[q.id].fields[fieldId].unit = el.value;
+                } else {
+                    state.answers[q.id].fields[fieldId].value = el.value;
+                }
+                
+                saveState();
+                updateProgress();
+            };
+            
+            el.addEventListener('input', updateField);
+            el.addEventListener('change', updateField);
+        });
+    } else if (q.type === 'mixed-analysis') {
+        document.querySelectorAll('.mixed-item select, .mixed-item input').forEach(el => {
+            const updateField = () => {
+                if (!state.answers[q.id]) state.answers[q.id] = { fields: {} };
+                if (!state.answers[q.id].fields) state.answers[q.id].fields = {};
+                
+                const fieldId = el.dataset.field;
+                const field = q.fields.find(f => f.id === fieldId);
+                
+                if (field.type === 'dropdown') {
+                    state.answers[q.id].fields[fieldId] = el.value === '' ? null : parseInt(el.value);
+                    el.classList.toggle('answered', el.value !== '');
+                } else {
+                    if (!state.answers[q.id].fields[fieldId] || typeof state.answers[q.id].fields[fieldId] !== 'object') {
+                        state.answers[q.id].fields[fieldId] = {};
+                    }
+                    if (el.tagName === 'SELECT') {
+                        state.answers[q.id].fields[fieldId].unit = el.value;
+                    } else {
+                        state.answers[q.id].fields[fieldId].value = el.value;
+                    }
+                }
+                
+                saveState();
+                updateProgress();
+            };
+            
+            el.addEventListener('input', updateField);
+            el.addEventListener('change', updateField);
+        });
+    }
+}
+
+// =============================================================================
+// DIAGRAMME (SVG)
+// =============================================================================
+function getDiagramSVG(type) {
+    if (type === 'vt-auto-8') {
+        // Typ 1: v(t)-Diagramm Auto, 8 Phasen, 40s
+        return `<div class="diagram-container">
+            <svg viewBox="0 0 520 220" style="max-width:520px;">
+                <!-- Raster -->
+                ${[0,1,2,3,4,5,6,7,8].map(i => `<line x1="${60+i*55}" y1="30" x2="${60+i*55}" y2="180" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+                ${[0,1,2,3,4].map(i => `<line x1="60" y1="${180-i*37.5}" x2="500" y2="${180-i*37.5}" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+                <!-- Achsen -->
+                <line x1="60" y1="180" x2="510" y2="180" stroke="#333" stroke-width="2"/>
+                <line x1="60" y1="180" x2="60" y2="20" stroke="#333" stroke-width="2"/>
+                <!-- v(t) Kurve: 8 Phasen -->
+                <!-- P1: 0-5s: 0→20 | P2: 5-10s: 20 | P3: 10-15s: 20→40 | P4: 15-20s: 40 | P5: 20-25s: 40→20 | P6: 25-30s: 20 | P7: 30-35s: 20→0 | P8: 35-40s: 0 -->
+                <path d="M60,180 L115,105 L170,105 L225,30 L280,30 L335,105 L390,105 L445,180 L500,180" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                <!-- Phasen-Nummern -->
+                ${[87,142,197,252,307,362,417,472].map((x,i) => `<text x="${x}" y="18" font-size="12" font-weight="bold" fill="#1565c0" text-anchor="middle">${i+1}</text>`).join('')}
+                <!-- Achsen-Beschriftung -->
+                <text x="510" y="200" font-size="12" fill="#333">t/s</text>
+                <text x="30" y="25" font-size="12" fill="#333">v/(m/s)</text>
+                <!-- Y-Werte -->
+                <text x="52" y="184" font-size="10" text-anchor="end" fill="#666">0</text>
+                <text x="52" y="147" font-size="10" text-anchor="end" fill="#666">10</text>
+                <text x="52" y="109" font-size="10" text-anchor="end" fill="#666">20</text>
+                <text x="52" y="72" font-size="10" text-anchor="end" fill="#666">30</text>
+                <text x="52" y="34" font-size="10" text-anchor="end" fill="#666">40</text>
+                <!-- X-Werte -->
+                ${[0,5,10,15,20,25,30,35,40].map((t,i) => `<text x="${60+i*55}" y="196" font-size="10" text-anchor="middle" fill="#666">${t}</text>`).join('')}
+            </svg>
+        </div>`;
+    } else if (type === 'st-radfahrer-6') {
+        // Typ 2: s(t)-Diagramm Radfahrer, 6 Phasen
+        return `<div class="diagram-container">
+            <svg viewBox="0 0 450 240" style="max-width:450px;">
+                <!-- Raster -->
+                ${[0,1,2,3,4,5,6].map(i => `<line x1="${60+i*60}" y1="30" x2="${60+i*60}" y2="200" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+                ${[0,1,2,3,4,5].map(i => `<line x1="60" y1="${200-i*34}" x2="420" y2="${200-i*34}" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+                <!-- Achsen -->
+                <line x1="60" y1="200" x2="430" y2="200" stroke="#333" stroke-width="2"/>
+                <line x1="60" y1="200" x2="60" y2="20" stroke="#333" stroke-width="2"/>
+                <!-- s(t) Kurve: 6 Phasen A-F -->
+                <!-- A: 0-5s: Parabel 0→50 | B: 5-10s: Gerade 50→100 | C: 10-15s: waagerecht 100 | D: 15-20s: Gerade 100→150 | E: 20-25s: flacher 150→200 | F: 25-30s: Gerade 200→250 -->
+                <path d="M60,200 Q90,200 120,166" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                <path d="M120,166 L180,132" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                <path d="M180,132 L240,132" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                <path d="M240,132 L300,98" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                <path d="M300,98 Q330,80 360,64" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                <path d="M360,64 L420,30" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                <!-- Phasen-Buchstaben -->
+                ${[90,150,210,270,330,390].map((x,i) => `<text x="${x}" y="218" font-size="12" font-weight="bold" fill="#1565c0" text-anchor="middle">${['A','B','C','D','E','F'][i]}</text>`).join('')}
+                <!-- Achsen-Beschriftung -->
+                <text x="430" y="218" font-size="12" fill="#333">t/s</text>
+                <text x="30" y="25" font-size="12" fill="#333">s/m</text>
+                <!-- Y-Werte -->
+                ${[0,50,100,150,200,250].map((s,i) => `<text x="52" y="${204-i*34}" font-size="10" text-anchor="end" fill="#666">${s}</text>`).join('')}
+                <!-- X-Werte -->
+                ${[0,5,10,15,20,25,30].map((t,i) => `<text x="${60+i*60}" y="214" font-size="10" text-anchor="middle" fill="#666">${t}</text>`).join('')}
+            </svg>
+        </div>`;
+    } else if (type === 'at-elevator') {
+        // a(t)-Diagramm Aufzug: 6 Phasen
+        return `<div class="diagram-container">
+            <svg viewBox="0 0 420 180" style="max-width:420px;">
+                <!-- Raster -->
+                ${[0,1,2,3,4,5,6].map(i => `<line x1="${60+i*55}" y1="30" x2="${60+i*55}" y2="150" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+                <!-- Achsen -->
+                <line x1="60" y1="100" x2="400" y2="100" stroke="#333" stroke-width="2"/>
+                <line x1="60" y1="150" x2="60" y2="30" stroke="#333" stroke-width="2"/>
+                <!-- Nulllinie -->
+                <line x1="60" y1="100" x2="390" y2="100" stroke="#999" stroke-dasharray="3,2"/>
+                <!-- a(t): 6 Phasen -->
+                <rect x="60" y="55" width="55" height="45" fill="rgba(33,150,243,0.25)" stroke="#2196f3" stroke-width="1.5"/>
+                <line x1="115" y1="100" x2="170" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
+                <rect x="170" y="55" width="55" height="45" fill="rgba(33,150,243,0.25)" stroke="#2196f3" stroke-width="1.5"/>
+                <line x1="225" y1="100" x2="280" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
+                <rect x="280" y="100" width="55" height="35" fill="rgba(244,67,54,0.25)" stroke="#f44336" stroke-width="1.5"/>
+                <line x1="335" y1="100" x2="390" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
+                <!-- Phasen-Nummern -->
+                ${[87,142,197,252,307,362].map((x,i) => `<text x="${x}" y="25" font-size="12" font-weight="bold" fill="#1565c0" text-anchor="middle">${i+1}</text>`).join('')}
+                <!-- Achsen-Beschriftung -->
+                <text x="405" y="105" font-size="12" fill="#333">t/s</text>
+                <text x="30" y="35" font-size="12" fill="#333">a</text>
+                <text x="52" y="60" font-size="10" text-anchor="end" fill="#666">+</text>
+                <text x="52" y="105" font-size="10" text-anchor="end" fill="#666">0</text>
+                <text x="52" y="145" font-size="10" text-anchor="end" fill="#666">−</text>
+            </svg>
+        </div>`;
+    } else if (type === 'matching-4') {
+        // Typ 3: Zuordnung v(t) ↔ s(t), 4 Paare
+        return `<div class="diagram-container">
+            <svg viewBox="0 0 460 220" style="max-width:460px;">
+                <!-- v(t) Überschrift -->
+                <text x="230" y="18" font-size="13" font-weight="bold" fill="#333" text-anchor="middle">v(t)-Diagramme</text>
+                <!-- v(t) I-IV -->
+                ${[0,1,2,3].map(i => {
+                    const x = 25 + i * 110;
+                    const paths = [
+                        'M10,35 L55,35',           // I: konstant
+                        'M10,50 L55,20',           // II: steigend
+                        'M10,50 L32,20 L55,50',    // III: Dreieck
+                        'M10,20 L55,50'            // IV: fallend
+                    ];
+                    return `<g transform="translate(${x},28)">
+                        <rect x="0" y="0" width="65" height="55" fill="#fff" stroke="#bbb" rx="4" stroke-width="1.5"/>
+                        <line x1="10" y1="50" x2="55" y2="50" stroke="#ddd" stroke-width="1"/>
+                        <line x1="10" y1="50" x2="10" y2="15" stroke="#ddd" stroke-width="1"/>
+                        <path d="${paths[i]}" fill="none" stroke="#2c5aa0" stroke-width="2.5"/>
+                        <text x="32" y="70" font-size="12" text-anchor="middle" font-weight="bold" fill="#1565c0">${['I','II','III','IV'][i]}</text>
+                    </g>`;
+                }).join('')}
+                <!-- s(t) Überschrift -->
+                <text x="230" y="128" font-size="13" font-weight="bold" fill="#333" text-anchor="middle">s(t)-Diagramme</text>
+                <!-- s(t) A-D -->
+                ${[0,1,2,3].map(i => {
+                    const x = 25 + i * 110;
+                    const paths = [
+                        'M10,50 L55,20',                     // A: Gerade
+                        'M10,50 Q32,50 55,20',               // B: Parabel steiler
+                        'M10,50 Q25,30 32,25 Q40,22 55,25',  // C: erst steiler, dann flacher
+                        'M10,50 Q32,25 55,22'                // D: Parabel flacher
+                    ];
+                    return `<g transform="translate(${x},138)">
+                        <rect x="0" y="0" width="65" height="55" fill="#fff" stroke="#bbb" rx="4" stroke-width="1.5"/>
+                        <line x1="10" y1="50" x2="55" y2="50" stroke="#ddd" stroke-width="1"/>
+                        <line x1="10" y1="50" x2="10" y2="15" stroke="#ddd" stroke-width="1"/>
+                        <path d="${paths[i]}" fill="none" stroke="#c62828" stroke-width="2.5"/>
+                        <text x="32" y="70" font-size="12" text-anchor="middle" font-weight="bold" fill="#c62828">${['A','B','C','D'][i]}</text>
+                    </g>`;
+                }).join('')}
+            </svg>
+        </div>`;
+    } else if (type === 'vt-complex-4') {
+        // Typ 4: Komplexe Analyse, 4 Phasen
+        return `<div class="diagram-container">
+            <svg viewBox="0 0 480 230" style="max-width:480px;">
+                <!-- Raster -->
+                ${[0,1,2,3,4,5,6].map(i => `<line x1="${60+i*60}" y1="30" x2="${60+i*60}" y2="180" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+                ${[0,1,2,3,4].map(i => `<line x1="60" y1="${180-i*37.5}" x2="420" y2="${180-i*37.5}" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+                <!-- Achsen -->
+                <line x1="60" y1="180" x2="440" y2="180" stroke="#333" stroke-width="2"/>
+                <line x1="60" y1="180" x2="60" y2="20" stroke="#333" stroke-width="2"/>
+                <!-- Flächen für Phasen -->
+                <path d="M60,180 L150,30 L150,180 Z" fill="rgba(33,150,243,0.15)"/>
+                <path d="M150,180 L150,30 L240,30 L240,180 Z" fill="rgba(76,175,80,0.15)"/>
+                <path d="M240,180 L240,30 L330,105 L330,180 Z" fill="rgba(255,152,0,0.15)"/>
+                <path d="M330,180 L330,105 L420,105 L420,180 Z" fill="rgba(156,39,176,0.15)"/>
+                <!-- v(t) Kurve: 4 Phasen -->
+                <!-- I: 0-3s: 0→30 | II: 3-6s: 30 | III: 6-9s: 30→15 | IV: 9-12s: 15 -->
+                <path d="M60,180 L150,30 L240,30 L330,105 L420,105" fill="none" stroke="#2c5aa0" stroke-width="3"/>
+                <!-- Punkte -->
+                <circle cx="60" cy="180" r="4" fill="#2c5aa0"/>
+                <circle cx="150" cy="30" r="4" fill="#2c5aa0"/>
+                <circle cx="240" cy="30" r="4" fill="#2c5aa0"/>
+                <circle cx="330" cy="105" r="4" fill="#2c5aa0"/>
+                <circle cx="420" cy="105" r="4" fill="#2c5aa0"/>
+                <!-- Phasen-Labels -->
+                <text x="105" y="120" font-size="16" font-weight="bold" fill="#1565c0">I</text>
+                <text x="195" y="120" font-size="16" font-weight="bold" fill="#2e7d32">II</text>
+                <text x="285" y="120" font-size="16" font-weight="bold" fill="#e65100">III</text>
+                <text x="375" y="150" font-size="16" font-weight="bold" fill="#7b1fa2">IV</text>
+                <!-- Achsen-Beschriftung -->
+                <text x="445" y="185" font-size="12" fill="#333">t/s</text>
+                <text x="25" y="25" font-size="12" fill="#333">v/(m/s)</text>
+                <!-- Y-Werte -->
+                <text x="52" y="184" font-size="10" text-anchor="end" fill="#666">0</text>
+                <text x="52" y="109" font-size="10" text-anchor="end" fill="#666">15</text>
+                <text x="52" y="34" font-size="10" text-anchor="end" fill="#666">30</text>
+                <!-- X-Werte -->
+                ${[0,3,6,9,12].map((t,i) => `<text x="${60+i*90}" y="198" font-size="10" text-anchor="middle" fill="#666">${t}</text>`).join('')}
+                <!-- Werte-Annotations -->
+                <text x="150" y="22" font-size="9" text-anchor="middle" fill="#666">(3|30)</text>
+                <text x="240" y="22" font-size="9" text-anchor="middle" fill="#666">(6|30)</text>
+                <text x="330" y="98" font-size="9" text-anchor="middle" fill="#666">(9|15)</text>
+                <text x="420" y="98" font-size="9" text-anchor="middle" fill="#666">(12|15)</text>
+            </svg>
+        </div>`;
+    }
+    return '';
+}
+
+// =============================================================================
+// NAVIGATION
+// =============================================================================
+function navigate(dir) {
+    if (dir === 1 && state.currentQuestion === QUESTIONS.length - 1) {
+        if (confirm('Quiz abgeben? Du kannst danach keine Änderungen mehr vornehmen.')) {
+            submitQuiz();
+        }
+        return;
+    }
+    goToQuestion(state.currentQuestion + dir);
+}
+
+function goToQuestion(idx) {
+    if (idx >= 0 && idx < QUESTIONS.length) {
+        showQuestion(idx);
+    }
+}
+
+function updateNavButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    prevBtn.disabled = state.currentQuestion === 0;
+    
+    if (state.currentQuestion === QUESTIONS.length - 1) {
+        nextBtn.textContent = '✓ Abgeben';
+        nextBtn.classList.add('submit');
+    } else {
+        nextBtn.textContent = 'Weiter →';
+        nextBtn.classList.remove('submit');
+    }
+}
+
+// =============================================================================
+// RESET MODAL
+// =============================================================================
+function showResetModal() {
+    document.getElementById('resetModal').classList.add('active');
+    document.getElementById('resetCodeInput').value = '';
+    document.getElementById('resetCodeInput').focus();
+}
+
+function closeResetModal() {
+    document.getElementById('resetModal').classList.remove('active');
+}
+
+function attemptReset() {
+    const input = document.getElementById('resetCodeInput');
+    if (input.value === CONFIG.RESET_CODE) {
+        clearInterval(timerInterval);
+        clearState();
+        location.reload();
+    } else {
+        input.classList.add('error');
+        setTimeout(() => input.classList.remove('error'), 500);
+    }
+}
+
+document.getElementById('resetModal').addEventListener('click', function(e) {
+    if (e.target === this) closeResetModal();
+});
+
+// =============================================================================
+// ABGABE & BEWERTUNG
+// =============================================================================
+function submitQuiz() {
+    clearInterval(timerInterval);
+    state.submitted = true;
+    markAsSubmitted();
+    
+    const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    
+    document.getElementById('quizScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+    document.getElementById('resultSeat').textContent = state.seat;
+    document.getElementById('resultTime').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    
+    gradeAllAnswers();
+    
+    const data = generateSubmissionData(elapsed);
+    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+    
+    try {
+        new QRCode(document.getElementById('qrcode'), { 
+            text: compressed, 
+            width: 180, 
+            height: 180,
+            correctLevel: QRCode.CorrectLevel.L
+        });
+    } catch(e) {
+        document.getElementById('qrcode').innerHTML = '<p style="color:#c00; font-size:0.85em;">QR-Code konnte nicht erstellt werden.</p>';
+    }
+    
+    startUnlockTimer();
+}
+
+function gradeAllAnswers() {
+    gradedAnswers = [];
+    totalEarned = 0;
+    bonusEarned = 0;
+    
+    QUESTIONS.forEach((q, idx) => {
+        const ans = state.answers[q.id];
+        const result = gradeQuestion(q, ans);
+        gradedAnswers.push(result);
+        
+        if (q.isBonus) {
+            bonusEarned += result.points;
+        } else {
+            totalEarned += result.points;
+        }
+    });
+}
+
+function gradeQuestion(q, ans) {
+    const result = {
+        qId: q.id,
+        type: q.type,
+        maxPoints: q.points,
+        points: 0,
+        correct: false,
+        userAnswer: null,
+        correctAnswer: null,
+        isBonus: q.isBonus || false,
+        question: q
+    };
+    
+    if (!ans) return result;
+    
+    if (q.type === 'mc') {
+        result.userAnswer = ans.selected;
+        result.correctAnswer = q.correct;
+        if (ans.selected === q.correct) {
+            result.points = q.points;
+            result.correct = true;
+        }
+    } else if (q.type === 'calc') {
+        result.userAnswer = { value: ans.value, unit: ans.unit };
+        result.correctAnswer = q.accepted[0];
+        
+        const userVal = parseFloat(String(ans.value || '').replace(',', '.'));
+        let isCorrect = false;
+        
+        for (const acc of q.accepted) {
+            if (ans.unit === acc.unit && !isNaN(userVal) && Math.abs(userVal - acc.value) <= acc.tolerance) {
+                isCorrect = true;
+                break;
+            }
+        }
+        
+        if (isCorrect) {
+            result.points = q.points;
+            result.correct = true;
+        }
+    } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+        const phases = ans.phases || [];
+        result.userAnswer = phases;
+        result.correctAnswer = q.correct;
+        
+        let correctCount = 0;
+        const pointsPerItem = q.points / q.correct.length;
+        q.correct.forEach((c, i) => {
+            if (phases[i] === c) correctCount++;
+        });
+        result.points = Math.round(correctCount * pointsPerItem);
+        result.correct = correctCount === q.correct.length;
+    } else if (q.type === 'multi-calc' || q.type === 'bonus') {
+        const fields = ans.fields || {};
+        result.userAnswer = fields;
+        result.correctAnswer = q.fields;
+        
+        let fieldPoints = 0;
+        const pointsPerField = q.points / q.fields.length;
+        
+        q.fields.forEach(f => {
+            const fa = fields[f.id] || {};
+            const userVal = parseFloat(String(fa.value || '').replace(',', '.'));
+            
+            for (const acc of f.accepted) {
+                if (fa.unit === acc.unit && !isNaN(userVal) && Math.abs(userVal - acc.value) <= acc.tolerance) {
+                    fieldPoints += pointsPerField;
+                    break;
+                }
+            }
+        });
+        
+        result.points = Math.round(fieldPoints);
+        result.correct = result.points === q.points;
+    } else if (q.type === 'mixed-analysis') {
+        const fields = ans.fields || {};
+        result.userAnswer = fields;
+        result.correctAnswer = q.fields;
+        
+        let fieldPoints = 0;
+        const pointsPerField = q.points / q.fields.length;
+        
+        q.fields.forEach(f => {
+            const fa = fields[f.id];
+            
+            if (f.type === 'dropdown') {
+                if (fa === f.correct) {
+                    fieldPoints += pointsPerField;
+                }
+            } else {
+                const faObj = fa || {};
+                const userVal = parseFloat(String(faObj.value || '').replace(',', '.'));
+                
+                for (const acc of f.accepted) {
+                    if (faObj.unit === acc.unit && !isNaN(userVal) && Math.abs(userVal - acc.value) <= acc.tolerance) {
+                        fieldPoints += pointsPerField;
+                        break;
+                    }
+                }
+            }
+        });
+        
+        result.points = Math.round(fieldPoints);
+        result.correct = result.points === q.points;
+    }
+    
+    return result;
+}
+
+function generateSubmissionData(elapsed) {
+    return {
+        v: CONFIG.VERSION,
+        s: state.seat,
+        t: new Date().toISOString(),
+        d: elapsed,
+        p: totalEarned,
+        b: bonusEarned,
+        m: CONFIG.TOTAL_POINTS,
+        a: gradedAnswers.map(r => ({
+            q: r.qId,
+            p: r.points,
+            c: r.correct,
+            a: r.userAnswer,
+            ca: r.correctAnswer
+        }))
+    };
+}
+
+// =============================================================================
+// UNLOCK & MUSTERLÖSUNG
+// =============================================================================
+function startUnlockTimer() {
+    let remaining = CONFIG.UNLOCK_TIME;
+    updateUnlockDisplay(remaining);
+    
+    unlockInterval = setInterval(() => {
+        remaining--;
+        updateUnlockDisplay(remaining);
+        if (remaining <= 0) {
+            clearInterval(unlockInterval);
+            unlockSolutions();
+        }
+    }, 1000);
+    
+    document.getElementById('unlockBtn').addEventListener('click', checkUnlockCode);
+    document.getElementById('unlockCode').addEventListener('keypress', e => {
+        if (e.key === 'Enter') checkUnlockCode();
+    });
+}
+
+function updateUnlockDisplay(remaining) {
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
+    document.getElementById('unlockTimer').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    document.getElementById('unlockProgress').style.width = (remaining / CONFIG.UNLOCK_TIME * 100) + '%';
+}
+
+function checkUnlockCode() {
+    const input = document.getElementById('unlockCode');
+    if (input.value.toUpperCase() === CONFIG.UNLOCK_CODE) {
+        clearInterval(unlockInterval);
+        unlockSolutions();
+    } else {
+        input.classList.add('error');
+        setTimeout(() => input.classList.remove('error'), 500);
+    }
+}
+
+function unlockSolutions() {
+    document.getElementById('resultScreen').style.display = 'none';
+    document.getElementById('feedbackScreen').style.display = 'block';
+    renderFeedback();
+}
+
+function showResultAfterReload() {
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('resultScreen').style.display = 'block';
+    document.getElementById('resultSeat').textContent = state.seat;
+    document.getElementById('resultTime').textContent = '--:--';
+    document.getElementById('qrcode').innerHTML = '<p style="color:#666; font-size:0.9em;">Quiz bereits abgegeben.<br>Warte auf Musterlösung.</p>';
+    startUnlockTimer();
+}
+
+// =============================================================================
+// FEEDBACK RENDERN
+// =============================================================================
+function renderFeedback() {
+    const pct = (totalEarned / CONFIG.TOTAL_POINTS) * 100;
+    const grade = calculateGrade(pct);
+    
+    const summary = document.getElementById('feedbackSummary');
+    summary.classList.remove('good', 'medium', 'poor');
+    if (grade >= 10) summary.classList.add('good');
+    else if (grade >= 5) summary.classList.add('medium');
+    else summary.classList.add('poor');
+    
+    document.getElementById('feedbackSeat').textContent = state.seat;
+    document.getElementById('feedbackDate').textContent = new Date().toLocaleDateString('de-DE');
+    document.getElementById('feedbackGrade').textContent = grade + ' NP';
+    document.getElementById('feedbackPoints').textContent = `${totalEarned} / ${CONFIG.TOTAL_POINTS} Punkte (${pct.toFixed(1)}%)`;
+    
+    if (bonusEarned > 0) {
+        document.getElementById('feedbackBonus').textContent = `🎄 Bonus: ${bonusEarned} / ${CONFIG.BONUS_POINTS} Punkte`;
+    }
+    
+    const elapsed = state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0;
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    document.getElementById('feedbackTime').textContent = `Bearbeitungszeit: ${mins}:${String(secs).padStart(2, '0')} von 90:00 Minuten`;
+    
+    renderFeedbackList();
+    renderPointsOverview();
+}
+
+function calculateGrade(pct) {
+    const thresholds = [98.67, 97.33, 96, 90.67, 85.33, 80, 73.33, 66.67, 60, 53.33, 46.67, 40, 33.33, 26.67, 20];
+    const grades = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+    
+    for (let i = 0; i < thresholds.length; i++) {
+        if (pct >= thresholds[i]) return grades[i];
+    }
+    return 0;
+}
+
+function renderFeedbackList() {
+    const list = document.getElementById('feedbackList');
+    let html = '';
+    
+    gradedAnswers.forEach((g, idx) => {
+        const q = QUESTIONS[idx];
+        const statusIcon = g.correct ? '✅' : (g.points > 0 ? '⚠️' : '❌');
+        const statusClass = g.correct ? 'correct' : (g.points > 0 ? 'partial' : 'incorrect');
+        
+        html += `<div class="feedback-item ${statusClass}${g.isBonus ? ' bonus-item' : ''}">
+            <div class="feedback-header">
+                <strong>${statusIcon} ${g.isBonus ? '🎄 Bonus' : `Frage ${idx + 1}`} (${g.qId})</strong>
+                <span class="feedback-points">${g.points} / ${g.maxPoints} P</span>
+            </div>
+            <div class="feedback-question">${q.text.replace(/\n/g, '<br>')}</div>`;
+        
+        if (q.diagram) {
+            html += getDiagramSVG(q.diagram);
+        }
+        
+        html += renderFeedbackAnswer(g, q);
+        html += '</div>';
+    });
+    
+    list.innerHTML = html;
+}
+
+function renderFeedbackAnswer(g, q) {
+    let html = '<div class="feedback-answer">';
+    
+    if (q.type === 'mc') {
+        const letters = ['A', 'B', 'C', 'D'];
+        html += '<div class="feedback-options">';
+        q.options.forEach((opt, i) => {
+            let cls = '';
+            let suffix = '';
+            if (i === q.correct) {
+                cls = ' correct-answer';
+                suffix = ' ✓ RICHTIG';
+            }
+            if (i === g.userAnswer && i !== q.correct) {
+                cls = ' user-wrong';
+                suffix = ' ✗';
+            } else if (i === g.userAnswer && i === q.correct) {
+                suffix = ' ✓';
+            }
+            html += `<div class="feedback-option${cls}">${letters[i]}) ${opt}${suffix}</div>`;
+        });
+        html += '</div>';
+        
+        html += `<p style="margin-top:10px;"><strong>Deine Antwort:</strong> ${g.userAnswer !== undefined ? letters[g.userAnswer] : '–'} ${g.correct ? '✓' : '✗'}</p>`;
+        if (!g.correct && g.userAnswer !== undefined) {
+            html += `<p class="correct"><strong>Richtige Antwort:</strong> ${letters[q.correct]}</p>`;
+        }
+    } else if (q.type === 'calc') {
+        const userVal = g.userAnswer?.value || '–';
+        const userUnit = g.userAnswer?.unit || '–';
+        const correctAcc = q.accepted[0];
+        html += `<p><strong>Deine Antwort:</strong> ${userVal} ${userUnit} ${g.correct ? '✓' : '✗'}</p>`;
+        if (!g.correct) {
+            html += `<p class="correct"><strong>Richtige Antwort:</strong> ${correctAcc.value} ${correctAcc.unit}</p>`;
+        }
+    } else if (q.type === 'diagram-dropdown' || q.type === 'matching') {
+        const labels = q.labels || (q.type === 'matching' ? ['I', 'II', 'III', 'IV'] : Array.from({length: q.phases || q.pairs}, (_, i) => String(i + 1)));
+        const count = q.phases || q.pairs;
+        
+        html += '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:6px; margin-top:8px;">';
+        for (let i = 0; i < count; i++) {
+            const userSel = g.userAnswer?.[i];
+            const correctSel = q.correct[i];
+            const isCorrect = userSel === correctSel;
+            const userLabel = userSel !== null && userSel !== undefined ? q.options[userSel] : '–';
+            const correctLabel = q.options[correctSel];
+            
+            html += `<div style="padding:6px; background:${isCorrect ? '#e8f5e9' : '#ffebee'}; border-radius:4px; font-size:0.85em;">
+                <strong>${labels[i]}:</strong> ${userLabel}${isCorrect ? ' ✓' : ` ✗<br><span class="correct">→ ${correctLabel}</span>`}
+            </div>`;
+        }
+        html += '</div>';
+    } else if (q.type === 'multi-calc' || q.type === 'bonus') {
+        html += '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin-top:8px;">';
+        q.fields.forEach(f => {
+            const fa = g.userAnswer?.[f.id] || {};
+            const userVal = fa.value !== undefined ? `${fa.value} ${fa.unit || ''}` : '–';
+            const correctAcc = f.accepted[0];
+            const correctVal = `${correctAcc.value} ${correctAcc.unit}`;
+            
+            const uv = parseFloat(String(fa.value || '').replace(',', '.'));
+            let isCorrect = false;
+            for (const acc of f.accepted) {
+                if (fa.unit === acc.unit && !isNaN(uv) && Math.abs(uv - acc.value) <= acc.tolerance) {
+                    isCorrect = true;
+                    break;
+                }
+            }
+            
+            html += `<div style="padding:8px; background:${isCorrect ? '#e8f5e9' : '#ffebee'}; border-radius:4px; font-size:0.85em;">
+                <strong>${f.label}</strong><br>
+                Deine Antwort: ${userVal} ${isCorrect ? '✓' : '✗'}<br>
+                ${!isCorrect ? `<span class="correct">→ ${correctVal}</span>` : ''}
+            </div>`;
+        });
+        html += '</div>';
+    } else if (q.type === 'mixed-analysis') {
+        html += '<div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; margin-top:8px;">';
+        q.fields.forEach(f => {
+            const fa = g.userAnswer?.[f.id];
+            let userVal, correctVal, isCorrect;
+            
+            if (f.type === 'dropdown') {
+                userVal = fa !== undefined && fa !== null ? f.options[fa] : '–';
+                correctVal = f.options[f.correct];
+                isCorrect = fa === f.correct;
+            } else {
+                const faObj = fa || {};
+                userVal = faObj.value !== undefined ? `${faObj.value} ${faObj.unit || ''}` : '–';
+                const correctAcc = f.accepted[0];
+                correctVal = `${correctAcc.value} ${correctAcc.unit}`;
+                
+                const uv = parseFloat(String(faObj.value || '').replace(',', '.'));
+                isCorrect = false;
+                for (const acc of f.accepted) {
+                    if (faObj.unit === acc.unit && !isNaN(uv) && Math.abs(uv - acc.value) <= acc.tolerance) {
+                        isCorrect = true;
+                        break;
+                    }
+                }
+            }
+            
+            html += `<div style="padding:8px; background:${isCorrect ? '#e8f5e9' : '#ffebee'}; border-radius:4px; font-size:0.85em;">
+                <strong>${f.label}</strong><br>
+                Deine Antwort: ${userVal} ${isCorrect ? '✓' : '✗'}<br>
+                ${!isCorrect ? `<span class="correct">→ ${correctVal}</span>` : ''}
+            </div>`;
+        });
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    return html;
+}
+
+function renderPointsOverview() {
+    const overview = document.getElementById('pointsOverview');
+    
+    const blocks = [
+        { name: 'Block 1: MC Grundwissen (F1-F10)', ids: ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10'] },
+        { name: 'Block 2: Berechnungen (F11-F18)', ids: ['F11','F12','F13','F14','F15','F16','F17','F18'] },
+        { name: 'Block 3: Diagramme (A-D)', ids: ['A','B','C','D'] },
+        { name: 'Block 4: Komplexe Aufgaben (E-F)', ids: ['E','F'] }
+    ];
+    
+    let html = '<h3 style="margin-bottom:10px; font-size:1em;">📊 Punkteübersicht</h3>';
+    
+    blocks.forEach(block => {
+        let earned = 0, max = 0;
+        block.ids.forEach(id => {
+            const g = gradedAnswers.find(ga => ga.qId === id);
+            if (g) {
+                earned += g.points;
+                max += g.maxPoints;
+            }
+        });
+        html += `<div class="points-row"><span>${block.name}</span><span>${earned} / ${max} P</span></div>`;
+    });
+    
+    html += `<div class="points-row total"><span>BASISPUNKTE</span><span>${totalEarned} / ${CONFIG.TOTAL_POINTS} P</span></div>`;
+    
+    if (bonusEarned > 0 || CONFIG.BONUS_POINTS > 0) {
+        html += `<div class="points-row"><span>🎄 BONUS</span><span>${bonusEarned} / ${CONFIG.BONUS_POINTS} P</span></div>`;
+        html += `<div class="points-row total"><span>GESAMT</span><span>${totalEarned + bonusEarned} / ${CONFIG.TOTAL_POINTS + CONFIG.BONUS_POINTS} P</span></div>`;
+    }
+    
+    const pct = (totalEarned / CONFIG.TOTAL_POINTS) * 100;
+    const grade = calculateGrade(pct);
+    html += `<div class="points-row" style="margin-top:10px;"><span>Prozent (Basis)</span><span>${pct.toFixed(1)}%</span></div>`;
+    html += `<div class="points-row total"><span>NOTE</span><span style="font-size:1.2em;">${grade} NP</span></div>`;
+    
+    overview.innerHTML = html;
+}
+
+// =============================================================================
+// INIT
+// =============================================================================
+document.addEventListener('DOMContentLoaded', init);
+
+window.addEventListener('beforeunload', (e) => {
+    if (!state.submitted && state.startTime) {
+        saveState();
+    }
+});
+</script>
+</body>
+</html>

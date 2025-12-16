@@ -1,0 +1,109 @@
+# 📐 Quiz: Bewegungslehre – Klasse 10 GY
+
+Interaktives Quiz zur Stundenleistung im Themenbereich **Gleichförmige und beschleunigte Bewegung**.
+
+## 🔗 Links
+
+| Komponente | URL | QR-Code |
+|------------|-----|---------|
+| **Quiz (Schüler)** | [index.html](https://jpcrusius-hub.github.io/sciencesim/quiz/index.html) | In `qr-codes.html` |
+| **Decoder (Lehrer)** | [decoder.html](https://jpcrusius-hub.github.io/sciencesim/quiz/decoder.html) | In `qr-codes.html` |
+| **QR-Codes** | [qr-codes.html](https://jpcrusius-hub.github.io/sciencesim/quiz/qr-codes.html) | – |
+
+## 📊 Übersicht
+
+| Eigenschaft | Wert |
+|-------------|------|
+| **Fach** | Physik |
+| **Klassenstufe** | 10 GY (Gymnasium) |
+| **Thema** | Bewegungslehre (Kinematik) |
+| **Basispunkte** | 108 P |
+| **Bonuspunkte** | 3 P (🎄 Weihnachtsmann) |
+| **Bearbeitungszeit** | 90 Minuten |
+| **Hilfsmittel** | Keine |
+| **Bewertung** | 15-NP-Skala (Sonstige Leistungen) |
+
+## 📝 Aufgabenstruktur
+
+### Block 1: MC Grundwissen (20 P)
+- **F1–F10**: Multiple-Choice-Fragen zu Grundbegriffen
+- Themen: s(t)- und v(t)-Diagramme, Einheiten, Flächen/Steigungen
+
+### Block 2: Berechnungen (16 P)
+- **F11–F18**: Rechenaufgaben mit Einheiten-Auswahl
+- Themen: Umrechnungen, Formeln (v=s/t, a=Δv/Δt, s=½at², etc.)
+
+### Block 3: Diagramme (42 P)
+- **A (16 P)**: v(t)-Diagramm analysieren (8 Phasen)
+- **B (12 P)**: s(t)-Diagramm analysieren (6 Phasen)
+- **C (6 P)**: a(t)-Diagramm Aufzug (6 Phasen)
+- **D (8 P)**: Zuordnung v(t) ↔ s(t) (4 Paare)
+
+### Block 4: Komplexe Aufgaben (30 P)
+- **E (20 P)**: Komplexe v(t)-Analyse mit Berechnungen (10 Teilaufgaben)
+- **F (10 P)**: Ampelstart-Szenario (5 Teilaufgaben)
+
+### Bonus (3 P)
+- 🎄 Weihnachtsmann in MV – Geschwindigkeitsberechnung
+
+## ⚙️ Features
+
+### Quiz (index.html)
+- ✅ Auto-Save bei jeder Eingabe
+- ✅ Automatisches Fortsetzen bei Reload
+- ✅ Progress-Anzeige (Zeit + bearbeitete Punkte)
+- ✅ Navigation per Fragen-Dots
+- ✅ Reset nur mit Lehrer-Code (`3141`)
+- ✅ QR-Code-Generierung bei Abgabe
+- ✅ Vollständige Musterlösung mit PDF-Export
+- ✅ Einheiten-Mehrfach-Akzeptanz (m/km, m/s/km/h, etc.)
+
+### Decoder (decoder.html)
+- ✅ QR-Scanner mit Kamera-Auswahl
+- ✅ Text-Eingabe als Alternative
+- ✅ Akustisches Feedback bei Scan
+- ✅ Duplikat-Erkennung
+- ✅ Statistik-Übersicht (Durchschnitt, Beste, Schwächste)
+- ✅ Detail-Ansicht pro Schüler
+- ✅ CSV-Export
+- ✅ Feedbackbögen für alle Schüler
+
+## 🔐 Codes
+
+| Funktion | Code |
+|----------|------|
+| Quiz zurücksetzen | `3141` |
+| Musterlösung entsperren | `PHYSIK` |
+
+## 📱 Kompatibilität
+
+- ✅ Desktop (Chrome, Firefox, Safari, Edge)
+- ✅ Tablet/iPad (empfohlen: Landscape)
+- ✅ Smartphone (Portrait/Landscape)
+- ✅ Offline-fähig nach erstem Laden
+
+## 📄 Dateien
+
+```
+quiz/
+├── index.html      # Quiz für Schüler
+├── decoder.html    # Decoder für Lehrer
+├── qr-codes.html   # Druckbare QR-Codes
+└── README.md       # Diese Datei
+```
+
+## 🎓 Didaktische Hinweise
+
+- **Kopfrechenbar**: Alle Zahlenwerte sind so gewählt, dass kein Taschenrechner nötig ist
+- **g = 10 m/s²**: Vereinfachter Wert für Fallbeschleunigung
+- **AFB-Verteilung**: ca. 30% AFB1, 40% AFB2, 30% AFB3
+- **Differenzierung**: Aufgaben steigen in der Komplexität
+
+## 📜 Lizenz
+
+Erstellt für den Physikunterricht an Gesamtschulen in Mecklenburg-Vorpommern.
+
+---
+
+**Version:** 5.1  
+**Stand:** Dezember 2024
