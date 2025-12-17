@@ -7,37 +7,212 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        h1 { text-align: center; margin-bottom: 5px; font-size: 1.4em; }
-        .subtitle { text-align: center; color: #666; margin-bottom: 20px; font-size: 0.95em; }
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-            gap: 15px; 
-            max-width: 1000px; 
-            margin: 0 auto; 
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { text-align: center; margin-bottom: 5px; font-size: 1.5em; color: #222; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 0.95em; }
+        
+        /* Hauptbereich */
+        .main-section {
+            max-width: 900px;
+            margin: 0 auto 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
-        .card { 
-            background: #fff; 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            padding: 15px; 
-            text-align: center; 
+        
+        .main-card {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
         }
-        .card h3 { font-size: 1.1em; margin-bottom: 10px; color: #2c5aa0; }
-        .qr { margin: 10px auto; }
-        .url { font-size: 0.7em; color: #888; word-break: break-all; margin-top: 8px; }
-        .info { 
-            max-width: 1000px; 
-            margin: 20px auto; 
-            background: #e3f2fd; 
-            padding: 15px; 
-            border-radius: 8px; 
-            font-size: 0.9em; 
+        .main-card.student { border-color: #2c5aa0; }
+        .main-card.teacher { border-color: #2e7d32; }
+        
+        .main-card h2 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
+        .main-card.student h2 { color: #2c5aa0; }
+        .main-card.teacher h2 { color: #2e7d32; }
+        
+        .main-qr {
+            margin: 15px auto;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        
+        .main-link {
+            display: block;
+            margin: 15px auto;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+        .main-card.student .main-link {
+            background: #2c5aa0;
+            color: #fff;
+        }
+        .main-card.student .main-link:hover {
+            background: #1e4080;
+        }
+        .main-card.teacher .main-link {
+            background: #2e7d32;
+            color: #fff;
+        }
+        .main-card.teacher .main-link:hover {
+            background: #1b5e20;
+        }
+        
+        .url-display {
+            font-size: 0.8em;
+            color: #888;
+            word-break: break-all;
+            margin-top: 10px;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        /* Info-Box */
+        .info-box {
+            max-width: 900px;
+            margin: 0 auto 25px;
+            background: #e3f2fd;
+            border-left: 4px solid #2c5aa0;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        .info-box h3 {
+            font-size: 1em;
+            margin-bottom: 8px;
+            color: #1565c0;
+        }
+        .info-box ul {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: #333;
+        }
+        .info-box li { margin: 5px 0; }
+        .info-box code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: 600;
+        }
+        
+        /* Codes-Box */
+        .codes-box {
+            max-width: 900px;
+            margin: 0 auto 25px;
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        .codes-box h3 {
+            font-size: 1em;
+            margin-bottom: 8px;
+            color: #e65100;
+        }
+        .codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .code-item {
+            background: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .code-item .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .code-item .code {
+            font-size: 1.4em;
+            font-weight: 700;
+            font-family: monospace;
+            color: #e65100;
+        }
+        
+        /* Platz-Grid (optional) */
+        .toggle-section {
+            max-width: 900px;
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+        .toggle-btn {
+            padding: 10px 20px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .toggle-btn:hover {
+            background: #f5f5f5;
+            border-color: #bbb;
+        }
+        
+        .seat-grid {
+            display: none;
+            max-width: 900px;
+            margin: 20px auto;
+        }
+        .seat-grid.visible { display: block; }
+        .seat-grid h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #666;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .card h4 {
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            color: #2c5aa0;
+        }
+        .card .qr { margin: 8px auto; }
+        
+        /* Print Styles */
         @media print {
-            body { background: #fff; }
+            body { background: #fff; padding: 10px; }
+            .main-card { border-width: 1px; page-break-inside: avoid; }
+            .toggle-section { display: none; }
+            .seat-grid { display: block !important; }
             .card { break-inside: avoid; border: 1px solid #000; }
+        }
+        
+        /* Mobile */
+        @media (max-width: 600px) {
+            .main-section { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -45,50 +220,131 @@
     <h1>📐 Stundenleistung Bewegungslehre – Klasse 10 GY</h1>
     <p class="subtitle">Quiz V5.4 · 88 Punkte + 3 Bonus · 90 Minuten</p>
     
-    <div class="info">
-        <strong>Anleitung:</strong> Diese QR-Codes führen zum Quiz. Schüler scannen den Code mit ihrem Tablet/Smartphone. 
-        Nach Abgabe erscheint ein QR-Code mit den Ergebnissen, den die Lehrkraft mit dem Decoder scannen kann.
+    <!-- Hauptbereich: Schüler + Lehrer -->
+    <div class="main-section">
+        <div class="main-card student">
+            <h2>👨‍🎓 Schüler-Quiz</h2>
+            <div class="main-qr" id="studentQR"></div>
+            <a href="#" class="main-link" id="studentLink" target="_blank">🚀 Quiz starten</a>
+            <div class="url-display" id="studentURL"></div>
+        </div>
+        
+        <div class="main-card teacher">
+            <h2>👨‍🏫 Lehrer-Decoder</h2>
+            <div class="main-qr" id="teacherQR"></div>
+            <a href="#" class="main-link" id="teacherLink" target="_blank">🔓 Decoder öffnen</a>
+            <div class="url-display" id="teacherURL"></div>
+        </div>
     </div>
     
-    <div class="grid" id="qrGrid"></div>
+    <!-- Info-Box -->
+    <div class="info-box">
+        <h3>📋 Ablauf</h3>
+        <ul>
+            <li><strong>Schüler:</strong> Scannen den QR-Code oder klicken den Link → Platz wählen → Quiz bearbeiten → Abgeben</li>
+            <li><strong>Nach Abgabe:</strong> Schüler sehen QR-Code mit Ergebnis → Lehrkraft scannt mit Decoder</li>
+            <li><strong>Musterlösung:</strong> Nach 5 Min. oder mit Code <code>PHYSIK</code> sichtbar</li>
+        </ul>
+    </div>
     
-    <div class="info" style="margin-top: 20px;">
-        <strong>Hinweis für Lehrkräfte:</strong><br>
-        • Unlock-Code für Musterlösung: <strong>PHYSIK</strong> (oder 5 Min. warten)<br>
-        • Reset-Code für Neustart: <strong>3141</strong><br>
-        • Decoder-URL: <span id="decoderUrl"></span>
+    <!-- Codes-Box -->
+    <div class="codes-box">
+        <h3>🔐 Wichtige Codes</h3>
+        <div class="codes-grid">
+            <div class="code-item">
+                <div class="label">Musterlösung freischalten</div>
+                <div class="code">PHYSIK</div>
+            </div>
+            <div class="code-item">
+                <div class="label">Quiz zurücksetzen</div>
+                <div class="code">3141</div>
+            </div>
+            <div class="code-item">
+                <div class="label">Wartezeit Musterlösung</div>
+                <div class="code">5 Min.</div>
+            </div>
+            <div class="code-item">
+                <div class="label">Bearbeitungszeit</div>
+                <div class="code">90 Min.</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toggle für Einzel-QR-Codes -->
+    <div class="toggle-section">
+        <button class="toggle-btn" onclick="toggleSeatGrid()">
+            📱 Einzel-QR-Codes für jeden Platz anzeigen
+        </button>
+    </div>
+    
+    <!-- Platz-Grid (versteckt) -->
+    <div class="seat-grid" id="seatGrid">
+        <h3>QR-Codes für Plätze 1-30</h3>
+        <div class="grid" id="qrGrid"></div>
     </div>
 
 <script>
-const BASE_URL = 'https://patrickneubauer.github.io/sciencesim/quiz/';
-const QUIZ_FILE = 'index.html';
-const DECODER_FILE = 'decoder.html';
+// Basis-URL für GitHub Pages
+const BASE_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/';
+const QUIZ_URL = BASE_URL + 'index.html';
+const DECODER_URL = BASE_URL + 'decoder.html';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Schüler-QR und Link
+    document.getElementById('studentURL').textContent = QUIZ_URL;
+    document.getElementById('studentLink').href = QUIZ_URL;
+    new QRCode(document.getElementById('studentQR'), {
+        text: QUIZ_URL,
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.L
+    });
+    
+    // Lehrer-QR und Link
+    document.getElementById('teacherURL').textContent = DECODER_URL;
+    document.getElementById('teacherLink').href = DECODER_URL;
+    new QRCode(document.getElementById('teacherQR'), {
+        text: DECODER_URL,
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.L
+    });
+    
+    // Platz-Grid vorbereiten (aber nicht anzeigen)
+    createSeatGrid();
+});
+
+function createSeatGrid() {
     const grid = document.getElementById('qrGrid');
     
-    // Quiz QR-Codes für Plätze
     for (let i = 1; i <= 30; i++) {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-            <h3>Platz ${String(i).padStart(2, '0')}</h3>
+            <h4>Platz ${String(i).padStart(2, '0')}</h4>
             <div class="qr" id="qr${i}"></div>
-            <div class="url">${BASE_URL}${QUIZ_FILE}</div>
         `;
         grid.appendChild(card);
-        
-        new QRCode(document.getElementById(`qr${i}`), {
-            text: `${BASE_URL}${QUIZ_FILE}`,
-            width: 120,
-            height: 120,
-            correctLevel: QRCode.CorrectLevel.L
-        });
     }
+}
+
+function toggleSeatGrid() {
+    const grid = document.getElementById('seatGrid');
+    const isVisible = grid.classList.toggle('visible');
     
-    // Decoder-URL anzeigen
-    document.getElementById('decoderUrl').textContent = `${BASE_URL}${DECODER_FILE}`;
-});
+    // QR-Codes erst beim ersten Öffnen generieren
+    if (isVisible && !grid.dataset.loaded) {
+        for (let i = 1; i <= 30; i++) {
+            new QRCode(document.getElementById(`qr${i}`), {
+                text: QUIZ_URL,
+                width: 100,
+                height: 100,
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        }
+        grid.dataset.loaded = 'true';
+    }
+}
 </script>
 </body>
 </html>
