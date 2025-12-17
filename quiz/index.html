@@ -823,8 +823,8 @@
 
 <script>
 const CONFIG = {
-    VERSION: 5.3,
-    STORAGE_KEY: 'quiz_v53_bewegung_10gy',
+    VERSION: 5.2,
+    STORAGE_KEY: 'quiz_v52_bewegung_10gy',
     TOTAL_POINTS: 88,
     BONUS_POINTS: 3,
     TEST_DURATION: 90,
@@ -879,11 +879,11 @@ const QUESTIONS = [
     // BLOCK 2: CALC (F11-F18) - 16P
     { id: 'F11', type: 'calc', points: 2, afb: 2,
       text: 'Ein Sportwagen fährt auf der Autobahn mit 108 km/h. Rechne diese Geschwindigkeit in m/s um.',
-      accepted: [{ value: 30, unit: 'm/s', tolerance: 0.5 }],
+      accepted: [{ value: 30, unit: 'm/s', tolerance: 0.5 }, { value: 108, unit: 'km/h', tolerance: 1 }],
       unitOptions: ['m/s', 'km/h', 'm', 's'] },
     { id: 'F12', type: 'calc', points: 2, afb: 2,
-      text: 'Ein Radfahrer fährt mit konstanten 5 m/s. Welche Strecke s legt er in 40 Sekunden zurück?',
-      accepted: [{ value: 200, unit: 'm', tolerance: 1 }, { value: 0.2, unit: 'km', tolerance: 0.01 }],
+      text: 'Ein Radfahrer fährt mit konstanten 25 m/s. Welche Strecke s legt er in 40 Sekunden zurück?',
+      accepted: [{ value: 1000, unit: 'm', tolerance: 1 }, { value: 1, unit: 'km', tolerance: 0.01 }],
       unitOptions: ['m', 'km', 'm/s', 's'] },
     { id: 'F13', type: 'calc', points: 2, afb: 2,
       text: 'Ein E-Scooter beschleunigt gleichmäßig mit a = 5 m/s² aus dem Stand. Welche Geschwindigkeit v erreicht er nach 6 Sekunden?',
@@ -927,7 +927,7 @@ const QUESTIONS = [
       correct: [0, 1, 2, 1] },
 
     { id: 'C', type: 'diagram-dropdown', points: 6, afb: 2,
-      text: 'Ein Aufzug fährt vom Erdgeschoss in den 5. Stock. Er beschleunigt zunächst sanft (Komfortmodus), dann stärker. Das a(t)-Diagramm zeigt 6 Phasen. Ordne jeder Phase die Bewegungsart zu.',
+      text: 'Ein Aufzug fährt vom Erdgeschoss in den 5. Stock. Das a(t)-Diagramm zeigt 6 Phasen. Ordne jeder Phase die Bewegungsart zu.',
       diagram: 'at-elevator',
       phases: 6,
       options: ['Beschleunigung', 'Gleichförmige Bewegung', 'Verzögerung', 'Stillstand'],
