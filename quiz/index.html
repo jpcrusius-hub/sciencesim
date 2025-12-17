@@ -677,7 +677,7 @@
             <div class="box">
                 <h2>ℹ️ Informationen</h2>
                 <p style="font-size:0.9em; margin-bottom:8px;"><strong>Physik Klasse 10 GY</strong> · Gleichförmige & beschleunigte Bewegung</p>
-                <p style="font-size:0.9em; margin-bottom:8px;"><strong>88 Punkte + 3 Bonus</strong> · <strong>90 Minuten</strong></p>
+                <p style="font-size:0.9em; margin-bottom:8px;"><strong>86 Punkte + 3 Bonus</strong> · <strong>90 Minuten</strong></p>
                 <div class="info-box">
                     <strong>📝 Hilfsmittel:</strong> Keine (alle Werte kopfrechenbar)<br>
                     <strong>📐 Konstante:</strong> g = 10 m/s²
@@ -708,7 +708,7 @@
                 <div class="progress-section">
                     <div class="progress-header">
                         <span class="progress-label">📊 Bearbeitet</span>
-                        <span class="progress-display" id="progressDisplay">0% <span>(0 / 88 P)</span></span>
+                        <span class="progress-display" id="progressDisplay">0% <span>(0 / 86 P)</span></span>
                     </div>
                     <div class="progress-bar">
                         <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
@@ -775,7 +775,7 @@
                     <strong id="feedbackDate"></strong>
                 </div>
                 <div class="feedback-grade" id="feedbackGrade">-- NP</div>
-                <div style="font-size:1.1em; color:#555; margin-top:6px;" id="feedbackPoints">-- / 88 Punkte (---%)</div>
+                <div style="font-size:1.1em; color:#555; margin-top:6px;" id="feedbackPoints">-- / 86 Punkte (---%)</div>
                 <div style="font-size:0.95em; color:#666; margin-top:6px;" id="feedbackBonus"></div>
                 <div style="font-size:0.85em; color:#888; margin-top:8px;" id="feedbackTime"></div>
             </div>
@@ -825,7 +825,7 @@
 const CONFIG = {
     VERSION: 5.4,
     STORAGE_KEY: 'quiz_v54_bewegung_10gy',
-    TOTAL_POINTS: 88,
+    TOTAL_POINTS: 86,
     BONUS_POINTS: 3,
     TEST_DURATION: 90,
     UNLOCK_TIME: 300,
@@ -926,12 +926,12 @@ const QUESTIONS = [
       options: ['Beschleunigung aus der Ruhe', 'Gleichförmige Bewegung', 'Stillstand/Pause', 'Verzögerung/Bremsung'],
       correct: [0, 1, 2, 1] },
 
-    { id: 'C', type: 'diagram-dropdown', points: 6, afb: 2,
-      text: 'Ein Aufzug fährt vom Erdgeschoss in den 5. Stock. Er beschleunigt zunächst sanft (Komfortmodus), dann stärker. Das a(t)-Diagramm zeigt 6 Phasen. Ordne jeder Phase die Bewegungsart zu.',
+    { id: 'C', type: 'diagram-dropdown', points: 4, afb: 2,
+      text: 'Bei einer Fahrstuhlfahrt wird das folgende Beschleunigungsprofil a(t) aufgezeichnet. Ordne jeder Phase (1-4) die passende Bewegungsart zu.',
       diagram: 'at-elevator',
-      phases: 6,
+      phases: 4,
       options: ['Beschleunigung', 'Gleichförmige Bewegung', 'Verzögerung', 'Stillstand'],
-      correct: [0, 1, 0, 1, 2, 3] },
+      correct: [0, 1, 2, 3] },
 
     { id: 'D', type: 'matching', points: 4, afb: 3,
       text: 'Ordne jedem v(t)-Diagramm (I-IV) das passende s(t)-Diagramm (A-D) zu.',
@@ -939,7 +939,7 @@ const QUESTIONS = [
       pairs: 4,
       labels: ['I', 'II', 'III', 'IV'],
       options: ['A', 'B', 'C', 'D'],
-      correct: [0, 1, 2, 3] },
+      correct: [2, 0, 3, 1] },
 
     // BLOCK 4: KOMPLEX (E-F) - 30P
     { id: 'E', type: 'mixed-analysis', points: 20, afb: 3,
@@ -974,9 +974,9 @@ const QUESTIONS = [
       intro: 'Der Weihnachtsmann muss in der Heiligen Nacht alle Haushalte in MV besuchen. Hilf ihm bei der Planung!',
       data: { households: 800000, distance: 250, time: 2, soundSpeed: 340 },
       fields: [
-        { id: 'a', label: 'a) Gesamtstrecke', accepted: [{ value: 200000, unit: 'km', tolerance: 1000 }, { value: 200000000, unit: 'm', tolerance: 1000000 }], unitOptions: ['km', 'm', 'm/s'] },
-        { id: 'b', label: 'b) Nötige Geschwindigkeit', accepted: [{ value: 27778, unit: 'm/s', tolerance: 500 }, { value: 28000, unit: 'm/s', tolerance: 500 }, { value: 100000, unit: 'km/h', tolerance: 2000 }], unitOptions: ['m/s', 'km/h', 'km'] },
-        { id: 'c', label: 'c) Mach-Zahl (≈v/340)', accepted: [{ value: 82, unit: 'Mach', tolerance: 3 }, { value: 81, unit: 'Mach', tolerance: 3 }, { value: 82, unit: '', tolerance: 3 }], unitOptions: ['Mach', ''] }
+        { id: 'a', label: 'a) Gesamtstrecke', accepted: [{ value: 200000, unit: 'km', tolerance: 2000 }, { value: 200000000, unit: 'm', tolerance: 2000000 }], unitOptions: ['km', 'm', 'm/s'] },
+        { id: 'b', label: 'b) Nötige Geschwindigkeit', accepted: [{ value: 27778, unit: 'm/s', tolerance: 280 }, { value: 28000, unit: 'm/s', tolerance: 280 }, { value: 100000, unit: 'km/h', tolerance: 1000 }], unitOptions: ['m/s', 'km/h', 'km'] },
+        { id: 'c', label: 'c) Mach-Zahl (≈v/340)', accepted: [{ value: 82, unit: 'Mach', tolerance: 2.5 }, { value: 82, unit: '', tolerance: 2.5 }, { value: 81, unit: 'Mach', tolerance: 2.5 }, { value: 81, unit: '', tolerance: 2.5 }], unitOptions: ['Mach', ''] }
       ] }
 ];
 
@@ -1332,19 +1332,17 @@ function getDiagramSVG(type) {
             ${[0,5,10,15,20].map((t,i) => `<text x="${60+i*70}" y="196" font-size="10" text-anchor="middle" fill="#666">${t}</text>`).join('')}
         </svg></div>`;
     } else if (type === 'at-elevator') {
-        return `<div class="diagram-container"><svg viewBox="0 0 420 180" style="max-width:420px;">
-            ${[0,1,2,3,4,5,6].map(i => `<line x1="${60+i*55}" y1="30" x2="${60+i*55}" y2="150" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
-            <line x1="60" y1="100" x2="400" y2="100" stroke="#333" stroke-width="2"/>
+        return `<div class="diagram-container"><svg viewBox="0 0 340 180" style="max-width:340px;">
+            ${[0,1,2,3,4].map(i => `<line x1="${60+i*65}" y1="30" x2="${60+i*65}" y2="150" stroke="#e0e0e0" stroke-width="1"/>`).join('')}
+            <line x1="60" y1="100" x2="330" y2="100" stroke="#333" stroke-width="2"/>
             <line x1="60" y1="150" x2="60" y2="30" stroke="#333" stroke-width="2"/>
-            <line x1="60" y1="100" x2="390" y2="100" stroke="#999" stroke-dasharray="3,2"/>
-            <rect x="60" y="55" width="55" height="45" fill="rgba(33,150,243,0.25)" stroke="#2196f3" stroke-width="1.5"/>
-            <line x1="115" y1="100" x2="170" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
-            <rect x="170" y="55" width="55" height="45" fill="rgba(33,150,243,0.25)" stroke="#2196f3" stroke-width="1.5"/>
-            <line x1="225" y1="100" x2="280" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
-            <rect x="280" y="100" width="55" height="35" fill="rgba(244,67,54,0.25)" stroke="#f44336" stroke-width="1.5"/>
-            <line x1="335" y1="100" x2="390" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
-            ${[87,142,197,252,307,362].map((x,i) => `<text x="${x}" y="25" font-size="12" font-weight="bold" fill="#1565c0" text-anchor="middle">${i+1}</text>`).join('')}
-            <text x="405" y="105" font-size="12" fill="#333">t</text>
+            <line x1="60" y1="100" x2="320" y2="100" stroke="#999" stroke-dasharray="3,2"/>
+            <rect x="60" y="55" width="65" height="45" fill="rgba(33,150,243,0.25)" stroke="#2196f3" stroke-width="1.5"/>
+            <line x1="125" y1="100" x2="190" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
+            <rect x="190" y="100" width="65" height="40" fill="rgba(244,67,54,0.25)" stroke="#f44336" stroke-width="1.5"/>
+            <line x1="255" y1="100" x2="320" y2="100" stroke="#2c5aa0" stroke-width="2.5"/>
+            ${[92,157,222,287].map((x,i) => `<text x="${x}" y="25" font-size="12" font-weight="bold" fill="#1565c0" text-anchor="middle">${i+1}</text>`).join('')}
+            <text x="335" y="105" font-size="12" fill="#333">t</text>
             <text x="45" y="35" font-size="12" fill="#333">a</text>
             <text x="52" y="60" font-size="10" text-anchor="end" fill="#666">+</text>
             <text x="52" y="105" font-size="10" text-anchor="end" fill="#666">0</text>
@@ -1367,7 +1365,7 @@ function getDiagramSVG(type) {
             <text x="230" y="128" font-size="13" font-weight="bold" fill="#333" text-anchor="middle">s(t)-Diagramme</text>
             ${[0,1,2,3].map(i => {
                 const x = 25 + i * 110;
-                const paths = ['M10,50 L55,20','M10,50 Q32,48 55,20','M10,50 Q20,42 32,28 Q44,18 55,15','M10,50 Q32,22 55,20'];
+                const paths = ['M10,50 Q32,48 55,20','M10,50 Q32,22 55,20','M10,50 L55,20','M10,50 Q20,42 32,28 Q44,18 55,15'];
                 return `<g transform="translate(${x},138)">
                     <rect x="0" y="0" width="65" height="55" fill="#fff" stroke="#bbb" rx="4" stroke-width="1.5"/>
                     <line x1="10" y1="50" x2="55" y2="50" stroke="#ddd" stroke-width="1"/>

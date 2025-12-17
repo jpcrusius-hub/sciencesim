@@ -399,7 +399,7 @@
         <div class="box">
             <h2>📏 Bewertungsskala (15-NP, Sonstige Leistungen)</h2>
             <p style="margin-bottom: 8px; font-size: 0.9em;">
-                Gesamt: <strong>108 Punkte</strong> + 3 Bonus | 
+                Gesamt: <strong>86 Punkte</strong> + 3 Bonus | 
                 Hilfsmittel: Keine | 
                 g = 10 m/s²
             </p>
@@ -411,7 +411,7 @@
                     <td>%</td><td>98,7</td><td>97,3</td><td>96</td><td>90,7</td><td>85,3</td><td>80</td><td>73,3</td><td>66,7</td><td>60</td><td>53,3</td><td>46,7</td><td>40</td><td>33,3</td><td>26,7</td><td>20</td>
                 </tr>
                 <tr>
-                    <td>P</td><td>107</td><td>105</td><td>104</td><td>98</td><td>92</td><td>86</td><td>79</td><td>72</td><td>65</td><td>58</td><td>50</td><td>43</td><td>36</td><td>29</td><td>22</td>
+                    <td>P</td><td>85</td><td>84</td><td>83</td><td>78</td><td>74</td><td>69</td><td>64</td><td>58</td><td>52</td><td>46</td><td>41</td><td>35</td><td>29</td><td>23</td><td>18</td>
                 </tr>
             </table>
         </div>
@@ -455,7 +455,7 @@
 // =============================================================================
 // KONFIGURATION
 // =============================================================================
-const MAX_POINTS = 88;
+const MAX_POINTS = 86;
 const MAX_BONUS = 3;
 
 const SCALE = {
@@ -485,11 +485,11 @@ const QUESTIONS = [
     { id: 'F18', text: 'Bremszeit (30 m/s, -6 m/s²)', fullText: '5 s', type: 'calc', points: 2, correct: '5 s' },
     { id: 'A', text: 'v(t) Auto (8 Phasen)', fullText: 'Beschl., Gleichf., Beschl., Gleichf., Verzög., Gleichf., Verzög., Stillstand', type: 'diagram', points: 8, correct: [0,1,0,1,2,1,2,3] },
     { id: 'B', text: 's(t) Radfahrer (4 Phasen)', fullText: 'Beschl., Gleichf., Stillstand, Gleichf.', type: 'diagram', points: 4, correct: [0,1,2,1] },
-    { id: 'C', text: 'a(t) Aufzug (6 Phasen)', fullText: 'Beschl., Gleichf., Beschl., Gleichf., Verzög., Stillstand', type: 'diagram', points: 6, correct: [0,1,0,1,2,3] },
-    { id: 'D', text: 'Zuordnung v(t) ↔ s(t)', fullText: 'I→A, II→B, III→C, IV→D', type: 'matching', points: 4, correct: [0,1,2,3] },
+    { id: 'C', text: 'a(t) Fahrstuhl (4 Phasen)', fullText: 'Beschl., Gleichf., Verzög., Stillstand', type: 'diagram', points: 4, correct: [0,1,2,3] },
+    { id: 'D', text: 'Zuordnung v(t) ↔ s(t)', fullText: 'I→C, II→A, III→D, IV→B', type: 'matching', points: 4, correct: [2,0,3,1] },
     { id: 'E', text: 'Komplexe v(t)-Analyse (10 Teile)', fullText: '10 m/s², 90 m, -5 m/s², 67,5 m, 45 m, 247,5 m', type: 'mixed', points: 20 },
     { id: 'F', text: 'PKW Ampelstart (5 Teile)', fullText: 'v=20 m/s, s₁=50 m, s₂=200 m, t=2,5 s, s₃=25 m', type: 'multi', points: 10 },
-    { id: 'BONUS', text: '🎄 Weihnachtsmann MV', fullText: '200.000 km, ~27.778 m/s, ~82 Mach', type: 'bonus', points: 3 }
+    { id: 'BONUS', text: '🎄 Weihnachtsmann MV', fullText: '200.000 km (±1%), ~27.778 m/s oder ~100.000 km/h (±1%), Mach 80-85', type: 'bonus', points: 3 }
 ];
 
 // =============================================================================
