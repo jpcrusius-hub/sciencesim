@@ -3,748 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decoder – Elektrik-Quiz Klasse 8</title>
+    <title>Quiz Decoder – Elektrizitätslehre Klasse 8</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: #f5f5f5; 
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 1000px; margin: 0 auto; }
-        
-        .header {
-            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .header h1 { font-size: 1.4em; margin-bottom: 5px; }
-        .header h2 { font-size: 1em; font-weight: normal; opacity: 0.9; }
-        
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab {
-            flex: 1;
-            padding: 12px;
-            background: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .tab:hover { border-color: #1565c0; }
-        .tab.active { background: #1565c0; color: white; border-color: #1565c0; }
-        
-        .panel { display: none; }
-        .panel.active { display: block; }
-        
-        /* Scanner */
-        .scanner-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .camera-select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-        }
-        #reader {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .scanner-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            justify-content: center;
-        }
-        .scan-btn {
-            padding: 12px 25px;
-            font-size: 1em;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .scan-btn.start { background: #4caf50; color: white; }
-        .scan-btn.stop { background: #f44336; color: white; }
-        
-        /* Manual Input */
-        .manual-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .code-input {
-            width: 100%;
-            padding: 15px;
-            font-family: monospace;
-            font-size: 0.9em;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            min-height: 100px;
-            resize: vertical;
-        }
-        .decode-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-top: 15px;
-            font-size: 1.1em;
-            font-weight: bold;
-            background: #1565c0;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .decode-btn:hover { background: #0d47a1; }
-        
-        /* Result */
-        .result-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #e3f2fd;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .result-grade {
-            font-size: 2em;
-            font-weight: bold;
-            color: #1565c0;
-        }
-        .result-info { text-align: right; }
-        .result-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .detail-card {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .detail-label { font-size: 0.85em; color: #666; }
-        .detail-value { font-size: 1.2em; font-weight: bold; color: #333; }
-        
-        /* Class Overview */
-        .class-section {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        .class-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .class-table th, .class-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        .class-table th { background: #f5f5f5; }
-        .class-table tr:hover { background: #f9f9f9; }
-        
-        .level-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            color: white;
-        }
-        .level-badge.basis { background: #757575; }
-        .level-badge.stern1 { background: #ff9800; }
-        .level-badge.stern2 { background: #2196f3; }
-        .level-badge.stern3 { background: #9c27b0; }
-        
-        .grade-good { color: #4caf50; font-weight: bold; }
-        .grade-ok { color: #ff9800; font-weight: bold; }
-        .grade-bad { color: #f44336; font-weight: bold; }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .action-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .action-btn.export { background: #4caf50; color: white; }
-        .action-btn.clear { background: #f44336; color: white; }
-        .action-btn.print { background: #ff9800; color: white; }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        
-        /* Statistics */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-value { font-size: 1.8em; font-weight: bold; color: #1565c0; }
-        .stat-label { font-size: 0.85em; color: #666; }
-        
-        @media print {
-            .no-print { display: none !important; }
-            body { background: white; }
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 20px; color: #333; }
+        .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .section h2 { margin-bottom: 15px; color: #1565c0; font-size: 1.2em; }
+        #reader { width: 100%; max-width: 500px; margin: 0 auto; }
+        .camera-select { margin-bottom: 15px; }
+        .camera-select select { padding: 10px; font-size: 1em; border-radius: 6px; border: 1px solid #ddd; width: 100%; }
+        textarea { width: 100%; height: 100px; padding: 10px; font-family: monospace; font-size: 0.85em; border: 2px solid #ddd; border-radius: 8px; resize: vertical; }
+        .decode-btn { width: 100%; padding: 15px; font-size: 1.1em; font-weight: bold; border: none; border-radius: 8px; background: #4caf50; color: white; cursor: pointer; margin-top: 10px; }
+        .decode-btn:hover { background: #45a049; }
+        .result { margin-top: 20px; }
+        .result-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
+        .result-header .grade { font-size: 2.5em; font-weight: bold; }
+        .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .result-item { background: #f5f5f5; padding: 15px; border-radius: 8px; }
+        .result-item label { font-size: 0.85em; color: #666; display: block; margin-bottom: 5px; }
+        .result-item .value { font-size: 1.2em; font-weight: bold; color: #333; }
+        .answers-section { margin-top: 20px; }
+        .answer-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        .answer-row:nth-child(odd) { background: #fafafa; }
+        .export-btn { display: block; width: 100%; padding: 12px; margin-top: 15px; border: none; border-radius: 8px; background: #ff9800; color: white; font-weight: bold; cursor: pointer; }
+        .error { background: #ffebee; border: 1px solid #f44336; color: #c62828; padding: 15px; border-radius: 8px; margin-top: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔍 Decoder – Elektrik-Quiz</h1>
-            <h2>Klasse 8 – Auswertung für Lehrkräfte</h2>
+        <h1>🔓 Quiz Decoder</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">Elektrizitätslehre Klasse 8 – Lehrer-Auswertung</p>
+        
+        <div class="section">
+            <h2>📷 QR-Code scannen</h2>
+            <div class="camera-select">
+                <select id="cameraSelect"><option value="">Kamera wählen...</option></select>
+            </div>
+            <div id="reader"></div>
         </div>
         
-        <div class="tabs no-print">
-            <div class="tab active" onclick="showPanel('scanner')">📷 QR-Scanner</div>
-            <div class="tab" onclick="showPanel('manual')">⌨️ Code eingeben</div>
-            <div class="tab" onclick="showPanel('overview')">📊 Klassenübersicht</div>
+        <div class="section">
+            <h2>📝 Oder Code manuell eingeben</h2>
+            <textarea id="codeInput" placeholder="Code hier einfügen..."></textarea>
+            <button class="decode-btn" onclick="decodeManual()">Dekodieren</button>
         </div>
         
-        <!-- Scanner Panel -->
-        <div id="scannerPanel" class="panel active">
-            <div class="scanner-section no-print">
-                <h3 style="margin-bottom: 15px;">📷 Kamera wählen:</h3>
-                <select id="cameraSelect" class="camera-select">
-                    <option value="">Kamera wird geladen...</option>
-                </select>
-                <div id="reader"></div>
-                <div class="scanner-controls">
-                    <button class="scan-btn start" id="startBtn" onclick="startScanner()">▶ Scanner starten</button>
-                    <button class="scan-btn stop" id="stopBtn" onclick="stopScanner()" style="display: none;">⏹ Scanner stoppen</button>
-                </div>
+        <div id="resultSection" class="section result" style="display: none;">
+            <h2>📊 Ergebnis</h2>
+            <div class="result-header">
+                <div>Stundenleistung Elektrizitätslehre</div>
+                <div class="grade" id="resultGrade">-- NP</div>
+                <div id="resultPoints">-- / -- Punkte</div>
             </div>
-            
-            <div id="scanResult" class="result-section" style="display: none;">
-                <h3 style="margin-bottom: 15px;">📋 Gescanntes Ergebnis:</h3>
-                <div id="resultContent"></div>
-                <button class="action-btn export" onclick="addToClass()" style="margin-top: 15px;">➕ Zur Klasse hinzufügen</button>
+            <div class="result-grid">
+                <div class="result-item"><label>Niveau</label><div class="value" id="resultNiveau">--</div></div>
+                <div class="result-item"><label>Sitzplatz</label><div class="value" id="resultSeat">--</div></div>
+                <div class="result-item"><label>Zeit</label><div class="value" id="resultTime">--</div></div>
+                <div class="result-item"><label>Prozent</label><div class="value" id="resultPercent">--%</div></div>
             </div>
+            <div class="answers-section" id="answersSection"></div>
+            <button class="export-btn" onclick="exportCSV()">📥 Als CSV exportieren</button>
         </div>
         
-        <!-- Manual Panel -->
-        <div id="manualPanel" class="panel">
-            <div class="manual-section">
-                <h3 style="margin-bottom: 15px;">⌨️ Code einfügen:</h3>
-                <textarea id="codeInput" class="code-input" placeholder="Füge hier den Submission-Code ein..."></textarea>
-                <button class="decode-btn" onclick="decodeManual()">🔓 Code dekodieren</button>
-            </div>
-            
-            <div id="manualResult" class="result-section" style="display: none;">
-                <h3 style="margin-bottom: 15px;">📋 Dekodiertes Ergebnis:</h3>
-                <div id="manualResultContent"></div>
-                <button class="action-btn export" onclick="addToClassFromManual()" style="margin-top: 15px;">➕ Zur Klasse hinzufügen</button>
-            </div>
-        </div>
-        
-        <!-- Overview Panel -->
-        <div id="overviewPanel" class="panel">
-            <div class="class-section">
-                <h3 style="margin-bottom: 20px;">📊 Klassenübersicht</h3>
-                
-                <div class="stats-grid" id="statsGrid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="statCount">0</div>
-                        <div class="stat-label">Abgaben</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statAvg">-</div>
-                        <div class="stat-label">Ø Note</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statBest">-</div>
-                        <div class="stat-label">Beste Note</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statPass">-</div>
-                        <div class="stat-label">Bestanden</div>
-                    </div>
-                </div>
-                
-                <div id="classTableContainer">
-                    <div class="empty-state">
-                        <p>Noch keine Ergebnisse gesammelt.</p>
-                        <p style="font-size: 0.9em;">Scanne QR-Codes oder gib Codes manuell ein.</p>
-                    </div>
-                </div>
-                
-                <div class="action-buttons no-print">
-                    <button class="action-btn export" onclick="exportCSV()">📥 Als CSV exportieren</button>
-                    <button class="action-btn print" onclick="window.print()">🖨️ Drucken</button>
-                    <button class="action-btn clear" onclick="clearAll()">🗑️ Alle löschen</button>
-                </div>
-            </div>
-        </div>
+        <div id="errorSection" class="error" style="display: none;"></div>
     </div>
-
-<script>
-// ═══════════════════════════════════════════════════════════════
-// CONFIGURATION
-// ═══════════════════════════════════════════════════════════════
-
-const CONFIG = {
-    LEVELS: {
-        'basis':  { name: 'Basis',   symbol: '○',   totalPoints: 28 },
-        'stern1': { name: 'Stern 1', symbol: '★',   totalPoints: 30 },
-        'stern2': { name: 'Stern 2', symbol: '★★',  totalPoints: 30 },
-        'stern3': { name: 'Stern 3', symbol: '★★★', totalPoints: 52 }
-    },
     
-    GRADE_SCALE: [
-        { np: 14, percent: 100 },
-        { np: 13, percent: 96 },
-        { np: 12, percent: 90.67 },
-        { np: 11, percent: 86 },
-        { np: 10, percent: 80 },
-        { np: 9, percent: 73.33 },
-        { np: 8, percent: 66.67 },
-        { np: 7, percent: 60 },
-        { np: 6, percent: 53.33 },
-        { np: 5, percent: 46.67 },
-        { np: 4, percent: 40 },
-        { np: 3, percent: 33.33 },
-        { np: 2, percent: 26.67 },
-        { np: 1, percent: 20 },
-        { np: 0, percent: 0 }
-    ]
-};
-
-const STORAGE_KEY = 'elektrik_quiz_class_results';
-
-// ═══════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════
-
-let html5QrCode = null;
-let cameras = [];
-let currentCameraId = null;
-let classResults = [];
-let lastDecodedData = null;
-
-// ═══════════════════════════════════════════════════════════════
-// INITIALIZATION
-// ═══════════════════════════════════════════════════════════════
-
-document.addEventListener('DOMContentLoaded', async () => {
-    loadClassResults();
-    updateOverview();
-    await initCameras();
-});
-
-async function initCameras() {
-    try {
-        cameras = await Html5Qrcode.getCameras();
-        const select = document.getElementById('cameraSelect');
-        select.innerHTML = '';
-        
-        if (cameras.length === 0) {
-            select.innerHTML = '<option value="">Keine Kamera gefunden</option>';
-            return;
-        }
-        
-        cameras.forEach((camera, index) => {
-            const option = document.createElement('option');
-            option.value = camera.id;
-            option.textContent = camera.label || `Kamera ${index + 1}`;
-            select.appendChild(option);
-        });
-        
-        // Prefer back camera
-        const backCamera = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rück'));
-        if (backCamera) {
-            select.value = backCamera.id;
-        }
-        currentCameraId = select.value;
-        
-        select.addEventListener('change', async (e) => {
-            currentCameraId = e.target.value;
-            if (html5QrCode && html5QrCode.isScanning) {
-                await stopScanner();
-                await startScanner();
-            }
-        });
-    } catch (err) {
-        console.error('Error initializing cameras:', err);
-        document.getElementById('cameraSelect').innerHTML = '<option value="">Kamera-Zugriff verweigert</option>';
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// SCANNER
-// ═══════════════════════════════════════════════════════════════
-
-async function startScanner() {
-    if (!currentCameraId) {
-        alert('Bitte wähle eine Kamera aus.');
-        return;
-    }
-    
-    html5QrCode = new Html5Qrcode("reader");
-    
-    try {
-        await html5QrCode.start(
-            currentCameraId,
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            onScanSuccess,
-            onScanError
-        );
-        
-        document.getElementById('startBtn').style.display = 'none';
-        document.getElementById('stopBtn').style.display = 'inline-block';
-    } catch (err) {
-        console.error('Error starting scanner:', err);
-        alert('Fehler beim Starten der Kamera: ' + err);
-    }
-}
-
-async function stopScanner() {
-    if (html5QrCode && html5QrCode.isScanning) {
-        await html5QrCode.stop();
-    }
-    document.getElementById('startBtn').style.display = 'inline-block';
-    document.getElementById('stopBtn').style.display = 'none';
-}
-
-function onScanSuccess(decodedText) {
-    // Vibrate if supported
-    if (navigator.vibrate) navigator.vibrate(200);
-    
-    // Decode and show
-    const data = decodeSubmission(decodedText);
-    if (data) {
-        lastDecodedData = { ...data, code: decodedText };
-        showResult('scanResult', 'resultContent', data);
-    }
-}
-
-function onScanError(error) {
-    // Ignore scan errors (no QR found)
-}
-
-// ═══════════════════════════════════════════════════════════════
-// DECODING
-// ═══════════════════════════════════════════════════════════════
-
-function decodeSubmission(code) {
-    try {
-        const json = LZString.decompressFromBase64(code);
-        if (!json) {
-            alert('Ungültiger Code - Dekomprimierung fehlgeschlagen');
-            return null;
-        }
-        
-        const data = JSON.parse(json);
-        
-        // Validate
-        if (!data.l || !data.s || data.p === undefined) {
-            alert('Ungültiger Code - Fehlende Daten');
-            return null;
-        }
-        
-        const levelInfo = CONFIG.LEVELS[data.l];
-        if (!levelInfo) {
-            alert('Ungültiges Niveau: ' + data.l);
-            return null;
-        }
-        
-        const maxPoints = data.m || levelInfo.totalPoints;
-        const percent = (data.p / maxPoints) * 100;
-        const grade = getGrade(percent);
-        
-        return {
-            level: data.l,
-            levelName: levelInfo.name,
-            levelSymbol: levelInfo.symbol,
-            seat: data.s,
-            points: data.p,
-            maxPoints: maxPoints,
-            percent: percent,
-            grade: grade,
-            timestamp: data.t ? new Date(data.t).toLocaleString('de-DE') : '-',
-            answers: data.a
+    <script>
+        const CONFIG = {
+            LEVELS: {
+                'basis': { name: 'Basis', symbol: '○', totalPoints: 28 },
+                'stern1': { name: 'Stern 1', symbol: '★', totalPoints: 30 },
+                'stern2': { name: 'Stern 2', symbol: '★★', totalPoints: 30 },
+                'stern3': { name: 'Stern 3', symbol: '★★★', totalPoints: 52 }
+            },
+            GRADE_SCALE: [
+                { np: 14, pct: 100 }, { np: 13, pct: 96 }, { np: 12, pct: 90.67 },
+                { np: 11, pct: 86 }, { np: 10, pct: 80 }, { np: 9, pct: 73.33 },
+                { np: 8, pct: 66.67 }, { np: 7, pct: 60 }, { np: 6, pct: 53.33 },
+                { np: 5, pct: 46.67 }, { np: 4, pct: 40 }, { np: 3, pct: 33.33 },
+                { np: 2, pct: 26.67 }, { np: 1, pct: 20 }, { np: 0, pct: 0 }
+            ]
         };
-    } catch (err) {
-        console.error('Decode error:', err);
-        alert('Fehler beim Dekodieren: ' + err.message);
-        return null;
-    }
-}
-
-function getGrade(percent) {
-    for (const grade of CONFIG.GRADE_SCALE) {
-        if (percent >= grade.percent) return grade.np;
-    }
-    return 0;
-}
-
-function decodeManual() {
-    const code = document.getElementById('codeInput').value.trim();
-    if (!code) {
-        alert('Bitte einen Code eingeben.');
-        return;
-    }
-    
-    const data = decodeSubmission(code);
-    if (data) {
-        lastDecodedData = { ...data, code: code };
-        showResult('manualResult', 'manualResultContent', data);
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// RESULT DISPLAY
-// ═══════════════════════════════════════════════════════════════
-
-function showResult(containerId, contentId, data) {
-    const container = document.getElementById(containerId);
-    const content = document.getElementById(contentId);
-    
-    const gradeClass = data.grade >= 10 ? 'grade-good' : (data.grade >= 5 ? 'grade-ok' : 'grade-bad');
-    
-    content.innerHTML = `
-        <div class="result-header">
-            <div class="result-grade ${gradeClass}">${data.grade} NP</div>
-            <div class="result-info">
-                <div><strong>${data.seat}</strong></div>
-                <div><span class="level-badge ${data.level}">${data.levelSymbol} ${data.levelName}</span></div>
-            </div>
-        </div>
-        <div class="result-details">
-            <div class="detail-card">
-                <div class="detail-label">Punkte</div>
-                <div class="detail-value">${data.points} / ${data.maxPoints}</div>
-            </div>
-            <div class="detail-card">
-                <div class="detail-label">Prozent</div>
-                <div class="detail-value">${data.percent.toFixed(1)}%</div>
-            </div>
-            <div class="detail-card">
-                <div class="detail-label">Note</div>
-                <div class="detail-value ${gradeClass}">${data.grade} NP</div>
-            </div>
-            <div class="detail-card">
-                <div class="detail-label">Zeitstempel</div>
-                <div class="detail-value" style="font-size: 0.9em;">${data.timestamp}</div>
-            </div>
-        </div>
-    `;
-    
-    container.style.display = 'block';
-}
-
-// ═══════════════════════════════════════════════════════════════
-// CLASS MANAGEMENT
-// ═══════════════════════════════════════════════════════════════
-
-function addToClass() {
-    if (!lastDecodedData) return;
-    addResult(lastDecodedData);
-}
-
-function addToClassFromManual() {
-    if (!lastDecodedData) return;
-    addResult(lastDecodedData);
-}
-
-function addResult(data) {
-    // Check for duplicate
-    const existing = classResults.findIndex(r => r.seat === data.seat && r.level === data.level);
-    if (existing >= 0) {
-        if (!confirm(`${data.seat} (${data.levelName}) existiert bereits. Überschreiben?`)) {
-            return;
+        
+        let currentResult = null;
+        let html5QrCode = null;
+        
+        async function initCameras() {
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                const select = document.getElementById('cameraSelect');
+                select.innerHTML = '<option value="">Kamera wählen...</option>';
+                devices.forEach((device, i) => {
+                    const option = document.createElement('option');
+                    option.value = device.id;
+                    option.textContent = device.label || `Kamera ${i + 1}`;
+                    select.appendChild(option);
+                });
+                
+                select.addEventListener('change', () => {
+                    if (select.value) startScanner(select.value);
+                });
+                
+                if (devices.length > 0) {
+                    select.value = devices[devices.length - 1].id;
+                    startScanner(devices[devices.length - 1].id);
+                }
+            } catch (err) {
+                console.error('Kamera-Fehler:', err);
+            }
         }
-        classResults[existing] = data;
-    } else {
-        classResults.push(data);
-    }
-    
-    saveClassResults();
-    updateOverview();
-    alert(`✓ ${data.seat} hinzugefügt: ${data.grade} NP`);
-}
-
-function loadClassResults() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        try {
-            classResults = JSON.parse(saved);
-        } catch (e) {
-            classResults = [];
+        
+        function startScanner(cameraId) {
+            if (html5QrCode) {
+                html5QrCode.stop().catch(() => {});
+            }
+            
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                cameraId,
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    decodeResult(decodedText);
+                    html5QrCode.stop();
+                },
+                () => {}
+            ).catch(err => console.error('Scanner-Fehler:', err));
         }
-    }
-}
-
-function saveClassResults() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(classResults));
-}
-
-function updateOverview() {
-    // Stats
-    const count = classResults.length;
-    document.getElementById('statCount').textContent = count;
-    
-    if (count > 0) {
-        const grades = classResults.map(r => r.grade);
-        const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
-        const best = Math.max(...grades);
-        const passed = grades.filter(g => g >= 5).length;
         
-        document.getElementById('statAvg').textContent = avg.toFixed(1);
-        document.getElementById('statBest').textContent = best;
-        document.getElementById('statPass').textContent = `${passed}/${count}`;
+        function decodeManual() {
+            const code = document.getElementById('codeInput').value.trim();
+            if (code) decodeResult(code);
+        }
         
-        // Table
-        renderClassTable();
-    } else {
-        document.getElementById('statAvg').textContent = '-';
-        document.getElementById('statBest').textContent = '-';
-        document.getElementById('statPass').textContent = '-';
+        function decodeResult(code) {
+            try {
+                let data;
+                try {
+                    data = JSON.parse(LZString.decompressFromEncodedURIComponent(code));
+                } catch {
+                    data = JSON.parse(atob(code));
+                }
+                
+                currentResult = data;
+                displayResult(data);
+                document.getElementById('errorSection').style.display = 'none';
+            } catch (err) {
+                document.getElementById('errorSection').textContent = 'Fehler beim Dekodieren: ' + err.message;
+                document.getElementById('errorSection').style.display = 'block';
+                document.getElementById('resultSection').style.display = 'none';
+            }
+        }
         
-        document.getElementById('classTableContainer').innerHTML = `
-            <div class="empty-state">
-                <p>Noch keine Ergebnisse gesammelt.</p>
-                <p style="font-size: 0.9em;">Scanne QR-Codes oder gib Codes manuell ein.</p>
-            </div>
-        `;
-    }
-}
-
-function renderClassTable() {
-    const sorted = [...classResults].sort((a, b) => {
-        // Sort by seat number
-        const seatA = parseInt(a.seat.replace('P', ''));
-        const seatB = parseInt(b.seat.replace('P', ''));
-        return seatA - seatB;
-    });
-    
-    let html = `
-        <table class="class-table">
-            <thead>
-                <tr>
-                    <th>Platz</th>
-                    <th>Niveau</th>
-                    <th>Punkte</th>
-                    <th>Prozent</th>
-                    <th>Note</th>
-                    <th class="no-print">Aktion</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-    
-    sorted.forEach((r, i) => {
-        const gradeClass = r.grade >= 10 ? 'grade-good' : (r.grade >= 5 ? 'grade-ok' : 'grade-bad');
-        html += `
-            <tr>
-                <td><strong>${r.seat}</strong></td>
-                <td><span class="level-badge ${r.level}">${r.levelSymbol}</span></td>
-                <td>${r.points} / ${r.maxPoints}</td>
-                <td>${r.percent.toFixed(1)}%</td>
-                <td class="${gradeClass}">${r.grade} NP</td>
-                <td class="no-print"><button onclick="removeResult(${i})" style="color: #f44336; cursor: pointer; background: none; border: none;">🗑️</button></td>
-            </tr>
-        `;
-    });
-    
-    html += '</tbody></table>';
-    document.getElementById('classTableContainer').innerHTML = html;
-}
-
-function removeResult(index) {
-    if (confirm('Eintrag wirklich löschen?')) {
-        classResults.splice(index, 1);
-        saveClassResults();
-        updateOverview();
-    }
-}
-
-function clearAll() {
-    if (confirm('Wirklich ALLE Ergebnisse löschen?')) {
-        classResults = [];
-        saveClassResults();
-        updateOverview();
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// EXPORT
-// ═══════════════════════════════════════════════════════════════
-
-function exportCSV() {
-    if (classResults.length === 0) {
-        alert('Keine Ergebnisse zum Exportieren.');
-        return;
-    }
-    
-    let csv = 'Platz;Niveau;Punkte;Max;Prozent;Note\n';
-    
-    classResults.forEach(r => {
-        csv += `${r.seat};${r.levelName};${r.points};${r.maxPoints};${r.percent.toFixed(1)};${r.grade}\n`;
-    });
-    
-    // Download
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `elektrik_quiz_ergebnisse_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-}
-
-// ═══════════════════════════════════════════════════════════════
-// UI
-// ═══════════════════════════════════════════════════════════════
-
-function showPanel(panelName) {
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    
-    document.getElementById(panelName + 'Panel').classList.add('active');
-    event.target.classList.add('active');
-}
-</script>
+        function displayResult(data) {
+            const level = CONFIG.LEVELS[data.n] || { name: data.n, totalPoints: data.m };
+            const percent = Math.round((data.p / data.m) * 1000) / 10;
+            const grade = calculateGrade(percent);
+            
+            document.getElementById('resultGrade').textContent = `${grade} NP`;
+            document.getElementById('resultPoints').textContent = `${data.p} / ${data.m} Punkte`;
+            document.getElementById('resultNiveau').textContent = `${level.symbol || ''} ${level.name}`;
+            document.getElementById('resultSeat').textContent = data.s || '--';
+            document.getElementById('resultTime').textContent = formatTime(data.t);
+            document.getElementById('resultPercent').textContent = `${percent}%`;
+            
+            // Answers
+            let answersHtml = '<h3 style="margin: 15px 0;">Antworten</h3>';
+            if (data.a) {
+                Object.entries(data.a).forEach(([qid, answer]) => {
+                    let ansStr = typeof answer === 'object' ? JSON.stringify(answer) : answer;
+                    answersHtml += `<div class="answer-row"><span>${qid}</span><span>${ansStr}</span></div>`;
+                });
+            }
+            document.getElementById('answersSection').innerHTML = answersHtml;
+            document.getElementById('resultSection').style.display = 'block';
+        }
+        
+        function calculateGrade(percent) {
+            for (const g of CONFIG.GRADE_SCALE) {
+                if (percent >= g.pct) return g.np;
+            }
+            return 0;
+        }
+        
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+        
+        function exportCSV() {
+            if (!currentResult) return;
+            const data = currentResult;
+            const level = CONFIG.LEVELS[data.n] || { name: data.n };
+            const percent = Math.round((data.p / data.m) * 1000) / 10;
+            const grade = calculateGrade(percent);
+            
+            let csv = 'Feld,Wert\n';
+            csv += `Niveau,${level.name}\n`;
+            csv += `Sitzplatz,${data.s}\n`;
+            csv += `Punkte,${data.p}\n`;
+            csv += `Maximum,${data.m}\n`;
+            csv += `Prozent,${percent}\n`;
+            csv += `Note,${grade}\n`;
+            csv += `Zeit (Sek),${data.t}\n`;
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `quiz_${data.s}_${data.n}.csv`;
+            a.click();
+        }
+        
+        document.addEventListener('DOMContentLoaded', initCameras);
+    </script>
 </body>
 </html>
