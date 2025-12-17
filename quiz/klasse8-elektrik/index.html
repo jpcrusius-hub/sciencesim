@@ -200,6 +200,7 @@
         <div id="feedbackQuestions"></div>
         
         <button class="print-btn" onclick="window.print()">🖨️ Als PDF speichern</button>
+        <button class="print-btn" style="background: #f44336; margin-top: 10px;" onclick="requestReset()">🔄 Neuer Test (Lehrer-Code)</button>
     </div>
 </div>
 
@@ -1865,6 +1866,27 @@ function copyCode() {
 // INITIALISIERUNG
 // ============================================================
 function init() {
+    // ZUERST: Prüfe ob abgegebener oder laufender Test existiert
+    const levels = ['basis', 'stern1', 'stern2', 'stern3'];
+    for (const niveau of levels) {
+        const saved = loadState(niveau);
+        if (saved && saved.submitted && saved.submissionCode) {
+            // Abgegebener Test gefunden - direkt wiederherstellen
+            console.log('Abgegebenen Test gefunden für:', niveau);
+            restoreSubmittedState(saved);
+            showFeedbackScreen();
+            return; // Nicht weiter initialisieren
+        }
+        if (saved && saved.startTime && !saved.submitted) {
+            // Laufender Test gefunden - direkt fortsetzen
+            console.log('Laufenden Test gefunden für:', niveau);
+            restoreQuizState(saved);
+            return; // Nicht weiter initialisieren
+        }
+    }
+    
+    // Kein gespeicherter Test - normale Initialisierung
+    
     // Seats generieren
     const seatGrid = document.getElementById('seatGrid');
     let seatHtml = '';
@@ -1881,19 +1903,6 @@ function init() {
             btn.classList.add('selected');
             state.niveau = btn.dataset.level;
             checkStartButton();
-            
-            // Check for saved state
-            const saved = loadState(state.niveau);
-            if (saved && saved.submitted) {
-                if (confirm('Es gibt bereits eine abgegebene Arbeit für dieses Niveau. Fortsetzen?')) {
-                    restoreSubmittedState(saved);
-                    showFeedbackScreen();
-                }
-            } else if (saved && saved.startTime) {
-                if (confirm('Es gibt einen laufenden Test für dieses Niveau. Fortsetzen?')) {
-                    restoreQuizState(saved);
-                }
-            }
         });
     });
     
@@ -2004,6 +2013,28 @@ function restoreSubmittedState(saved) {
         saveState();
     }
 }
+
+function requestReset() {
+    const code = prompt('Lehrer-Code eingeben:');
+    if (code === CONFIG.RESET_CODE) {
+        if (confirm('Quiz wirklich zurücksetzen? Alle Daten werden gelöscht.')) {
+            // Lösche alle gespeicherten States
+            ['basis', 'stern1', 'stern2', 'stern3'].forEach(niveau => {
+                localStorage.removeItem(CONFIG.STORAGE_KEY_PREFIX + niveau);
+            });
+            location.reload();
+        }
+    } else if (code) {
+        alert('Falscher Code!');
+    }
+}
+
+// beforeunload Handler - speichert State bei Verlassen
+window.addEventListener('beforeunload', () => {
+    if (state.niveau && !state.submitted) {
+        saveState();
+    }
+});
 
 // Start
 document.addEventListener('DOMContentLoaded', init);
