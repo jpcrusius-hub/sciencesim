@@ -3,564 +3,475 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decoder V5 – Bewegungslehre Klasse 10 GY</title>
+    <title>Decoder – Bewegungslehre Quiz 10 GY</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: #f5f5f5; 
+            background: #1a1a2e; 
+            color: #eee; 
             min-height: 100vh; 
             padding: 15px; 
         }
-        .container { max-width: 1100px; margin: 0 auto; }
-        h1 { 
-            font-size: 1.3em; 
-            font-weight: 600; 
-            color: #222; 
-            margin-bottom: 15px; 
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .badge { 
-            display: inline-block; 
-            padding: 3px 10px; 
-            border-radius: 4px; 
-            font-size: 0.75em; 
-            font-weight: 600; 
-        }
-        .badge.version { background: #e3f2fd; color: #1565c0; }
-        .badge.points { background: #e8f5e9; color: #2e7d32; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 1.3em; margin-bottom: 15px; color: #fff; }
         
-        .box { 
-            background: #fff; 
-            border: 1px solid #ddd; 
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .tab { 
+            flex: 1; 
+            padding: 12px; 
+            background: #252545; 
+            border: none; 
+            color: #aaa; 
+            cursor: pointer; 
+            font-size: 0.9em; 
+            font-weight: 600; 
+            border-radius: 6px 6px 0 0; 
+            transition: all 0.2s; 
+        }
+        .tab:hover { background: #303060; }
+        .tab.active { background: #2c5aa0; color: #fff; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .card { 
+            background: #252545; 
+            border-radius: 8px; 
             padding: 15px; 
             margin-bottom: 15px; 
-            border-radius: 6px; 
         }
-        .box h2 { 
+        .card h2 { 
             font-size: 1em; 
-            font-weight: 600; 
-            color: #222; 
-            margin-bottom: 10px; 
+            margin-bottom: 12px; 
+            color: #fff; 
             padding-bottom: 8px; 
             border-bottom: 2px solid #2c5aa0; 
         }
         
-        /* Input Toggle */
-        .input-toggle {
-            display: flex;
-            gap: 0;
-            margin-bottom: 15px;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 2px solid #2c5aa0;
+        .scanner-container { 
+            background: #000; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            margin-bottom: 15px; 
         }
-        .toggle-btn {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            background: #fff;
-            cursor: pointer;
-            font-size: 0.95em;
-            font-weight: 600;
-            color: #2c5aa0;
-            transition: all 0.2s;
-        }
-        .toggle-btn:first-child { border-right: 1px solid #2c5aa0; }
-        .toggle-btn.active { background: #2c5aa0; color: #fff; }
-        .toggle-btn:hover:not(.active) { background: #e3f2fd; }
-        
-        /* Scanner */
-        .scanner-container {
-            display: none;
+        .camera-controls {
             background: #1a1a2e;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-        .scanner-container.active { display: block; }
-        #qr-reader {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        #qr-reader video { border-radius: 0; }
-        .scanner-status {
             padding: 12px;
-            text-align: center;
-            background: #1a1a2e;
-            color: #fff;
-            font-size: 0.95em;
-            font-weight: 500;
-        }
-        .scanner-status.success { background: #2e7d32; }
-        .scanner-status.error { background: #c62828; }
-        .scanner-controls {
             display: flex;
-            gap: 10px;
-            justify-content: center;
             align-items: center;
-            padding: 12px;
-            background: #252545;
+            gap: 10px;
             flex-wrap: wrap;
         }
-        .scanned-count {
-            background: #4caf50;
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-        
-        /* Camera Select */
-        .camera-select-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #1a1a2e;
-            padding: 10px 15px;
-            border-bottom: 1px solid #333;
-        }
-        .camera-select-container label {
+        .camera-controls label {
             color: #aaa;
             font-size: 0.85em;
-            white-space: nowrap;
         }
-        .camera-select {
+        .camera-controls select {
             flex: 1;
-            padding: 8px 12px;
-            font-size: 0.9em;
+            min-width: 200px;
+            padding: 10px;
+            border-radius: 6px;
             border: 1px solid #444;
-            border-radius: 4px;
             background: #252545;
             color: #fff;
-            cursor: pointer;
-            max-width: 300px;
+            font-size: 0.9em;
         }
-        .camera-select:focus { outline: none; border-color: #2c5aa0; }
-        
-        /* Textarea */
-        .text-container { display: none; }
-        .text-container.active { display: block; }
-        textarea { 
+        #qr-reader { 
             width: 100%; 
-            height: 120px; 
-            padding: 12px; 
-            font-family: "SF Mono", Monaco, monospace; 
-            font-size: 0.85em; 
-            border: 2px solid #ddd; 
-            resize: vertical; 
-            border-radius: 6px; 
+            max-width: 450px; 
+            margin: 0 auto; 
         }
-        textarea:focus { outline: none; border-color: #2c5aa0; }
-        
-        /* Buttons */
-        button { 
-            padding: 10px 20px; 
-            font-size: 0.9em; 
-            border: 1px solid #ccc; 
-            background: #fff; 
-            cursor: pointer; 
-            font-family: inherit; 
-            margin: 3px; 
-            border-radius: 4px;
-            transition: all 0.15s;
-        }
-        button:hover { background: #f5f5f5; }
-        button.primary { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
-        button.primary:hover { background: #234a80; }
-        button.success { background: #2a7a4b; color: #fff; border-color: #2a7a4b; }
-        button.success:hover { background: #1e5a37; }
-        button.danger { background: #c62828; color: #fff; border-color: #c62828; }
-        button.danger:hover { background: #a31f1f; }
-        button.scanner-btn {
-            background: #3a3a5a;
-            color: #fff;
-            border-color: #3a3a5a;
-            padding: 8px 16px;
-            font-size: 0.85em;
-        }
-        button.scanner-btn:hover { background: #4a4a6a; }
-        
-        /* Scale Table */
-        .scale-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 0.75em; 
-            margin: 10px 0; 
-            overflow-x: auto;
-            display: block;
-        }
-        .scale-table th, .scale-table td { 
-            border: 1px solid #ddd; 
-            padding: 4px 6px; 
+        .scanner-status { 
+            padding: 15px; 
             text-align: center; 
+            font-weight: 600; 
+            font-size: 1.1em; 
+            background: #1a1a2e; 
         }
-        .scale-table th { background: #2c5aa0; color: #fff; }
-        .scale-table tr:nth-child(even) { background: #f9f9f9; }
+        .scanner-status.success { color: #4caf50; }
+        .scanner-status.error { color: #f44336; }
         
-        /* Stats Grid */
+        .scanner-buttons { 
+            display: flex; 
+            gap: 10px; 
+            justify-content: center; 
+            padding: 12px; 
+            background: #1a1a2e; 
+        }
+        
+        button { 
+            padding: 10px 18px; 
+            font-size: 0.9em; 
+            border: none; 
+            background: #2c5aa0; 
+            color: #fff; 
+            cursor: pointer; 
+            border-radius: 6px; 
+            font-family: inherit; 
+            font-weight: 500; 
+            transition: background 0.2s; 
+        }
+        button:hover { background: #3d6bb8; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.secondary { background: #444; }
+        button.secondary:hover { background: #555; }
+        button.success { background: #4caf50; }
+        button.danger { background: #f44336; }
+        
+        .manual-input { margin-top: 15px; }
+        .manual-input textarea { 
+            width: 100%; 
+            height: 80px; 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid #444; 
+            background: #1a1a2e; 
+            color: #fff; 
+            font-family: monospace; 
+            font-size: 0.85em; 
+            resize: vertical; 
+            margin-bottom: 10px; 
+        }
+        
         .stats-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
             gap: 10px; 
-            margin: 15px 0; 
+            margin-bottom: 15px; 
         }
-        .stat-box { 
-            background: #f5f5f5; 
-            border: 1px solid #ddd; 
+        .stat-card { 
+            background: #1a1a2e; 
             padding: 12px; 
-            text-align: center; 
             border-radius: 6px; 
+            text-align: center; 
         }
-        .stat-box .value { font-size: 1.5em; font-weight: 700; color: #2c5aa0; }
-        .stat-box .label { font-size: 0.75em; color: #666; margin-top: 4px; }
+        .stat-card .value { 
+            font-size: 1.5em; 
+            font-weight: 700; 
+            color: #2c5aa0; 
+        }
+        .stat-card .label { 
+            font-size: 0.75em; 
+            color: #888; 
+            margin-top: 4px; 
+        }
         
-        /* Results Table */
         .results-table { 
             width: 100%; 
             border-collapse: collapse; 
-            margin-top: 15px; 
+            font-size: 0.85em; 
         }
         .results-table th, .results-table td { 
-            border: 1px solid #ddd; 
-            padding: 10px 12px; 
+            padding: 10px 8px; 
             text-align: left; 
-            font-size: 0.9em; 
+            border-bottom: 1px solid #333; 
         }
-        .results-table th { background: #f5f5f5; font-weight: 600; }
-        .results-table tr:hover { background: #fafafa; }
+        .results-table th { 
+            background: #1a1a2e; 
+            color: #aaa; 
+            font-weight: 600; 
+            position: sticky; 
+            top: 0; 
+        }
+        .results-table tr:hover { background: #303050; }
+        .results-table .points { font-weight: 600; }
+        .results-table .good { color: #4caf50; }
+        .results-table .medium { color: #ff9800; }
+        .results-table .poor { color: #f44336; }
         
-        .grade { font-weight: 700; }
-        .grade-good { color: #2a7a4b; }
-        .grade-ok { color: #b35c00; }
-        .grade-bad { color: #c00; }
+        .grade-badge { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            font-weight: 700; 
+            font-size: 0.85em; 
+        }
+        .grade-badge.good { background: #4caf50; color: #fff; }
+        .grade-badge.medium { background: #ff9800; color: #000; }
+        .grade-badge.poor { background: #f44336; color: #fff; }
         
-        /* Modal */
+        .action-btn { 
+            padding: 5px 10px; 
+            font-size: 0.8em; 
+            margin: 2px; 
+        }
+        
+        .empty-state { 
+            text-align: center; 
+            padding: 40px 20px; 
+            color: #666; 
+        }
+        .empty-state .icon { font-size: 3em; margin-bottom: 10px; }
+        
+        .export-section { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            margin-top: 15px; 
+        }
+        
         .modal { 
             display: none; 
             position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0; 
-            background: rgba(0,0,0,0.6); 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.8); 
             z-index: 1000; 
-            overflow-y: auto; 
+            align-items: center; 
+            justify-content: center; 
             padding: 20px; 
         }
-        .modal.active { display: block; }
+        .modal.active { display: flex; }
         .modal-content { 
-            background: #fff; 
-            max-width: 900px; 
-            margin: 0 auto; 
-            border-radius: 8px;
-            max-height: 90vh;
-            overflow-y: auto;
+            background: #252545; 
+            max-width: 600px; 
+            width: 100%; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            border-radius: 8px; 
         }
         .modal-header { 
+            padding: 15px; 
             background: #2c5aa0; 
-            color: #fff; 
-            padding: 15px 20px; 
+            font-weight: 600; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            position: sticky;
-            top: 0;
-            z-index: 10;
         }
-        .modal-header h3 { font-size: 1.1em; }
-        .close-btn { 
+        .modal-header .close { 
             background: none; 
             border: none; 
             color: #fff; 
             font-size: 1.5em; 
             cursor: pointer; 
             padding: 0; 
-            margin: 0; 
-            line-height: 1;
         }
         .modal-body { padding: 20px; }
         
-        /* Answer Rows */
-        .answer-row { 
-            display: flex; 
-            align-items: flex-start; 
-            padding: 10px 12px; 
-            margin: 6px 0; 
+        .detail-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            gap: 8px; 
+            margin-bottom: 15px; 
+        }
+        .detail-item { 
+            background: #1a1a2e; 
+            padding: 10px; 
             border-radius: 6px; 
-            border-left: 4px solid #ddd; 
-            flex-wrap: wrap;
-            gap: 10px;
-            background: #fafafa;
+            text-align: center; 
         }
-        .answer-row.correct { background: #e8f5e9; border-left-color: #4caf50; }
-        .answer-row.incorrect { background: #ffebee; border-left-color: #f44336; }
-        .answer-row.partial { background: #fff8e1; border-left-color: #ff9800; }
-        .answer-row.bonus { background: #fce4ec; border-left-color: #9c27b0; }
-        .answer-row .q-num { 
-            min-width: 50px; 
-            font-weight: 600; 
-            color: #333; 
-            font-size: 0.9em; 
-        }
-        .answer-row .q-info { 
-            flex: 1; 
-            font-size: 0.85em; 
-            min-width: 200px;
-            color: #555;
-        }
-        .answer-row .q-points { 
-            font-weight: 600; 
-            min-width: 60px; 
-            text-align: right; 
-            font-size: 0.9em; 
-        }
+        .detail-item .label { font-size: 0.75em; color: #888; }
+        .detail-item .value { font-size: 1.1em; font-weight: 600; }
         
-        /* Error Message */
-        .error-message {
-            background: #ffebee;
-            border: 1px solid #f44336;
-            color: #c62828;
-            padding: 10px 15px;
-            border-radius: 6px;
-            margin: 10px 0;
-            display: none;
+        .question-results { margin-top: 15px; }
+        .q-result { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 8px 10px; 
+            background: #1a1a2e; 
+            margin: 4px 0; 
+            border-radius: 4px; 
+            border-left: 3px solid #444; 
         }
-        .error-message.visible { display: block; }
+        .q-result.correct { border-left-color: #4caf50; }
+        .q-result.partial { border-left-color: #ff9800; }
+        .q-result.incorrect { border-left-color: #f44336; }
+        .q-result .q-id { font-weight: 600; min-width: 50px; }
+        .q-result .q-points { font-weight: 600; }
         
-        /* Print */
-        @media print { 
-            body { background: #fff; padding: 10px; font-size: 9pt; } 
-            .box { border: 1px solid #000; page-break-inside: avoid; } 
-            button, textarea, .modal, .scanner-container, .input-toggle { display: none !important; }
-            .text-container { display: none !important; }
-            .results-table { font-size: 8pt; }
+        .scanned-indicator { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: #4caf50; 
+            color: #fff; 
+            padding: 10px 15px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            z-index: 100; 
+            display: none; 
+        }
+        .scanned-indicator.show { display: block; animation: fadeInOut 2s ease; }
+        @keyframes fadeInOut { 0%, 100% { opacity: 0; transform: translateY(-10px); } 20%, 80% { opacity: 1; transform: translateY(0); } }
+        
+        @media print {
+            body { background: #fff; color: #000; }
+            .no-print { display: none !important; }
+            .card { background: #fff; border: 1px solid #000; }
+            .results-table th { background: #eee; color: #000; }
+            .results-table td { border-color: #ccc; }
         }
         
         @media (max-width: 600px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .results-table { font-size: 0.8em; }
-            .results-table th, .results-table td { padding: 6px 8px; }
-            .scanner-controls { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+            .tabs { flex-wrap: wrap; }
+            .tab { flex: 1 1 45%; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>
-            🔓 Decoder V5 – Bewegungslehre 10 GY
-            <span class="badge version">V5</span>
-            <span class="badge points">108P + 3 Bonus</span>
-        </h1>
+        <h1>🔓 Decoder – Bewegungslehre 10 GY</h1>
         
-        <div class="box">
-            <h2>📥 Ergebnisse erfassen</h2>
-            
-            <div class="input-toggle">
-                <button class="toggle-btn active" id="scannerToggle" onclick="setInputMode('scanner')">📷 QR scannen</button>
-                <button class="toggle-btn" id="textToggle" onclick="setInputMode('text')">📝 Text eingeben</button>
-            </div>
-            
-            <div class="scanner-container active" id="scannerContainer">
-                <div class="camera-select-container">
-                    <label for="cameraSelect">📷 Kamera:</label>
-                    <select class="camera-select" id="cameraSelect" onchange="switchToCamera()">
-                        <option value="">Wird geladen...</option>
-                    </select>
-                </div>
-                <div id="qr-reader"></div>
-                <div class="scanner-status" id="scannerStatus">Kamera wird gestartet...</div>
-                <div class="scanner-controls">
-                    <button class="scanner-btn" onclick="toggleScanner()" id="scannerToggleBtn">⏸️ Pause</button>
-                    <span class="scanned-count" id="scannedCount">✅ 0 gescannt</span>
-                </div>
-            </div>
-            
-            <div class="text-container" id="textContainer">
-                <textarea id="codeInput" placeholder="Füge hier einen oder mehrere Codes ein (einer pro Zeile)..."></textarea>
-            </div>
-            
-            <div class="error-message" id="errorMessage"></div>
-            
-            <p style="margin-top: 12px;">
-                <button class="primary" onclick="decodeAll()">🔓 Dekodieren</button>
-                <button onclick="clearAll()">🗑️ Löschen</button>
-                <button class="success" onclick="exportCSV()">📊 CSV Export</button>
-            </p>
+        <div class="tabs no-print">
+            <button class="tab active" onclick="showTab('scan')">📷 Scannen</button>
+            <button class="tab" onclick="showTab('results')">📊 Ergebnisse</button>
+            <button class="tab" onclick="showTab('export')">📤 Export</button>
         </div>
         
-        <div class="box">
-            <h2>📏 Bewertungsskala (15-NP, Sonstige Leistungen)</h2>
-            <p style="margin-bottom: 8px; font-size: 0.9em;">
-                Gesamt: <strong>108 Punkte</strong> + 3 Bonus | 
-                Hilfsmittel: Keine | 
-                g = 10 m/s²
-            </p>
-            <table class="scale-table">
-                <tr>
-                    <th>NP</th><th>15</th><th>14</th><th>13</th><th>12</th><th>11</th><th>10</th><th>9</th><th>8</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th><th>1</th>
-                </tr>
-                <tr>
-                    <td>%</td><td>98,7</td><td>97,3</td><td>96</td><td>90,7</td><td>85,3</td><td>80</td><td>73,3</td><td>66,7</td><td>60</td><td>53,3</td><td>46,7</td><td>40</td><td>33,3</td><td>26,7</td><td>20</td>
-                </tr>
-                <tr>
-                    <td>P</td><td>107</td><td>105</td><td>104</td><td>98</td><td>92</td><td>86</td><td>79</td><td>72</td><td>65</td><td>58</td><td>50</td><td>43</td><td>36</td><td>29</td><td>22</td>
-                </tr>
-            </table>
+        <div id="scanTab" class="tab-content active">
+            <div class="card">
+                <h2>📷 QR-Code Scanner</h2>
+                <div class="scanner-container">
+                    <div class="camera-controls">
+                        <label>📷 Kamera:</label>
+                        <select id="cameraSelect" onchange="switchCamera()">
+                            <option value="">Wird geladen...</option>
+                        </select>
+                    </div>
+                    <div id="qr-reader"></div>
+                    <div class="scanner-status" id="scannerStatus">Kamera wird gestartet...</div>
+                    <div class="scanner-buttons">
+                        <button id="scannerToggleBtn" onclick="toggleScanner()">⏸️ Pause</button>
+                        <span id="scannedCount" style="color:#4caf50; font-weight:600;">✅ 0 gescannt</span>
+                    </div>
+                </div>
+                
+                <div class="manual-input">
+                    <h3 style="font-size:0.9em; margin-bottom:8px; color:#aaa;">📝 Manuelle Eingabe</h3>
+                    <textarea id="manualCode" placeholder="QR-Code-Text hier einfügen..."></textarea>
+                    <button onclick="processManualCode()">🔓 Dekodieren</button>
+                </div>
+            </div>
         </div>
         
-        <div class="box" id="resultsBox" style="display:none;">
-            <h2>📊 Ergebnisse</h2>
-            <div class="stats-grid" id="statsGrid"></div>
-            <table class="results-table">
-                <thead>
-                    <tr>
-                        <th>Platz</th>
-                        <th>Punkte</th>
-                        <th>%</th>
-                        <th>NP</th>
-                        <th>Bonus</th>
-                        <th>Zeit</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsBody"></tbody>
-            </table>
-            <p style="margin-top: 15px; text-align: center;">
-                <button onclick="window.print()">🖨️ Drucken</button>
-                <button class="success" onclick="generateAllSheets()">📄 Alle Feedbackbögen</button>
-            </p>
+        <div id="resultsTab" class="tab-content">
+            <div class="card">
+                <h2>📊 Statistik</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card"><div class="value" id="statCount">0</div><div class="label">Gescannt</div></div>
+                    <div class="stat-card"><div class="value" id="statAvgPoints">--</div><div class="label">Ø Punkte</div></div>
+                    <div class="stat-card"><div class="value" id="statAvgGrade">--</div><div class="label">Ø Note</div></div>
+                    <div class="stat-card"><div class="value" id="statBest">--</div><div class="label">Beste</div></div>
+                    <div class="stat-card"><div class="value" id="statWorst">--</div><div class="label">Schwächste</div></div>
+                    <div class="stat-card"><div class="value" id="statBonus">--</div><div class="label">Ø Bonus</div></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>📋 Ergebnisliste</h2>
+                <div id="resultsContainer">
+                    <div class="empty-state">
+                        <div class="icon">📷</div>
+                        <p>Noch keine Ergebnisse gescannt.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="exportTab" class="tab-content">
+            <div class="card">
+                <h2>📤 Export-Optionen</h2>
+                <div class="export-section">
+                    <button onclick="exportCSV()">📊 CSV exportieren</button>
+                    <button onclick="printAllFeedback()">🖨️ Alle Feedbackbögen</button>
+                    <button class="danger" onclick="clearAllResults()">🗑️ Alle löschen</button>
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- Detail Modal -->
+    <div class="scanned-indicator" id="scannedIndicator">✅ Gescannt!</div>
+    
     <div class="modal" id="detailModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">Detail</h3>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <span id="modalTitle">Details</span>
+                <button class="close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
 <script>
-// =============================================================================
-// KONFIGURATION
-// =============================================================================
-const MAX_POINTS = 108;
-const MAX_BONUS = 3;
-
-const SCALE = {
-    thresholds: [98.67, 97.33, 96, 90.67, 85.33, 80, 73.33, 66.67, 60, 53.33, 46.67, 40, 33.33, 26.67, 20],
-    grades: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+const CONFIG = {
+    VERSION: 5.3,
+    TOTAL_POINTS: 88,
+    BONUS_POINTS: 3
 };
 
-// Fragen-Referenz für Detail-Ansicht
 const QUESTIONS = [
-    { id: 'F1', text: 's ~ t bei konstanter v?', type: 'mc', points: 2 },
-    { id: 'F2', text: 'Einheit Beschleunigung', type: 'mc', points: 2 },
-    { id: 'F3', text: 'Anstieg im s(t)-Diagramm', type: 'mc', points: 2 },
-    { id: 'F4', text: 'Anstieg im v(t)-Diagramm', type: 'mc', points: 2 },
-    { id: 'F5', text: 'Fläche unter v(t)', type: 'mc', points: 2 },
-    { id: 'F6', text: 'Fläche unter a(t)', type: 'mc', points: 2 },
-    { id: 'F7', text: 'Waagerechte im v(t)', type: 'mc', points: 2 },
-    { id: 'F8', text: 'Parabel im s(t)', type: 'mc', points: 2 },
-    { id: 'F9', text: 'v(t) Gerade durch Ursprung', type: 'mc', points: 2 },
-    { id: 'F10', text: 'Negative Fläche im v(t)', type: 'mc', points: 2 },
-    { id: 'F11', text: '108 km/h → m/s', type: 'calc', points: 2 },
-    { id: 'F12', text: 's = v·t (25 m/s, 40 s)', type: 'calc', points: 2 },
-    { id: 'F13', text: 'v = a·t (5 m/s², 6 s)', type: 'calc', points: 2 },
-    { id: 'F14', text: 's = ½at² (4 m/s², 5 s)', type: 'calc', points: 2 },
-    { id: 'F15', text: 'Fallhöhe nach 4 s', type: 'calc', points: 2 },
-    { id: 'F16', text: 'v aus h = 45 m', type: 'calc', points: 2 },
-    { id: 'F17', text: 'Bremsweg (40 m/s, -8 m/s²)', type: 'calc', points: 2 },
-    { id: 'F18', text: 'Bremszeit (30 m/s, -6 m/s²)', type: 'calc', points: 2 },
-    { id: 'A', text: 'v(t) Auto (8 Phasen)', type: 'diagram', points: 16 },
-    { id: 'B', text: 's(t) Radfahrer (6 Phasen)', type: 'diagram', points: 12 },
-    { id: 'C', text: 'a(t) Aufzug (6 Phasen)', type: 'diagram', points: 6 },
-    { id: 'D', text: 'Zuordnung v(t) ↔ s(t)', type: 'matching', points: 8 },
-    { id: 'E', text: 'Komplexe v(t)-Analyse', type: 'mixed', points: 20 },
+    { id: 'F1', text: 'MC: v=const → s~t', type: 'mc', points: 2 },
+    { id: 'F2', text: 'MC: Einheit a', type: 'mc', points: 2 },
+    { id: 'F3', text: 'MC: Anstieg s(t)', type: 'mc', points: 2 },
+    { id: 'F4', text: 'MC: Anstieg v(t)', type: 'mc', points: 2 },
+    { id: 'F5', text: 'MC: Fläche v(t)', type: 'mc', points: 2 },
+    { id: 'F6', text: 'MC: Fläche a(t)', type: 'mc', points: 2 },
+    { id: 'F7', text: 'MC: Waagerecht v(t)', type: 'mc', points: 2 },
+    { id: 'F8', text: 'MC: Parabel s(t)', type: 'mc', points: 2 },
+    { id: 'F9', text: 'MC: Gerade v(t)', type: 'mc', points: 2 },
+    { id: 'F10', text: 'MC: Neg. Fläche', type: 'mc', points: 2 },
+    { id: 'F11', text: 'Calc: km/h→m/s', type: 'calc', points: 2 },
+    { id: 'F12', text: 'Calc: s=v·t', type: 'calc', points: 2 },
+    { id: 'F13', text: 'Calc: v=a·t', type: 'calc', points: 2 },
+    { id: 'F14', text: 'Calc: s=½at²', type: 'calc', points: 2 },
+    { id: 'F15', text: 'Calc: Fallhöhe', type: 'calc', points: 2 },
+    { id: 'F16', text: 'Calc: v=√(2gh)', type: 'calc', points: 2 },
+    { id: 'F17', text: 'Calc: Bremsweg', type: 'calc', points: 2 },
+    { id: 'F18', text: 'Calc: Bremszeit', type: 'calc', points: 2 },
+    { id: 'A', text: 'v(t) 8 Phasen', type: 'diagram', points: 8 },
+    { id: 'B', text: 's(t) 4 Phasen', type: 'diagram', points: 4 },
+    { id: 'C', text: 'a(t) Aufzug', type: 'diagram', points: 6 },
+    { id: 'D', text: 'Zuordnung v↔s', type: 'matching', points: 4 },
+    { id: 'E', text: 'Komplexanalyse', type: 'mixed', points: 20 },
     { id: 'F', text: 'Ampelstart', type: 'multi', points: 10 },
-    { id: 'BONUS', text: '🎄 Weihnachtsmann MV', type: 'bonus', points: 3 }
+    { id: 'BONUS', text: '🎄 Weihnachtsmann', type: 'bonus', points: 3 }
 ];
 
-// =============================================================================
-// GLOBALE VARIABLEN
-// =============================================================================
-let results = [];
-let scannedCodes = new Set();
 let html5QrCode = null;
-let scannerPaused = false;
 let cameras = [];
 let currentCameraId = null;
+let scannerPaused = false;
+let results = [];
+let scannedCodes = new Set();
 
-// =============================================================================
-// INPUT MODE
-// =============================================================================
-function setInputMode(mode) {
-    document.getElementById('scannerToggle').classList.toggle('active', mode === 'scanner');
-    document.getElementById('textToggle').classList.toggle('active', mode === 'text');
-    
-    const scannerContainer = document.getElementById('scannerContainer');
-    const textContainer = document.getElementById('textContainer');
-    
-    if (mode === 'scanner') {
-        scannerContainer.classList.add('active');
-        textContainer.classList.remove('active');
-        startScanner();
-    } else {
-        scannerContainer.classList.remove('active');
-        textContainer.classList.add('active');
-        stopScanner();
-    }
-}
-
-// =============================================================================
-// QR SCANNER MIT KAMERA-AUSWAHL
-// =============================================================================
 async function initCameras() {
     try {
         cameras = await Html5Qrcode.getCameras();
         const select = document.getElementById('cameraSelect');
         select.innerHTML = '';
         
-        if (cameras && cameras.length > 0) {
-            cameras.forEach((camera, index) => {
-                const option = document.createElement('option');
-                option.value = camera.id;
-                // Versuche, die Kamera-Beschreibung lesbarer zu machen
-                let label = camera.label || `Kamera ${index + 1}`;
-                // Kürzen wenn zu lang
-                if (label.length > 40) {
-                    label = label.substring(0, 37) + '...';
-                }
-                // Rückkamera hervorheben
-                if (label.toLowerCase().includes('back') || label.toLowerCase().includes('rück') || label.toLowerCase().includes('rear')) {
-                    label = '📷 ' + label + ' (Rück)';
-                } else if (label.toLowerCase().includes('front') || label.toLowerCase().includes('vorn')) {
-                    label = '🤳 ' + label + ' (Front)';
-                }
-                option.textContent = label;
-                select.appendChild(option);
-            });
-            
-            // Standardmäßig letzte Kamera (oft Rückkamera) auswählen
-            currentCameraId = cameras[cameras.length - 1].id;
-            select.value = currentCameraId;
-        } else {
+        if (cameras.length === 0) {
             select.innerHTML = '<option value="">Keine Kamera gefunden</option>';
+            updateScannerStatus('Keine Kamera verfügbar', 'error');
+            return;
         }
+        
+        cameras.forEach((cam, i) => {
+            const opt = document.createElement('option');
+            opt.value = cam.id;
+            let label = cam.label || `Kamera ${i + 1}`;
+            if (label.toLowerCase().includes('back') || label.toLowerCase().includes('rear') || label.toLowerCase().includes('rück')) {
+                label = '📷 ' + label;
+            } else if (label.toLowerCase().includes('front')) {
+                label = '🤳 ' + label;
+            }
+            opt.textContent = label;
+            select.appendChild(opt);
+        });
+        
+        // Letzte Kamera (oft Rückkamera) vorauswählen
+        currentCameraId = cameras[cameras.length - 1].id;
+        select.value = currentCameraId;
+        
+        startScanner();
     } catch (err) {
-        console.error('Fehler beim Laden der Kameras:', err);
-        document.getElementById('cameraSelect').innerHTML = '<option value="">Fehler beim Laden</option>';
+        console.error('Kamera-Fehler:', err);
+        updateScannerStatus('Kamera-Zugriff verweigert', 'error');
     }
 }
 
@@ -569,16 +480,8 @@ async function startScanner() {
         await stopScanner();
     }
     
-    if (!cameras || cameras.length === 0) {
-        await initCameras();
-    }
-    
-    if (!currentCameraId && cameras.length > 0) {
-        currentCameraId = cameras[cameras.length - 1].id;
-    }
-    
     if (!currentCameraId) {
-        updateScannerStatus('Keine Kamera verfügbar', 'error');
+        updateScannerStatus('Keine Kamera ausgewählt', 'error');
         return;
     }
     
@@ -588,8 +491,8 @@ async function startScanner() {
         await html5QrCode.start(
             currentCameraId,
             {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
+                fps: 15,
+                qrbox: { width: 350, height: 350 },
                 aspectRatio: 1.0
             },
             onScanSuccess,
@@ -615,7 +518,7 @@ async function stopScanner() {
     }
 }
 
-async function switchToCamera() {
+async function switchCamera() {
     const select = document.getElementById('cameraSelect');
     const newCameraId = select.value;
     
@@ -645,43 +548,69 @@ function onScanSuccess(decodedText, decodedResult) {
         return;
     }
     
-    // Dekodieren versuchen
-    try {
-        const decoded = LZString.decompressFromEncodedURIComponent(decodedText);
-        if (!decoded) throw new Error('Ungültiger Code');
-        
-        const data = JSON.parse(decoded);
-        const result = processResult(data);
-        
-        if (result) {
-            scannedCodes.add(decodedText);
-            updateScannedCount();
-            updateScannerStatus(`✅ ${result.seatId} gescannt!`, 'success');
-            
-            // Audio-Feedback
-            playBeep();
-            
-            // Nach kurzer Pause Status zurücksetzen
-            setTimeout(() => {
-                if (!scannerPaused) {
-                    updateScannerStatus('Bereit zum Scannen', '');
-                }
-            }, 1500);
-            
-            displayResults();
-        }
-    } catch (err) {
-        updateScannerStatus('❌ Ungültiger QR-Code', 'error');
-        setTimeout(() => {
-            if (!scannerPaused) {
-                updateScannerStatus('Bereit zum Scannen', '');
-            }
-        }, 2000);
-    }
+    processCode(decodedText);
 }
 
 function onScanFailure(error) {
-    // Ignorieren - das ist normal wenn kein QR-Code im Bild ist
+    // Ignorieren - normal wenn kein QR-Code im Bild
+}
+
+function processManualCode() {
+    const code = document.getElementById('manualCode').value.trim();
+    if (!code) {
+        alert('Bitte Code eingeben!');
+        return;
+    }
+    processCode(code);
+    document.getElementById('manualCode').value = '';
+}
+
+function processCode(code) {
+    try {
+        const decoded = LZString.decompressFromEncodedURIComponent(code);
+        if (!decoded) throw new Error('Ungültiger Code');
+        
+        const data = JSON.parse(decoded);
+        
+        // Duplikat nach Sitzplatz prüfen
+        const existing = results.find(r => r.seat === data.s);
+        if (existing) {
+            if (!confirm(`${data.s} bereits vorhanden. Überschreiben?`)) return;
+            results = results.filter(r => r.seat !== data.s);
+        }
+        
+        const result = {
+            seat: data.s,
+            points: data.p,
+            bonus: data.b || 0,
+            maxPoints: data.m || CONFIG.TOTAL_POINTS,
+            time: data.t,
+            duration: data.d,
+            answers: data.a || [],
+            grade: calculateGrade((data.p / (data.m || CONFIG.TOTAL_POINTS)) * 100)
+        };
+        
+        results.push(result);
+        scannedCodes.add(code);
+        results.sort((a, b) => a.seat.localeCompare(b.seat));
+        
+        updateScannerStatus(`✅ ${result.seat} gescannt!`, 'success');
+        showScannedIndicator();
+        playBeep();
+        updateScannedCount();
+        displayResults();
+        
+        setTimeout(() => {
+            if (!scannerPaused) updateScannerStatus('Bereit zum Scannen', '');
+        }, 1500);
+        
+    } catch (err) {
+        console.error('Decode-Fehler:', err);
+        updateScannerStatus('❌ Ungültiger QR-Code', 'error');
+        setTimeout(() => {
+            if (!scannerPaused) updateScannerStatus('Bereit zum Scannen', '');
+        }, 2000);
+    }
 }
 
 function updateScannerStatus(message, type) {
@@ -692,271 +621,134 @@ function updateScannerStatus(message, type) {
 }
 
 function updateScannedCount() {
-    document.getElementById('scannedCount').textContent = `✅ ${scannedCodes.size} gescannt`;
+    document.getElementById('scannedCount').textContent = `✅ ${results.length} gescannt`;
+}
+
+function showScannedIndicator() {
+    const ind = document.getElementById('scannedIndicator');
+    ind.classList.remove('show');
+    void ind.offsetWidth; // Reflow
+    ind.classList.add('show');
 }
 
 function playBeep() {
     try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
-        gainNode.gain.value = 0.3;
-        
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.15);
-    } catch (e) {
-        // Audio nicht verfügbar - ignorieren
-    }
-}
-
-// =============================================================================
-// DEKODIEREN
-// =============================================================================
-function decodeAll() {
-    const input = document.getElementById('codeInput').value.trim();
-    
-    if (!input && scannedCodes.size === 0) {
-        showError('Bitte Codes eingeben oder scannen.');
-        return;
-    }
-    
-    hideError();
-    let errors = [];
-    
-    // Text-Eingabe verarbeiten
-    if (input) {
-        const codes = input.split('\n').map(c => c.trim()).filter(c => c.length > 0);
-        
-        codes.forEach((code, i) => {
-            if (scannedCodes.has(code)) return; // Bereits gescannt
-            
-            try {
-                const decoded = LZString.decompressFromEncodedURIComponent(code);
-                if (!decoded) throw new Error('Ungültig');
-                
-                const data = JSON.parse(decoded);
-                if (processResult(data)) {
-                    scannedCodes.add(code);
-                }
-            } catch (e) {
-                errors.push(`Zeile ${i + 1}`);
-            }
-        });
-    }
-    
-    if (results.length > 0) {
-        displayResults();
-        if (errors.length > 0) {
-            showError(`${errors.length} fehlerhafte Codes: ${errors.join(', ')}`);
-        }
-    } else {
-        showError('Keine gültigen Codes gefunden.');
-    }
-}
-
-function processResult(data) {
-    // Duplikat-Check nach Sitzplatz
-    const existing = results.findIndex(r => r.seatId === data.s);
-    
-    const result = {
-        seatId: data.s,
-        totalPoints: data.p || 0,
-        bonusPoints: data.b || 0,
-        maxPoints: data.m || MAX_POINTS,
-        duration: data.d || 0,
-        timestamp: data.t,
-        answers: data.a || [],
-        percentage: ((data.p || 0) / MAX_POINTS) * 100,
-        grade: calculateGrade(((data.p || 0) / MAX_POINTS) * 100)
-    };
-    
-    if (existing >= 0) {
-        // Aktualisieren falls neuere Version
-        results[existing] = result;
-    } else {
-        results.push(result);
-    }
-    
-    return result;
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 1000;
+        osc.type = 'sine';
+        gain.gain.value = 0.3;
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+    } catch (e) {}
 }
 
 function calculateGrade(pct) {
-    for (let i = 0; i < SCALE.thresholds.length; i++) {
-        if (pct >= SCALE.thresholds[i]) return SCALE.grades[i];
-    }
+    const th = [98.67, 97.33, 96, 90.67, 85.33, 80, 73.33, 66.67, 60, 53.33, 46.67, 40, 33.33, 26.67, 20];
+    const gr = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+    for (let i = 0; i < th.length; i++) { if (pct >= th[i]) return gr[i]; }
     return 0;
 }
 
-// =============================================================================
-// ERGEBNISSE ANZEIGEN
-// =============================================================================
 function displayResults() {
+    updateStats();
+    
+    const container = document.getElementById('resultsContainer');
     if (results.length === 0) {
-        document.getElementById('resultsBox').style.display = 'none';
+        container.innerHTML = '<div class="empty-state"><div class="icon">📷</div><p>Noch keine Ergebnisse.</p></div>';
         return;
     }
     
-    document.getElementById('resultsBox').style.display = 'block';
+    let html = `<div style="overflow-x:auto;"><table class="results-table">
+        <thead><tr>
+            <th>Platz</th><th>Punkte</th><th>%</th><th>Note</th><th>Bonus</th><th>Zeit</th><th>Aktionen</th>
+        </tr></thead><tbody>`;
     
-    // Sortieren nach Sitzplatz
-    results.sort((a, b) => a.seatId.localeCompare(b.seatId));
-    
-    // Statistiken
-    const stats = calculateStats();
-    document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-box">
-            <div class="value">${stats.avg.toFixed(1)}</div>
-            <div class="label">Ø Punkte</div>
-        </div>
-        <div class="stat-box">
-            <div class="value">${stats.avgGrade.toFixed(1)}</div>
-            <div class="label">Ø Note</div>
-        </div>
-        <div class="stat-box">
-            <div class="value">${stats.best}</div>
-            <div class="label">Beste</div>
-        </div>
-        <div class="stat-box">
-            <div class="value">${stats.worst}</div>
-            <div class="label">Schwächste</div>
-        </div>
-        <div class="stat-box">
-            <div class="value">${results.length}</div>
-            <div class="label">Anzahl</div>
-        </div>
-        <div class="stat-box">
-            <div class="value">${stats.avgBonus.toFixed(1)}</div>
-            <div class="label">Ø Bonus</div>
-        </div>
-    `;
-    
-    // Tabelle
-    let tbody = '';
-    results.forEach((r, i) => {
-        const gradeClass = r.grade >= 10 ? 'grade-good' : (r.grade >= 5 ? 'grade-ok' : 'grade-bad');
-        const duration = formatDuration(r.duration);
+    results.forEach(r => {
+        const pct = ((r.points / r.maxPoints) * 100).toFixed(1);
+        const gradeClass = r.grade >= 10 ? 'good' : (r.grade >= 5 ? 'medium' : 'poor');
+        const mins = Math.floor((r.duration || 0) / 60);
+        const secs = (r.duration || 0) % 60;
         
-        tbody += `<tr>
-            <td><strong>${r.seatId}</strong></td>
-            <td>${r.totalPoints} / ${MAX_POINTS}</td>
-            <td>${r.percentage.toFixed(1)}%</td>
-            <td class="grade ${gradeClass}">${r.grade} NP</td>
-            <td>${r.bonusPoints} / ${MAX_BONUS}</td>
-            <td>${duration}</td>
+        html += `<tr>
+            <td><strong>${r.seat}</strong></td>
+            <td class="points">${r.points} / ${r.maxPoints}</td>
+            <td>${pct}%</td>
+            <td><span class="grade-badge ${gradeClass}">${r.grade} NP</span></td>
+            <td>${r.bonus > 0 ? '🎄 ' + r.bonus : '-'}</td>
+            <td>${mins}:${String(secs).padStart(2, '0')}</td>
             <td>
-                <button onclick="showDetail(${i})" style="padding:5px 10px; font-size:0.85em;">🔍 Details</button>
+                <button class="action-btn" onclick="showDetail('${r.seat}')">📋</button>
+                <button class="action-btn secondary" onclick="deleteResult('${r.seat}')">🗑️</button>
             </td>
         </tr>`;
     });
     
-    document.getElementById('resultsBody').innerHTML = tbody;
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
 }
 
-function calculateStats() {
-    const points = results.map(r => r.totalPoints);
-    const grades = results.map(r => r.grade);
-    const bonus = results.map(r => r.bonusPoints);
+function updateStats() {
+    document.getElementById('statCount').textContent = results.length;
     
-    return {
-        avg: points.reduce((a, b) => a + b, 0) / points.length,
-        avgGrade: grades.reduce((a, b) => a + b, 0) / grades.length,
-        best: Math.max(...points),
-        worst: Math.min(...points),
-        avgBonus: bonus.reduce((a, b) => a + b, 0) / bonus.length
-    };
+    if (results.length === 0) {
+        document.getElementById('statAvgPoints').textContent = '--';
+        document.getElementById('statAvgGrade').textContent = '--';
+        document.getElementById('statBest').textContent = '--';
+        document.getElementById('statWorst').textContent = '--';
+        document.getElementById('statBonus').textContent = '--';
+        return;
+    }
+    
+    const avgP = results.reduce((s, r) => s + r.points, 0) / results.length;
+    const avgG = results.reduce((s, r) => s + r.grade, 0) / results.length;
+    const avgB = results.reduce((s, r) => s + r.bonus, 0) / results.length;
+    const best = Math.max(...results.map(r => r.grade));
+    const worst = Math.min(...results.map(r => r.grade));
+    
+    document.getElementById('statAvgPoints').textContent = avgP.toFixed(1);
+    document.getElementById('statAvgGrade').textContent = avgG.toFixed(1);
+    document.getElementById('statBest').textContent = best + ' NP';
+    document.getElementById('statWorst').textContent = worst + ' NP';
+    document.getElementById('statBonus').textContent = avgB.toFixed(1);
 }
 
-function formatDuration(seconds) {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${String(secs).padStart(2, '0')}`;
-}
-
-// =============================================================================
-// DETAIL-ANSICHT
-// =============================================================================
-function showDetail(index) {
-    const r = results[index];
-    const gradeClass = r.grade >= 10 ? 'grade-good' : (r.grade >= 5 ? 'grade-ok' : 'grade-bad');
+function showDetail(seat) {
+    const r = results.find(res => res.seat === seat);
+    if (!r) return;
     
-    document.getElementById('modalTitle').textContent = `${r.seatId} – ${r.totalPoints}/${MAX_POINTS} P (${r.grade} NP)`;
+    const pct = ((r.points / r.maxPoints) * 100).toFixed(1);
+    const gradeClass = r.grade >= 10 ? 'good' : (r.grade >= 5 ? 'medium' : 'poor');
+    const mins = Math.floor((r.duration || 0) / 60);
+    const secs = (r.duration || 0) % 60;
     
-    let html = `
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:20px;">
-            <div class="stat-box">
-                <div class="value ${gradeClass}">${r.grade}</div>
-                <div class="label">Notenpunkte</div>
-            </div>
-            <div class="stat-box">
-                <div class="value">${r.totalPoints}</div>
-                <div class="label">Punkte</div>
-            </div>
-            <div class="stat-box">
-                <div class="value">${r.percentage.toFixed(1)}%</div>
-                <div class="label">Prozent</div>
-            </div>
-            <div class="stat-box">
-                <div class="value">${r.bonusPoints}</div>
-                <div class="label">Bonus</div>
-            </div>
-            <div class="stat-box">
-                <div class="value">${formatDuration(r.duration)}</div>
-                <div class="label">Zeit</div>
-            </div>
-        </div>
-        <h4 style="margin-bottom:10px;">Antworten im Detail:</h4>
-    `;
+    let html = `<div class="detail-grid">
+        <div class="detail-item"><div class="label">Platz</div><div class="value">${r.seat}</div></div>
+        <div class="detail-item"><div class="label">Punkte</div><div class="value">${r.points}/${r.maxPoints}</div></div>
+        <div class="detail-item"><div class="label">Prozent</div><div class="value">${pct}%</div></div>
+        <div class="detail-item"><div class="label">Note</div><div class="value"><span class="grade-badge ${gradeClass}">${r.grade} NP</span></div></div>
+        <div class="detail-item"><div class="label">Bonus</div><div class="value">${r.bonus > 0 ? '🎄 ' + r.bonus : '-'}</div></div>
+        <div class="detail-item"><div class="label">Zeit</div><div class="value">${mins}:${String(secs).padStart(2, '0')}</div></div>
+    </div>`;
     
-    r.answers.forEach((a, i) => {
-        const q = QUESTIONS.find(qu => qu.id === a.q) || { id: a.q, text: a.q, points: 2 };
-        const statusClass = a.c ? 'correct' : (a.p > 0 ? 'partial' : 'incorrect');
-        const statusIcon = a.c ? '✅' : (a.p > 0 ? '⚠️' : '❌');
-        
-        html += `<div class="answer-row ${statusClass}${q.id === 'BONUS' ? ' bonus' : ''}">
-            <div class="q-num">${statusIcon} ${a.q}</div>
-            <div class="q-info">
-                <strong>${q.text}</strong><br>
-                <span style="color:#666;">`;
-        
-        // Antwort-Details
-        if (a.a !== null && a.a !== undefined) {
-            if (typeof a.a === 'object') {
-                if (a.a.value !== undefined) {
-                    html += `Antwort: ${a.a.value} ${a.a.unit || ''}`;
-                } else if (a.a.value1 !== undefined) {
-                    html += `Antwort: ${a.a.value1}, ${a.a.value2} ${a.a.unit || ''}`;
-                } else if (Array.isArray(a.a)) {
-                    html += `Antwort: [${a.a.map(x => x !== null ? x : '–').join(', ')}]`;
-                } else {
-                    // Fields object
-                    const fieldAnswers = Object.entries(a.a).map(([k, v]) => {
-                        if (typeof v === 'object' && v !== null) {
-                            if (v.value !== undefined) return `${k}: ${v.value} ${v.unit || ''}`;
-                            if (v.value1 !== undefined) return `${k}: ${v.value1}, ${v.value2} ${v.unit || ''}`;
-                        }
-                        return `${k}: ${v !== null ? v : '–'}`;
-                    }).join(' | ');
-                    html += `Antwort: ${fieldAnswers}`;
-                }
-            } else {
-                const letters = ['A', 'B', 'C', 'D'];
-                html += `Antwort: ${typeof a.a === 'number' && a.a < 4 ? letters[a.a] : a.a}`;
-            }
-        } else {
-            html += 'Keine Antwort';
-        }
-        
-        html += `</span></div>
-            <div class="q-points">${a.p}/${q.points} P</div>
-        </div>`;
-    });
+    if (r.answers && r.answers.length > 0) {
+        html += '<h3 style="margin:15px 0 10px; font-size:0.95em;">Einzelergebnisse</h3><div class="question-results">';
+        r.answers.forEach(a => {
+            const q = QUESTIONS.find(q => q.id === a.q) || { text: a.q, points: '?' };
+            const cls = a.c ? 'correct' : (a.p > 0 ? 'partial' : 'incorrect');
+            html += `<div class="q-result ${cls}">
+                <span class="q-id">${a.q}</span>
+                <span style="flex:1; font-size:0.85em; color:#888;">${q.text}</span>
+                <span class="q-points">${a.p}/${q.points || a.p}</span>
+            </div>`;
+        });
+        html += '</div>';
+    }
     
+    document.getElementById('modalTitle').textContent = `Details: ${r.seat}`;
     document.getElementById('modalBody').innerHTML = html;
     document.getElementById('detailModal').classList.add('active');
 }
@@ -965,163 +757,120 @@ function closeModal() {
     document.getElementById('detailModal').classList.remove('active');
 }
 
-// Modal schließen bei Klick außerhalb
-document.getElementById('detailModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-});
+function deleteResult(seat) {
+    if (!confirm(`${seat} wirklich löschen?`)) return;
+    results = results.filter(r => r.seat !== seat);
+    displayResults();
+}
 
-// =============================================================================
-// EXPORT & UTILITIES
-// =============================================================================
-function clearAll() {
+function clearAllResults() {
+    if (!confirm('ALLE Ergebnisse löschen?')) return;
     results = [];
     scannedCodes.clear();
-    document.getElementById('resultsBox').style.display = 'none';
-    document.getElementById('codeInput').value = '';
+    displayResults();
     updateScannedCount();
-    hideError();
 }
 
 function exportCSV() {
-    if (results.length === 0) {
-        showError('Keine Ergebnisse zum Exportieren!');
-        return;
-    }
+    if (results.length === 0) { alert('Keine Daten zum Exportieren!'); return; }
     
-    // Header mit allen Fragen
-    let csv = 'Platz;Punkte;Max;Prozent;NP;Bonus;Zeit_Sek;';
-    csv += QUESTIONS.map(q => q.id).join(';');
+    let csv = 'Platz;Punkte;Max;Prozent;Note;Bonus;Zeit_min';
+    QUESTIONS.forEach(q => { csv += `;${q.id}`; });
     csv += '\n';
     
     results.forEach(r => {
-        csv += `${r.seatId};${r.totalPoints};${r.maxPoints};${r.percentage.toFixed(1)};${r.grade};${r.bonusPoints};${r.duration};`;
-        
-        // Punkte pro Frage
+        const pct = ((r.points / r.maxPoints) * 100).toFixed(1);
+        const mins = ((r.duration || 0) / 60).toFixed(1);
+        csv += `${r.seat};${r.points};${r.maxPoints};${pct};${r.grade};${r.bonus};${mins}`;
         QUESTIONS.forEach(q => {
-            const ans = r.answers.find(a => a.q === q.id);
-            csv += (ans ? ans.p : 0) + ';';
+            const a = r.answers.find(ans => ans.q === q.id);
+            csv += `;${a ? a.p : ''}`;
         });
-        csv = csv.slice(0, -1) + '\n'; // Letztes Semikolon entfernen
+        csv += '\n';
     });
     
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `Ergebnisse_Bewegungslehre_10GY_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `quiz_ergebnisse_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
 }
 
-function generateAllSheets() {
-    if (results.length === 0) {
-        showError('Keine Ergebnisse vorhanden!');
-        return;
-    }
+function printAllFeedback() {
+    if (results.length === 0) { alert('Keine Ergebnisse!'); return; }
     
-    const win = window.open('', '_blank');
-    let html = `<!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Feedbackbögen – Bewegungslehre 10 GY</title>
+    let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>Feedbackbögen</title>
         <style>
-            body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 15px; }
-            .sheet { page-break-after: always; border: 1px solid #000; padding: 15px; margin-bottom: 20px; }
-            .sheet:last-child { page-break-after: auto; }
-            h2 { font-size: 14pt; margin: 0 0 10px 0; border-bottom: 2px solid #000; padding-bottom: 5px; }
-            .info { display: flex; justify-content: space-between; margin-bottom: 15px; }
-            .info-left { }
-            .info-right { text-align: right; }
-            .grade-box { 
-                font-size: 28pt; 
-                font-weight: bold; 
-                text-align: center; 
-                padding: 10px 20px; 
-                border: 3px solid #000; 
-                display: inline-block;
-                margin: 10px 0;
-            }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9pt; }
-            th, td { border: 1px solid #999; padding: 5px 6px; text-align: left; }
+            body { font-family: Arial, sans-serif; font-size: 10pt; }
+            .page { page-break-after: always; padding: 15px; }
+            .page:last-child { page-break-after: auto; }
+            h2 { margin: 0 0 10px; font-size: 14pt; }
+            .header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #000; }
+            .grade { font-size: 24pt; font-weight: bold; }
+            .good { color: #2e7d32; }
+            .medium { color: #e65100; }
+            .poor { color: #c62828; }
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            th, td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; font-size: 9pt; }
             th { background: #f0f0f0; }
-            .correct { background: #d4edda; }
-            .partial { background: #fff3cd; }
-            .incorrect { background: #f8d7da; }
-            .bonus { background: #f3e5f5; }
-            .sig-line { margin-top: 30px; border-top: 1px solid #000; padding-top: 5px; font-size: 9pt; }
-            @media print {
-                .sheet { border: none; }
-            }
+            .correct { background: #e8f5e9; }
+            .partial { background: #fff3e0; }
+            .incorrect { background: #ffebee; }
         </style>
-    </head>
-    <body>`;
+    </head><body>`;
     
     results.forEach(r => {
-        const gradeClass = r.grade >= 10 ? 'good' : (r.grade >= 5 ? 'ok' : 'bad');
+        const pct = ((r.points / r.maxPoints) * 100).toFixed(1);
+        const gradeClass = r.grade >= 10 ? 'good' : (r.grade >= 5 ? 'medium' : 'poor');
         
-        html += `<div class="sheet">
-            <h2>📐 Feedback: Stundenleistung Bewegungslehre – Klasse 10 GY</h2>
-            <div class="info">
-                <div class="info-left">
-                    <p><strong>Platz:</strong> ${r.seatId}</p>
-                    <p><strong>Bearbeitungszeit:</strong> ${formatDuration(r.duration)} von 90:00</p>
-                    <p><strong>Datum:</strong> ${new Date().toLocaleDateString('de-DE')}</p>
+        html += `<div class="page">
+            <div class="header">
+                <div>
+                    <h2>Stundenleistung Bewegungslehre – Klasse 10 GY</h2>
+                    <p>Name: _________________ Platz: <strong>${r.seat}</strong> Datum: ${new Date().toLocaleDateString('de-DE')}</p>
                 </div>
-                <div class="info-right">
-                    <div class="grade-box">${r.grade} NP</div>
-                    <p><strong>${r.totalPoints} / ${MAX_POINTS} Punkte</strong> (${r.percentage.toFixed(1)}%)</p>
-                    ${r.bonusPoints > 0 ? `<p>🎄 Bonus: ${r.bonusPoints} / ${MAX_BONUS} P</p>` : ''}
+                <div style="text-align:right;">
+                    <div class="grade ${gradeClass}">${r.grade} NP</div>
+                    <div>${r.points}/${r.maxPoints} P (${pct}%)</div>
+                    ${r.bonus > 0 ? `<div>🎄 Bonus: ${r.bonus} P</div>` : ''}
                 </div>
             </div>
-            <table>
-                <tr><th style="width:50px;">#</th><th>Aufgabe</th><th style="width:120px;">Punkte</th></tr>`;
+            <table><thead><tr><th>Aufgabe</th><th>Thema</th><th>Punkte</th><th>Max</th></tr></thead><tbody>`;
         
         r.answers.forEach(a => {
-            const q = QUESTIONS.find(qu => qu.id === a.q) || { id: a.q, text: a.q, points: 2 };
-            const rowClass = a.c ? 'correct' : (a.p > 0 ? 'partial' : 'incorrect');
-            const bonusClass = q.id === 'BONUS' ? ' bonus' : '';
-            
-            html += `<tr class="${rowClass}${bonusClass}">
-                <td>${a.q}</td>
-                <td>${q.text}</td>
-                <td>${a.p}/${q.points}</td>
-            </tr>`;
+            const q = QUESTIONS.find(q => q.id === a.q) || { text: a.q, points: '?' };
+            const cls = a.c ? 'correct' : (a.p > 0 ? 'partial' : 'incorrect');
+            html += `<tr class="${cls}"><td><strong>${a.q}</strong></td><td>${q.text}</td><td>${a.p}</td><td>${q.points}</td></tr>`;
         });
         
-        html += `</table>
-            <div class="sig-line">
-                Unterschrift Lehrkraft: _________________________ Datum: _____________
-            </div>
+        html += `</tbody></table>
+            <p style="margin-top:20px;">Unterschrift Lehrkraft: _________________ Datum: _________</p>
         </div>`;
     });
     
     html += '</body></html>';
+    
+    const win = window.open('', '_blank');
     win.document.write(html);
     win.document.close();
+    win.print();
 }
 
-function showError(msg) {
-    const el = document.getElementById('errorMessage');
-    el.textContent = msg;
-    el.classList.add('visible');
+function showTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`.tab:nth-child(${tab === 'scan' ? 1 : tab === 'results' ? 2 : 3})`).classList.add('active');
+    document.getElementById(tab + 'Tab').classList.add('active');
 }
 
-function hideError() {
-    document.getElementById('errorMessage').classList.remove('visible');
-}
-
-// =============================================================================
-// INIT
-// =============================================================================
-document.addEventListener('DOMContentLoaded', async () => {
-    // Kameras laden
-    await initCameras();
-    // Scanner standardmäßig starten
-    startScanner();
+document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
 });
 
-// Cleanup beim Verlassen
-window.addEventListener('beforeunload', () => {
-    stopScanner();
+document.addEventListener('DOMContentLoaded', () => {
+    initCameras();
+    displayResults();
 });
 </script>
 </body>
