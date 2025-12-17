@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabenübersicht – Elektrik-Quiz Klasse 8</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #f5f5f5; 
+            padding: 20px;
+            line-height: 1.5;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .header {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 1.6em; margin-bottom: 10px; }
+        
+        .level-section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .level-header {
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .level-header.basis { background: #757575; }
+        .level-header.stern1 { background: #ff9800; }
+        .level-header.stern2 { background: #2196f3; }
+        .level-header.stern3 { background: #9c27b0; }
+        
+        .level-header h2 { font-size: 1.3em; }
+        .level-stats { text-align: right; opacity: 0.9; }
+        
+        .questions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .questions-table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-size: 0.9em;
+            border-bottom: 2px solid #ddd;
+        }
+        .questions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        .questions-table tr:hover { background: #f9f9f9; }
+        
+        .q-id { font-weight: bold; color: #1565c0; white-space: nowrap; }
+        .q-type { 
+            font-size: 0.8em; 
+            padding: 2px 8px; 
+            background: #e0e0e0; 
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .q-points { 
+            font-weight: bold; 
+            color: #4caf50;
+            text-align: center;
+        }
+        .q-solution {
+            background: #e8f5e9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
+        
+        .afb-badge {
+            font-size: 0.75em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: white;
+            margin-left: 5px;
+        }
+        .afb-1 { background: #4caf50; }
+        .afb-2 { background: #ff9800; }
+        .afb-3 { background: #f44336; }
+        
+        .summary-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+        .summary-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .summary-value { font-size: 1.8em; font-weight: bold; color: #1565c0; }
+        .summary-label { font-size: 0.85em; color: #666; }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .level-section { box-shadow: none; border: 1px solid #ddd; }
+            .no-print { display: none; }
+        }
+        
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 25px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        .print-btn:hover { background: #f57c00; }
+    </style>
+</head>
+<body>
+    <button class="print-btn no-print" onclick="window.print()">🖨️ Drucken</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📋 Aufgabenübersicht – Elektrik-Quiz</h1>
+            <p>Klasse 8 – Stromstärke & Spannung (für Lehrkräfte)</p>
+        </div>
+        
+        <div class="summary-box">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value">48</div>
+                    <div class="summary-label">Aufgaben gesamt</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">140</div>
+                    <div class="summary-label">Punkte gesamt</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">4</div>
+                    <div class="summary-label">Niveaustufen</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">45</div>
+                    <div class="summary-label">Minuten</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BASIS -->
+        <div class="level-section">
+            <div class="level-header basis">
+                <h2>○ Basis-Niveau</h2>
+                <div class="level-stats">13 Aufgaben · 28 Punkte</div>
+            </div>
+            <table class="questions-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Nr.</th>
+                        <th style="width: 100px;">Typ</th>
+                        <th>Aufgabe & Lösung</th>
+                        <th style="width: 60px;">Pkt.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="q-id">F1 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">MC</span></td>
+                        <td>
+                            <strong>Formelzeichen der Stromstärke</strong>
+                            <div class="q-solution">✓ <strong>B) <em>I</em></strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F2 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">MC</span></td>
+                        <td>
+                            <strong>Einheit der Stromstärke</strong>
+                            <div class="q-solution">✓ <strong>A) Ampere (A)</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F3 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">MC</span></td>
+                        <td>
+                            <strong>Formelzeichen der Spannung</strong>
+                            <div class="q-solution">✓ <strong>A) <em>U</em></strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F4 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">MC</span></td>
+                        <td>
+                            <strong>Einheit der Spannung</strong>
+                            <div class="q-solution">✓ <strong>B) Volt (V)</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F5 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Messgeräte zuordnen</strong>
+                            <div class="q-solution">✓ Stromstärke → <strong>Amperemeter</strong>; Spannung → <strong>Voltmeter</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F6 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Anschlussart der Messgeräte</strong>
+                            <div class="q-solution">✓ Amperemeter → <strong>in Reihe</strong>; Voltmeter → <strong>parallel</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F7 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">MC</span></td>
+                        <td>
+                            <strong>Reihenschaltung: Stromstärke</strong>
+                            <div class="q-solution">✓ <strong>A) Die Stromstärke ist überall gleich groß</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F8 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">MC</span></td>
+                        <td>
+                            <strong>Reihenschaltung: Spannung</strong>
+                            <div class="q-solution">✓ <strong>B) Die Teilspannungen addieren sich</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F9 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">MC</span></td>
+                        <td>
+                            <strong>Parallelschaltung: Spannung</strong>
+                            <div class="q-solution">✓ <strong>A) Die Spannung ist an allen Zweigen gleich</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F10 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Reihenschaltung I: L₁ = 0,4 A → I₂ = ?</strong>
+                            <div class="q-solution">✓ <strong>I₂ = 0,4 A</strong> (Stromstärke überall gleich)</div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F11 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Parallelschaltung I: I₁ = 0,3 A, I₂ = 0,2 A → Iges = ?</strong>
+                            <div class="q-solution">✓ <strong>Iges = 0,5 A</strong> (0,3 + 0,2)</div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F12 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Reihenschaltung U: Uges = 12 V, U₁ = 5 V → U₂ = ?</strong>
+                            <div class="q-solution">✓ <strong>U₂ = 7 V</strong> (12 − 5)</div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F13 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Parallelschaltung U: Uges = 9 V → U₁ = ?</strong>
+                            <div class="q-solution">✓ <strong>U₁ = 9 V</strong> (Spannung überall gleich)</div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- STERN 1 -->
+        <div class="level-section">
+            <div class="level-header stern1">
+                <h2>★ Stern-1-Niveau (BR)</h2>
+                <div class="level-stats">12 Aufgaben · 30 Punkte</div>
+            </div>
+            <table class="questions-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Nr.</th>
+                        <th style="width: 100px;">Typ</th>
+                        <th>Aufgabe & Lösung</th>
+                        <th style="width: 60px;">Pkt.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="q-id">F1 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Formelzeichen + Einheit Stromstärke</strong>
+                            <div class="q-solution">✓ <strong>I</strong>; <strong>Ampere</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F2 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Stromstärke = Ladung pro Zeit</strong>
+                            <div class="q-solution">✓ <strong>Ladung</strong>; <strong>Zeit</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F3 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Formelzeichen + Einheit Spannung</strong>
+                            <div class="q-solution">✓ <strong>U</strong>; <strong>Volt</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F4 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Messgeräte-Anschluss</strong>
+                            <div class="q-solution">✓ Amperemeter: <strong>in Reihe</strong>; Voltmeter: <strong>parallel</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F5 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Multicheck</span></td>
+                        <td>
+                            <strong>Regeln der Reihenschaltung</strong>
+                            <div class="q-solution">✓ <strong>I überall gleich</strong> + <strong>U addiert sich</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F6 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Multicheck</span></td>
+                        <td>
+                            <strong>Regeln der Parallelschaltung</strong>
+                            <div class="q-solution">✓ <strong>I addiert sich</strong> + <strong>U überall gleich</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F7 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>3 Lampen Reihe: I₁ = 0,5 A → I₂ = ?</strong>
+                            <div class="q-solution">✓ <strong>I₂ = 0,5 A</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F8 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>3 Lampen parallel: 0,3 + 0,4 + 0,3 A = Iges</strong>
+                            <div class="q-solution">✓ <strong>Iges = 1 A</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F9 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Einheiten: 400 mA + 600 mA = ? A</strong>
+                            <div class="q-solution">✓ <strong>Iges = 1 A</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F10 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>3 Lampen Reihe: 12 V, U₁ = 3 V, U₂ = 5 V → U₃ = ?</strong>
+                            <div class="q-solution">✓ <strong>U₃ = 4 V</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F11 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>3 Lampen parallel an 9 V → U₁ = ?</strong>
+                            <div class="q-solution">✓ <strong>U₁ = 9 V</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F12 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Gemischt: (L₁+L₂) ∥ L₃, 12 V, U₁=4V, U₂=8V → U₃=?</strong>
+                            <div class="q-solution">✓ <strong>U₃ = 12 V</strong> (parallel zur Quelle)</div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- STERN 2 -->
+        <div class="level-section">
+            <div class="level-header stern2">
+                <h2>★★ Stern-2-Niveau (MR)</h2>
+                <div class="level-stats">9 Aufgaben · 30 Punkte</div>
+            </div>
+            <table class="questions-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Nr.</th>
+                        <th style="width: 100px;">Typ</th>
+                        <th>Aufgabe & Lösung</th>
+                        <th style="width: 60px;">Pkt.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="q-id">F1 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Text</span></td>
+                        <td>
+                            <strong>Texteingabe: Stromstärke (Formel, Einheit, Messgerät)</strong>
+                            <div class="q-solution">✓ <strong>I</strong>; <strong>Ampere/A</strong>; <strong>Amperemeter</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F2 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Text</span></td>
+                        <td>
+                            <strong>Texteingabe: Spannung (Formel, Einheit, Messgerät)</strong>
+                            <div class="q-solution">✓ <strong>U</strong>; <strong>Volt/V</strong>; <strong>Voltmeter</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F3 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Regeln zuordnen (4 Regeln)</strong>
+                            <div class="q-solution">✓ Reihe; Parallel; Reihe; Parallel</div>
+                        </td>
+                        <td class="q-points">4</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F4 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Messgeräte-Anschluss</strong>
+                            <div class="q-solution">✓ <strong>in Reihe</strong>; <strong>parallel</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F5 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>4 Motoren parallel: 0,5+0,3+0,4+0,3 A</strong>
+                            <div class="q-solution">✓ <strong>Iges = 1,5 A</strong></div>
+                        </td>
+                        <td class="q-points">4</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F6 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Gemischt: L₁ + (L₂∥L₃), Iges=0,8A, I₂=0,5A → I₃=?</strong>
+                            <div class="q-solution">✓ <strong>I₃ = 0,3 A</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F7 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Einheiten: 800 mA + 0,7 A = ? A</strong>
+                            <div class="q-solution">✓ <strong>Iges = 1,5 A</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F8 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>3 Lampen Reihe: 18 V, U₁=4V, U₂=6V → U₃=?</strong>
+                            <div class="q-solution">✓ <strong>U₃ = 8 V</strong></div>
+                        </td>
+                        <td class="q-points">4</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F9 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Multi-Zahl</span></td>
+                        <td>
+                            <strong>Gemischt: (L₁+L₂)∥L₃, 24V, U₁=10V → U₂, U₃=?</strong>
+                            <div class="q-solution">✓ <strong>U₂ = 14 V</strong>; <strong>U₃ = 24 V</strong></div>
+                        </td>
+                        <td class="q-points">5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- STERN 3 -->
+        <div class="level-section">
+            <div class="level-header stern3">
+                <h2>★★★ Stern-3-Niveau (GY)</h2>
+                <div class="level-stats">14 Aufgaben · 52 Punkte</div>
+            </div>
+            <table class="questions-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Nr.</th>
+                        <th style="width: 100px;">Typ</th>
+                        <th>Aufgabe & Lösung</th>
+                        <th style="width: 60px;">Pkt.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="q-id">F1 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Regeln verbal zuordnen (4 Regeln)</strong>
+                            <div class="q-solution">✓ Reihe; Parallel; Reihe; Parallel</div>
+                        </td>
+                        <td class="q-points">4</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F2 <span class="afb-badge afb-1">I</span></td>
+                        <td><span class="q-type">Dropdown</span></td>
+                        <td>
+                            <strong>Messgeräte-Anschluss</strong>
+                            <div class="q-solution">✓ <strong>in Reihe</strong>; <strong>parallel</strong></div>
+                        </td>
+                        <td class="q-points">2</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F3 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Multicheck</span></td>
+                        <td>
+                            <strong>Reihenschaltung (nur verbal, keine Formeln)</strong>
+                            <div class="q-solution">✓ <strong>Ausfall → kein Strom</strong> + <strong>U verteilt sich</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F4 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Multicheck</span></td>
+                        <td>
+                            <strong>Parallelschaltung (nur verbal)</strong>
+                            <div class="q-solution">✓ <strong>I = Summe</strong> + <strong>Ausfall → andere OK</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F5 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>4 Motoren parallel: 0,6+0,4+0,5+0,5 A</strong>
+                            <div class="q-solution">✓ <strong>Iges = 2 A</strong></div>
+                        </td>
+                        <td class="q-points">5</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F6 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Gemischt: Iges=1,2A, I₂=0,7A → I₃=?</strong>
+                            <div class="q-solution">✓ <strong>I₃ = 0,5 A</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F7 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Einheiten: 500mA + 0,8A + 700mA = ? A</strong>
+                            <div class="q-solution">✓ <strong>Iges = 2 A</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F8 <span class="afb-badge afb-3">III</span></td>
+                        <td><span class="q-type">Fehleranalyse</span></td>
+                        <td>
+                            <strong>Parallel: Iges=1A (angegeben), aber 0,4+0,3+0,4=1,1A</strong>
+                            <div class="q-solution">✓ <strong>Differenz = 0,1 A</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F9 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>4 Lampen Reihe: 24V, U₁=6V, U₂=8V, U₃=4V → U₄=?</strong>
+                            <div class="q-solution">✓ <strong>U₄ = 6 V</strong></div>
+                        </td>
+                        <td class="q-points">5</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F10 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Gemischt: 18V, U₁=6V → U₂=?</strong>
+                            <div class="q-solution">✓ <strong>U₂ = 12 V</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F11 <span class="afb-badge afb-2">II</span></td>
+                        <td><span class="q-type">Berechnung</span></td>
+                        <td>
+                            <strong>Einheiten: 4500mV + 3,5V + U₃ = 12V</strong>
+                            <div class="q-solution">✓ <strong>U₃ = 4 V</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F12 <span class="afb-badge afb-3">III</span></td>
+                        <td><span class="q-type">Fehleranalyse</span></td>
+                        <td>
+                            <strong>Reihe 12V: 5+4+4=13V → Differenz?</strong>
+                            <div class="q-solution">✓ <strong>Differenz = 1 V</strong></div>
+                        </td>
+                        <td class="q-points">3</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F13 <span class="afb-badge afb-3">III</span></td>
+                        <td><span class="q-type">EXTREM</span></td>
+                        <td>
+                            <strong>5 Lampen: (L₁+L₂) ∥ [L₃ ∥ (L₄∥L₅)], Iges=2A, I₁=0,8A, I₃=0,4A, I₄=0,4A → I₅=?</strong>
+                            <div class="q-solution">✓ <strong>I₅ = 0,4 A</strong></div>
+                        </td>
+                        <td class="q-points">6</td>
+                    </tr>
+                    <tr>
+                        <td class="q-id">F14 <span class="afb-badge afb-3">III</span></td>
+                        <td><span class="q-type">EXTREM</span></td>
+                        <td>
+                            <strong>5 Lampen: 24V, U₁=8V → U₂, U₃, U₄, U₅=?</strong>
+                            <div class="q-solution">✓ <strong>U₂=16V</strong>; <strong>U₃=U₄=U₅=24V</strong></div>
+                        </td>
+                        <td class="q-points">6</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 12px; font-size: 0.9em; color: #666;">
+            <strong>Legende AFB:</strong> 
+            <span class="afb-badge afb-1">I</span> Reproduktion · 
+            <span class="afb-badge afb-2">II</span> Anwendung · 
+            <span class="afb-badge afb-3">III</span> Transfer
+        </div>
+    </div>
+</body>
+</html>

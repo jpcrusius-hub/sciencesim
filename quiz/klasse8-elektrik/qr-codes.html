@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR-Codes – Elektrik-Quiz Klasse 8</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #f5f5f5; 
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 1.6em; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        
+        .qr-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .qr-section h2 { margin-bottom: 20px; color: #333; }
+        
+        .qr-container {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+        }
+        
+        .link-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .copy-btn {
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .copy-btn:hover { background: #0d47a1; }
+        
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .link-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .link-card h3 { margin-bottom: 15px; color: #333; }
+        .link-card a {
+            display: block;
+            padding: 12px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            color: #1565c0;
+            text-decoration: none;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .link-card a:hover { background: #bbdefb; }
+        
+        .print-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .print-btn {
+            padding: 15px 30px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .print-btn:hover { background: #f57c00; }
+        
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .qr-section { box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 QR-Codes – Elektrik-Quiz</h1>
+            <p>Klasse 8 – Stromstärke & Spannung</p>
+        </div>
+        
+        <div class="qr-section">
+            <h2>🎯 Quiz starten</h2>
+            <div class="qr-container" id="quizQR"></div>
+            <div class="link-box" id="quizLink"></div>
+            <button class="copy-btn no-print" onclick="copyLink('quiz')">📋 Link kopieren</button>
+        </div>
+        
+        <div class="links-grid">
+            <div class="link-card">
+                <h3>📋 Schüler-Quiz</h3>
+                <a href="index.html" target="_blank">Quiz öffnen</a>
+                <p style="font-size: 0.85em; color: #666;">Für Schüler-iPads</p>
+            </div>
+            <div class="link-card">
+                <h3>🔍 Lehrer-Decoder</h3>
+                <a href="decoder.html" target="_blank">Decoder öffnen</a>
+                <p style="font-size: 0.85em; color: #666;">Für Auswertung</p>
+            </div>
+        </div>
+        
+        <div class="qr-section" style="margin-top: 30px;">
+            <h2>🔍 Decoder für Lehrkräfte</h2>
+            <div class="qr-container" id="decoderQR"></div>
+            <div class="link-box" id="decoderLink"></div>
+            <button class="copy-btn no-print" onclick="copyLink('decoder')">📋 Link kopieren</button>
+        </div>
+        
+        <div class="print-section no-print">
+            <button class="print-btn" onclick="window.print()">🖨️ Seite drucken</button>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 12px;">
+            <h3 style="margin-bottom: 15px;">📌 Hinweise:</h3>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li>QR-Codes mit dem iPad scannen, um direkt zum Quiz zu gelangen</li>
+                <li>Der Decoder wird auf dem Lehrer-Gerät geöffnet</li>
+                <li>Nach Abgabe zeigen Schüler ihren QR-Code zum Scannen</li>
+                <li>Ergebnisse werden automatisch gesammelt und können als CSV exportiert werden</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Base URL - ändern für Deployment
+        const BASE_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/klasse8-elektrik/';
+        
+        // Alternative für lokale Tests:
+        // const BASE_URL = window.location.href.replace('qr-codes.html', '');
+        
+        const quizUrl = BASE_URL + 'index.html';
+        const decoderUrl = BASE_URL + 'decoder.html';
+        
+        // Display links
+        document.getElementById('quizLink').textContent = quizUrl;
+        document.getElementById('decoderLink').textContent = decoderUrl;
+        
+        // Generate QR codes
+        new QRCode(document.getElementById('quizQR'), {
+            text: quizUrl,
+            width: 200,
+            height: 200
+        });
+        
+        new QRCode(document.getElementById('decoderQR'), {
+            text: decoderUrl,
+            width: 200,
+            height: 200
+        });
+        
+        function copyLink(type) {
+            const url = type === 'quiz' ? quizUrl : decoderUrl;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link kopiert!');
+            });
+        }
+    </script>
+</body>
+</html>

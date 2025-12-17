@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platzkarten – Elektrik-Quiz Klasse 8</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+        }
+        
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 10mm;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 5mm;
+            page-break-after: always;
+        }
+        
+        .page:last-child {
+            page-break-after: auto;
+        }
+        
+        .card {
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+        }
+        
+        .card-header {
+            text-align: center;
+            width: 100%;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .card-title {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .seat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1565c0;
+        }
+        
+        .qr-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-container canvas,
+        .qr-container img {
+            width: 80px !important;
+            height: 80px !important;
+        }
+        
+        .name-field {
+            width: 100%;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+        
+        .name-label {
+            font-size: 8px;
+            color: #999;
+        }
+        
+        .name-line {
+            border-bottom: 1px solid #333;
+            height: 18px;
+            margin-top: 2px;
+        }
+        
+        .instructions {
+            page-break-before: always;
+            padding: 20mm;
+        }
+        
+        .instructions h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1565c0;
+        }
+        
+        .instructions h2 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        
+        .instructions .note {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+        }
+        
+        /* Screen-only controls */
+        .controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #1565c0;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .controls:hover { background: #0d47a1; }
+    </style>
+</head>
+<body>
+    <button class="controls no-print" onclick="window.print()">🖨️ Drucken / PDF</button>
+    
+    <div id="cardsContainer"></div>
+    
+    <div class="instructions">
+        <h1>📋 Platzkarten – Elektrik-Quiz Klasse 8</h1>
+        
+        <h2>Anleitung</h2>
+        <ul>
+            <li>Karten ausschneiden (3×5 pro Seite)</li>
+            <li>Auf jeden Tisch eine Karte legen</li>
+            <li>Schüler schreiben ihren Namen auf die Karte</li>
+            <li>QR-Code führt direkt zum Quiz</li>
+        </ul>
+        
+        <h2>Durchführung</h2>
+        <ul>
+            <li>Schüler scannen den QR-Code mit dem iPad</li>
+            <li>Niveau wird von der Lehrkraft vorgegeben</li>
+            <li>Sitzplatz entsprechend der Karte auswählen (z.B. P01)</li>
+            <li>Nach Abgabe: QR-Code auf dem Bildschirm der Lehrkraft zeigen</li>
+        </ul>
+        
+        <div class="note">
+            <strong>💡 Tipp:</strong> Die Platznummern P01-P30 entsprechen dem Sitzplan. 
+            Passen Sie die Anordnung an Ihren Klassenraum an.
+        </div>
+        
+        <h2>Technische Hinweise</h2>
+        <ul>
+            <li>Quiz-URL: <code>https://jpcrusius-hub.github.io/sciencesim/quiz/klasse8-elektrik/</code></li>
+            <li>Reset-Code (nur für Lehrkraft): <code>2718</code></li>
+            <li>Daten werden lokal auf dem Gerät gespeichert</li>
+        </ul>
+    </div>
+
+<script>
+    const QUIZ_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/klasse8-elektrik/index.html';
+    const TOTAL_SEATS = 30;
+    const CARDS_PER_PAGE = 15;
+    
+    const container = document.getElementById('cardsContainer');
+    
+    // Create pages
+    const numPages = Math.ceil(TOTAL_SEATS / CARDS_PER_PAGE);
+    
+    for (let page = 0; page < numPages; page++) {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'page';
+        
+        const startSeat = page * CARDS_PER_PAGE + 1;
+        const endSeat = Math.min(startSeat + CARDS_PER_PAGE - 1, TOTAL_SEATS);
+        
+        for (let seat = startSeat; seat <= endSeat; seat++) {
+            const seatStr = `P${seat.toString().padStart(2, '0')}`;
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-title">⚡ Elektrik-Quiz Klasse 8</div>
+                    <div class="seat-number">${seatStr}</div>
+                </div>
+                <div class="qr-container" id="qr-${seatStr}"></div>
+                <div class="name-field">
+                    <div class="name-label">Name:</div>
+                    <div class="name-line"></div>
+                </div>
+            `;
+            
+            pageDiv.appendChild(card);
+        }
+        
+        container.appendChild(pageDiv);
+    }
+    
+    // Generate QR codes
+    for (let seat = 1; seat <= TOTAL_SEATS; seat++) {
+        const seatStr = `P${seat.toString().padStart(2, '0')}`;
+        new QRCode(document.getElementById(`qr-${seatStr}`), {
+            text: QUIZ_URL,
+            width: 80,
+            height: 80,
+            correctLevel: QRCode.CorrectLevel.L
+        });
+    }
+</script>
+</body>
+</html>

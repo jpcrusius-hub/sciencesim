@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quiz: Elektrizitätslehre Klasse 8</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: #f5f5f5; 
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        /* Header */
+        .header { 
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%); 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .header h1 { font-size: 1.4em; margin-bottom: 5px; }
+        .header h2 { font-size: 1em; font-weight: normal; opacity: 0.9; }
+        
+        /* Level Selection */
+        .level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+        .level-btn {
+            padding: 20px 10px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .level-btn:hover { border-color: #1565c0; transform: translateY(-2px); }
+        .level-btn.selected { border-color: #1565c0; background: #e3f2fd; }
+        .level-btn .symbol { font-size: 1.8em; display: block; margin-bottom: 5px; }
+        .level-btn .name { font-weight: bold; }
+        .level-btn .points { font-size: 0.85em; color: #666; }
+        
+        .level-basis { border-color: #9e9e9e; }
+        .level-basis.selected { background: #f5f5f5; border-color: #616161; }
+        .level-stern1 { border-color: #ff9800; }
+        .level-stern1.selected { background: #fff3e0; border-color: #e65100; }
+        .level-stern2 { border-color: #2196f3; }
+        .level-stern2.selected { background: #e3f2fd; border-color: #1565c0; }
+        .level-stern3 { border-color: #9c27b0; }
+        .level-stern3.selected { background: #f3e5f5; border-color: #7b1fa2; }
+        
+        /* Seat Selection */
+        .seat-grid { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 8px; 
+            margin: 20px 0;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .seat-btn {
+            padding: 12px 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .seat-btn:hover { border-color: #1565c0; background: #e3f2fd; }
+        .seat-btn.selected { border-color: #1565c0; background: #1565c0; color: white; }
+        
+        /* Start Button */
+        .start-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .start-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .start-btn:not(:disabled):hover { background: #0d47a1; transform: translateY(-2px); }
+        
+        /* Quiz Screen */
+        .quiz-header {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .timer-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .timer { font-size: 1.3em; font-weight: bold; color: #1565c0; }
+        .timer.warning { color: #f57c00; }
+        .timer.danger { color: #d32f2f; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .level-badge { 
+            padding: 5px 12px; 
+            border-radius: 20px; 
+            font-size: 0.9em; 
+            font-weight: bold;
+            color: white;
+        }
+        .level-badge.basis { background: #757575; }
+        .level-badge.stern1 { background: #ff9800; }
+        .level-badge.stern2 { background: #2196f3; }
+        .level-badge.stern3 { background: #9c27b0; }
+        
+        .progress-bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #4caf50; transition: width 0.3s; }
+        .progress-text { font-size: 0.85em; color: #666; margin-top: 5px; }
+        
+        /* Question Navigation */
+        .question-nav { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 6px; 
+            margin: 15px 0; 
+            justify-content: center;
+        }
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { border-color: #1565c0; }
+        .nav-btn.current { border-color: #1565c0; background: #1565c0; color: white; }
+        .nav-btn.answered { background: #e8f5e9; border-color: #4caf50; }
+        
+        /* Question Card */
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .question-header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-num { font-weight: bold; color: #333; }
+        .question-points { 
+            background: #4caf50; 
+            color: white; 
+            padding: 3px 10px; 
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        .question-text { margin-bottom: 15px; color: #333; }
+        .question-text strong { color: #1565c0; }
+        
+        /* Circuit SVG */
+        .circuit-container {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+        
+        /* Answer Options */
+        .options { margin: 15px 0; }
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option:hover { border-color: #1565c0; background: #f5f5f5; }
+        .option.selected { border-color: #1565c0; background: #e3f2fd; }
+        .option-letter {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0e0e0;
+            border-radius: 6px;
+            margin-right: 12px;
+            font-weight: bold;
+        }
+        .option.selected .option-letter { background: #1565c0; color: white; }
+        
+        /* Multicheck */
+        .multicheck .option { cursor: pointer; }
+        .multicheck .option.checked { border-color: #4caf50; background: #e8f5e9; }
+        .check-box {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #666;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .multicheck .option.checked .check-box { background: #4caf50; border-color: #4caf50; color: white; }
+        
+        /* Dropdown */
+        .dropdown-row { margin: 10px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .dropdown-row select {
+            padding: 8px 12px;
+            font-size: 1em;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            min-width: 150px;
+        }
+        .dropdown-row select:focus { border-color: #1565c0; outline: none; }
+        
+        /* Number Input */
+        .number-input-row { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+        .number-input {
+            width: 120px;
+            padding: 10px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .number-input:focus { border-color: #1565c0; outline: none; }
+        .unit-select {
+            padding: 10px;
+            font-size: 1em;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        /* Text Input */
+        .text-input {
+            width: 150px;
+            padding: 8px 12px;
+            font-size: 1em;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+        }
+        .text-input:focus { border-color: #1565c0; outline: none; }
+        
+        /* Navigation Buttons */
+        .nav-buttons { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+        .nav-button {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-button.prev { background: #e0e0e0; color: #333; }
+        .nav-button.prev:hover { background: #bdbdbd; }
+        .nav-button.next { background: #1565c0; color: white; }
+        .nav-button.next:hover { background: #0d47a1; }
+        .nav-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .submit-btn:hover { background: #388e3c; }
+        
+        /* Reset Button */
+        .reset-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 0.9em;
+            padding: 5px 10px;
+        }
+        .reset-btn:hover { color: #666; }
+        
+        /* Feedback Screen */
+        .feedback-header {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .grade-display { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
+        .points-display { font-size: 1.3em; opacity: 0.95; }
+        .time-display { font-size: 1em; opacity: 0.85; margin-top: 10px; }
+        
+        .submission-box {
+            background: white;
+            border: 2px solid #1565c0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .submission-box h3 { color: #1565c0; margin-bottom: 15px; }
+        .qr-container { margin: 15px auto; }
+        .text-code {
+            font-family: monospace;
+            font-size: 0.8em;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .copy-btn {
+            padding: 8px 20px;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .copy-btn:hover { background: #0d47a1; }
+        
+        .print-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            padding: 12px 20px;
+            font-size: 1em;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .print-btn:hover { background: #f57c00; }
+        
+        /* Feedback Items */
+        .feedback-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .feedback-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f5f5f5;
+        }
+        .feedback-item.correct .feedback-item-header { background: #e8f5e9; }
+        .feedback-item.wrong .feedback-item-header { background: #ffebee; }
+        .feedback-item.partial .feedback-item-header { background: #fff3e0; }
+        .feedback-item-body { padding: 15px; }
+        .your-answer { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 6px; }
+        .correct-answer { margin: 10px 0; padding: 10px; background: #e8f5e9; border-radius: 6px; border-left: 4px solid #4caf50; }
+        
+        /* Points Overview */
+        .points-overview {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .points-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .points-row:last-child { border-bottom: none; }
+        .points-row.total { font-weight: bold; font-size: 1.1em; background: #f5f5f5; margin: 10px -20px -20px; padding: 15px 20px; border-radius: 0 0 12px 12px; }
+        
+        /* Signature Area */
+        .signature-area {
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+        }
+        .signature-line { border-bottom: 1px solid #333; height: 40px; margin: 10px 0; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content h3 { margin-bottom: 15px; }
+        .modal-content p { margin-bottom: 20px; color: #666; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+        .modal-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-btn.cancel { background: #e0e0e0; }
+        .modal-btn.confirm { background: #4caf50; color: white; }
+        .modal-btn.danger { background: #d32f2f; color: white; }
+        
+        /* Print Styles */
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .feedback-item { break-inside: avoid; }
+        }
+        
+        /* Table */
+        .rules-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .rules-table th, .rules-table td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        .rules-table th { background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <!-- SETUP SCREEN -->
+    <div id="setupScreen" class="screen active">
+        <div class="container">
+            <div class="header">
+                <h1>📋 Stundenleistung Elektrizitätslehre</h1>
+                <h2>Klasse 8 – Stromstärke & Spannung</h2>
+            </div>
+            
+            <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px; color: #1565c0;">⚡ Niveau wählen:</h3>
+                <div class="level-grid">
+                    <div class="level-btn level-basis" data-level="basis">
+                        <span class="symbol">○</span>
+                        <span class="name">Basis</span>
+                        <span class="points">28 P · 13 Aufgaben</span>
+                    </div>
+                    <div class="level-btn level-stern1" data-level="stern1">
+                        <span class="symbol">★</span>
+                        <span class="name">Stern 1</span>
+                        <span class="points">30 P · 12 Aufgaben</span>
+                    </div>
+                    <div class="level-btn level-stern2" data-level="stern2">
+                        <span class="symbol">★★</span>
+                        <span class="name">Stern 2</span>
+                        <span class="points">30 P · 9 Aufgaben</span>
+                    </div>
+                    <div class="level-btn level-stern3" data-level="stern3">
+                        <span class="symbol">★★★</span>
+                        <span class="name">Stern 3</span>
+                        <span class="points">52 P · 14 Aufgaben</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: white; border-radius: 12px; padding: 20px;">
+                <h3 style="margin-bottom: 15px; color: #1565c0;">📍 Sitzplatz wählen:</h3>
+                <div class="seat-grid" id="seatGrid"></div>
+            </div>
+            
+            <button class="start-btn" id="startBtn" disabled>Quiz starten</button>
+        </div>
+    </div>
+    
+    <!-- QUIZ SCREEN -->
+    <div id="quizScreen" class="screen">
+        <div class="container">
+            <div class="quiz-header">
+                <div class="timer-row">
+                    <span class="timer" id="timer">45:00</span>
+                    <span class="level-badge" id="levelBadge">○ Basis</span>
+                    <button class="reset-btn no-print" onclick="showResetModal()">⟳ Reset</button>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="progress-text" id="progressText">Frage 1 von 13 · 0 / 28 P</div>
+            </div>
+            
+            <div class="question-nav" id="questionNav"></div>
+            
+            <div id="questionContainer"></div>
+            
+            <div class="nav-buttons no-print">
+                <button class="nav-button prev" id="prevBtn" onclick="prevQuestion()">← Zurück</button>
+                <button class="nav-button next" id="nextBtn" onclick="nextQuestion()">Weiter →</button>
+            </div>
+            
+            <button class="submit-btn no-print" id="submitBtn" style="display: none;" onclick="showSubmitModal()">
+                ✓ Quiz abgeben
+            </button>
+        </div>
+    </div>
+    
+    <!-- FEEDBACK SCREEN -->
+    <div id="feedbackScreen" class="screen">
+        <div class="container">
+            <div class="feedback-header" id="feedbackHeader">
+                <div>Name: _________________ Platz: <span id="feedbackSeat">P01</span> Datum: <span id="feedbackDate"></span></div>
+                <div class="grade-display" id="gradeDisplay">★★★ 14 NP ★★★</div>
+                <div class="points-display" id="pointsDisplay">28 / 28 Punkte (100%)</div>
+                <div class="time-display" id="timeDisplay">Bearbeitungszeit: 32:15 von 45:00</div>
+            </div>
+            
+            <div class="submission-box">
+                <h3>📤 Abgabe-Code (für Lehrkraft)</h3>
+                <div class="qr-container" id="feedbackQR"></div>
+                <div class="text-code" id="feedbackCode"></div>
+                <button class="copy-btn" onclick="copyCode()">📋 Code kopieren</button>
+            </div>
+            
+            <button class="print-btn no-print" onclick="window.print()">🖨️ Als PDF speichern</button>
+            
+            <div id="feedbackContent"></div>
+            
+            <div class="points-overview" id="pointsOverview"></div>
+            
+            <div class="signature-area">
+                <strong>Unterschrift Lehrkraft:</strong>
+                <div class="signature-line"></div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Datum: _____________</span>
+                    <span>Kenntnisnahme Erziehungsberechtigte: _____________</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODALS -->
+    <div class="modal" id="submitModal">
+        <div class="modal-content">
+            <h3>Quiz abgeben?</h3>
+            <p>Bist du sicher, dass du das Quiz abgeben möchtest? Du kannst danach keine Antworten mehr ändern.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal('submitModal')">Abbrechen</button>
+                <button class="modal-btn confirm" onclick="submitQuiz()">Ja, abgeben</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <h3>Quiz zurücksetzen?</h3>
+            <p>Gib den Lehrer-Code ein:</p>
+            <input type="text" id="resetCodeInput" style="width: 100%; padding: 10px; margin: 10px 0; text-align: center; font-size: 1.2em;">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal('resetModal')">Abbrechen</button>
+                <button class="modal-btn danger" onclick="tryReset()">Zurücksetzen</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════════════════════════════════
+
+const CONFIG = {
+    VERSION: 1.0,
+    STORAGE_KEY_PREFIX: 'quiz_v10_elektrik_k8_',
+    TEST_DURATION: 45,
+    RESET_CODE: '2718',
+    
+    LEVELS: {
+        'basis':  { name: 'Basis',   symbol: '○',   totalPoints: 28, color: '#757575' },
+        'stern1': { name: 'Stern 1', symbol: '★',   totalPoints: 30, color: '#ff9800' },
+        'stern2': { name: 'Stern 2', symbol: '★★',  totalPoints: 30, color: '#2196f3' },
+        'stern3': { name: 'Stern 3', symbol: '★★★', totalPoints: 52, color: '#9c27b0' }
+    },
+    
+    GRADE_SCALE: [
+        { np: 14, percent: 100 },
+        { np: 13, percent: 96 },
+        { np: 12, percent: 90.67 },
+        { np: 11, percent: 86 },
+        { np: 10, percent: 80 },
+        { np: 9, percent: 73.33 },
+        { np: 8, percent: 66.67 },
+        { np: 7, percent: 60 },
+        { np: 6, percent: 53.33 },
+        { np: 5, percent: 46.67 },
+        { np: 4, percent: 40 },
+        { np: 3, percent: 33.33 },
+        { np: 2, percent: 26.67 },
+        { np: 1, percent: 20 },
+        { np: 0, percent: 0 }
+    ]
+};
+
+// ═══════════════════════════════════════════════════════════════
+// QUESTIONS DATABASE
+// ═══════════════════════════════════════════════════════════════
+
+const QUESTIONS = {
+    // ═══════════════════════════════════════════════════════════
+    // BASIS (○) – 13 Aufgaben, 28 Punkte
+    // ═══════════════════════════════════════════════════════════
+    basis: [
+        {
+            id: "BASIS_F01",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Das <strong>Formelzeichen</strong> für die elektrische Stromstärke ist:`,
+            options: [
+                { letter: "A", text: "<em>U</em>" },
+                { letter: "B", text: "<em>I</em>" },
+                { letter: "C", text: "<em>R</em>" },
+                { letter: "D", text: "<em>P</em>" }
+            ],
+            correct: "B",
+            solution: "Das Formelzeichen der Stromstärke ist <em>I</em> (von lat. Intensität)."
+        },
+        {
+            id: "BASIS_F02",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Die <strong>Einheit</strong> der elektrischen Stromstärke heißt:`,
+            options: [
+                { letter: "A", text: "Ampere (A)" },
+                { letter: "B", text: "Volt (V)" },
+                { letter: "C", text: "Watt (W)" },
+                { letter: "D", text: "Ohm (Ω)" }
+            ],
+            correct: "A",
+            solution: "Die Einheit der Stromstärke ist Ampere (A)."
+        },
+        {
+            id: "BASIS_F03",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Das <strong>Formelzeichen</strong> für die elektrische Spannung ist:`,
+            options: [
+                { letter: "A", text: "<em>U</em>" },
+                { letter: "B", text: "<em>I</em>" },
+                { letter: "C", text: "<em>S</em>" },
+                { letter: "D", text: "<em>V</em>" }
+            ],
+            correct: "A",
+            solution: "Das Formelzeichen der Spannung ist <em>U</em>."
+        },
+        {
+            id: "BASIS_F04",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Die <strong>Einheit</strong> der elektrischen Spannung heißt:`,
+            options: [
+                { letter: "A", text: "Ampere (A)" },
+                { letter: "B", text: "Volt (V)" },
+                { letter: "C", text: "Watt (W)" },
+                { letter: "D", text: "Joule (J)" }
+            ],
+            correct: "B",
+            solution: "Die Einheit der Spannung ist Volt (V)."
+        },
+        {
+            id: "BASIS_F05",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Vervollständige die Sätze:`,
+            blanks: [
+                { id: "b1", label: "Die Stromstärke misst man mit einem", options: ["Amperemeter", "Voltmeter", "Ohmmeter", "Wattmeter"], correct: "Amperemeter" },
+                { id: "b2", label: "Die Spannung misst man mit einem", options: ["Amperemeter", "Voltmeter", "Ohmmeter", "Wattmeter"], correct: "Voltmeter" }
+            ],
+            solution: "Stromstärke → Amperemeter; Spannung → Voltmeter"
+        },
+        {
+            id: "BASIS_F06",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Vervollständige die Sätze zur Anschlussart:`,
+            blanks: [
+                { id: "b1", label: "Das Amperemeter wird", options: ["in Reihe", "parallel"], correct: "in Reihe" },
+                { id: "b2", label: "Das Voltmeter wird", options: ["in Reihe", "parallel"], correct: "parallel" }
+            ],
+            solution: "Amperemeter → in Reihe; Voltmeter → parallel"
+        },
+        {
+            id: "BASIS_F07",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `In einer <strong>Reihenschaltung</strong> gilt für die <strong>Stromstärke</strong>:`,
+            options: [
+                { letter: "A", text: "Die Stromstärke ist überall gleich groß" },
+                { letter: "B", text: "Die Teilströme addieren sich" },
+                { letter: "C", text: "Die Stromstärke wird immer kleiner" },
+                { letter: "D", text: "Die Stromstärke verdoppelt sich" }
+            ],
+            correct: "A",
+            solution: "In der Reihenschaltung ist die Stromstärke überall gleich groß."
+        },
+        {
+            id: "BASIS_F08",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `In einer <strong>Reihenschaltung</strong> gilt für die <strong>Spannung</strong>:`,
+            options: [
+                { letter: "A", text: "Die Spannung ist überall gleich groß" },
+                { letter: "B", text: "Die Teilspannungen addieren sich zur Gesamtspannung" },
+                { letter: "C", text: "Die Spannung halbiert sich" },
+                { letter: "D", text: "Die Spannung bleibt unverändert" }
+            ],
+            correct: "B",
+            solution: "In der Reihenschaltung addieren sich die Teilspannungen zur Gesamtspannung."
+        },
+        {
+            id: "BASIS_F09",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `In einer <strong>Parallelschaltung</strong> gilt für die <strong>Spannung</strong>:`,
+            options: [
+                { letter: "A", text: "Die Spannung ist an allen Zweigen gleich" },
+                { letter: "B", text: "Die Teilspannungen addieren sich" },
+                { letter: "C", text: "Die Spannung teilt sich auf" },
+                { letter: "D", text: "Die Spannung wird größer" }
+            ],
+            correct: "A",
+            solution: "In der Parallelschaltung ist die Spannung an allen Zweigen gleich."
+        },
+        {
+            id: "BASIS_F10",
+            type: "number",
+            afb: 2,
+            points: 2,
+            question: `Zwei Lampen sind <strong>in Reihe</strong> geschaltet. Durch L₁ fließen 0,4 A. Wie groß ist <em>I</em>₂?`,
+            svg: `<svg width="340" height="160" viewBox="0 0 340 160">
+                <line x1="40" y1="40" x2="90" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="130" y1="40" x2="170" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="210" y1="40" x2="300" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="40" x2="300" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="120" x2="200" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="108" x2="200" y2="132" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="112" x2="180" y2="128" stroke="#000" stroke-width="4"/>
+                <text x="206" y="118" font-family="serif" font-size="10">+</text>
+                <text x="166" y="118" font-family="serif" font-size="10">−</text>
+                <line x1="180" y1="120" x2="40" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="120" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="110" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="97" y1="27" x2="123" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="123" y1="27" x2="97" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="190" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="177" y1="27" x2="203" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="203" y1="27" x2="177" y2="53" stroke="#000" stroke-width="2"/>
+                <text x="110" y="80" text-anchor="middle" font-family="serif" font-size="11">L₁</text>
+                <text x="190" y="80" text-anchor="middle" font-family="serif" font-size="11">L₂</text>
+                <text x="110" y="18" text-anchor="middle" font-family="serif" font-size="10"><tspan font-style="italic">I</tspan>₁ = 0,4 A</text>
+                <text x="190" y="18" text-anchor="middle" font-family="serif" font-size="10" fill="#c00" font-weight="bold"><tspan font-style="italic">I</tspan>₂ = ?</text>
+            </svg>`,
+            correctValue: 0.4,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Reihenschaltung: Stromstärke überall gleich → <em>I</em>₂ = <em>I</em>₁ = 0,4 A"
+        },
+        {
+            id: "BASIS_F11",
+            type: "number",
+            afb: 2,
+            points: 2,
+            question: `Zwei Lampen sind <strong>parallel</strong> geschaltet. <em>I</em>₁ = 0,3 A, <em>I</em>₂ = 0,2 A. Berechne <em>I</em><sub>ges</sub>.`,
+            svg: `<svg width="340" height="200" viewBox="0 0 340 200">
+                <line x1="40" y1="40" x2="100" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="40" x2="100" y2="140" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="60" x2="140" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="60" x2="240" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="120" x2="140" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="120" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="60" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="90" x2="300" y2="90" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="90" x2="300" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="170" x2="200" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="158" x2="200" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="162" x2="180" y2="178" stroke="#000" stroke-width="4"/>
+                <text x="206" y="168" font-family="serif" font-size="10">+</text>
+                <text x="166" y="168" font-family="serif" font-size="10">−</text>
+                <line x1="180" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="60" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="47" x2="173" y2="73" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="47" x2="147" y2="73" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="120" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="107" x2="173" y2="133" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="107" x2="147" y2="133" stroke="#000" stroke-width="2"/>
+                <text x="200" y="55" font-family="serif" font-size="10">L₁: <tspan font-style="italic">I</tspan>₁ = 0,3 A</text>
+                <text x="200" y="125" font-family="serif" font-size="10">L₂: <tspan font-style="italic">I</tspan>₂ = 0,2 A</text>
+                <text x="270" y="75" font-family="serif" font-size="10" fill="#c00" font-weight="bold"><tspan font-style="italic">I</tspan><tspan font-size="8" baseline-shift="sub">ges</tspan> = ?</text>
+            </svg>`,
+            correctValue: 0.5,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Parallelschaltung: <em>I</em><sub>ges</sub> = <em>I</em>₁ + <em>I</em>₂ = 0,3 A + 0,2 A = 0,5 A"
+        },
+        {
+            id: "BASIS_F12",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Zwei Lampen in <strong>Reihe</strong> an 12 V. An L₁ liegen 5 V. Berechne <em>U</em>₂.`,
+            svg: `<svg width="340" height="160" viewBox="0 0 340 160">
+                <line x1="40" y1="40" x2="90" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="130" y1="40" x2="170" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="210" y1="40" x2="300" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="40" x2="300" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="120" x2="200" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="108" x2="200" y2="132" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="112" x2="180" y2="128" stroke="#000" stroke-width="4"/>
+                <text x="190" y="145" font-family="serif" font-size="10">12 V</text>
+                <line x1="180" y1="120" x2="40" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="120" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="110" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="97" y1="27" x2="123" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="123" y1="27" x2="97" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="190" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="177" y1="27" x2="203" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="203" y1="27" x2="177" y2="53" stroke="#000" stroke-width="2"/>
+                <text x="110" y="80" text-anchor="middle" font-family="serif" font-size="11">L₁</text>
+                <text x="190" y="80" text-anchor="middle" font-family="serif" font-size="11">L₂</text>
+                <text x="110" y="18" text-anchor="middle" font-family="serif" font-size="10"><tspan font-style="italic">U</tspan>₁ = 5 V</text>
+                <text x="190" y="18" text-anchor="middle" font-family="serif" font-size="10" fill="#c00" font-weight="bold"><tspan font-style="italic">U</tspan>₂ = ?</text>
+            </svg>`,
+            correctValue: 7,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "Reihenschaltung: <em>U</em>₂ = <em>U</em><sub>ges</sub> − <em>U</em>₁ = 12 V − 5 V = 7 V"
+        },
+        {
+            id: "BASIS_F13",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Zwei Lampen sind <strong>parallel</strong> an 9 V angeschlossen. Wie groß ist <em>U</em>₁?`,
+            svg: `<svg width="340" height="200" viewBox="0 0 340 200">
+                <line x1="40" y1="40" x2="100" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="40" x2="100" y2="140" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="60" x2="140" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="60" x2="240" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="120" x2="140" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="120" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="60" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="90" x2="300" y2="90" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="90" x2="300" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="170" x2="200" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="158" x2="200" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="162" x2="180" y2="178" stroke="#000" stroke-width="4"/>
+                <text x="190" y="195" font-family="serif" font-size="10">9 V</text>
+                <line x1="180" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="60" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="47" x2="173" y2="73" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="47" x2="147" y2="73" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="120" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="107" x2="173" y2="133" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="107" x2="147" y2="133" stroke="#000" stroke-width="2"/>
+                <text x="200" y="55" font-family="serif" font-size="10" fill="#c00" font-weight="bold">L₁: <tspan font-style="italic">U</tspan>₁ = ?</text>
+                <text x="200" y="125" font-family="serif" font-size="10" fill="#c00" font-weight="bold">L₂: <tspan font-style="italic">U</tspan>₂ = ?</text>
+            </svg>`,
+            correctValue: 9,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "Parallelschaltung: Spannung überall gleich → <em>U</em>₁ = <em>U</em>₂ = <em>U</em><sub>ges</sub> = 9 V"
+        }
+    ],
+    
+    // ═══════════════════════════════════════════════════════════
+    // STERN1 (★) – 12 Aufgaben, 30 Punkte (Kurzfassung - vollständig in separater Datei)
+    // ═══════════════════════════════════════════════════════════
+    stern1: [
+        {
+            id: "STERN1_F01",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Vervollständige:`,
+            blanks: [
+                { id: "b1", label: "Das Formelzeichen der Stromstärke ist", options: ["I", "U", "R", "P"], correct: "I" },
+                { id: "b2", label: "Die Einheit der Stromstärke heißt", options: ["Ampere", "Volt", "Ohm", "Watt"], correct: "Ampere" }
+            ],
+            solution: "Formelzeichen: I; Einheit: Ampere"
+        },
+        {
+            id: "STERN1_F02",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Die Stromstärke gibt an, wie viel ___ pro ___ durch einen Leiter fließt.`,
+            blanks: [
+                { id: "b1", label: "Wie viel", options: ["Ladung", "Energie", "Spannung", "Strom"], correct: "Ladung" },
+                { id: "b2", label: "Pro", options: ["Zeit", "Strecke", "Spannung", "Widerstand"], correct: "Zeit" }
+            ],
+            solution: "Ladung pro Zeit"
+        },
+        {
+            id: "STERN1_F03",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Vervollständige:`,
+            blanks: [
+                { id: "b1", label: "Das Formelzeichen der Spannung ist", options: ["U", "I", "V", "S"], correct: "U" },
+                { id: "b2", label: "Die Einheit der Spannung heißt", options: ["Volt", "Ampere", "Ohm", "Watt"], correct: "Volt" }
+            ],
+            solution: "Formelzeichen: U; Einheit: Volt"
+        },
+        {
+            id: "STERN1_F04",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Ordne die Messgeräte richtig zu:`,
+            blanks: [
+                { id: "b1", label: "Amperemeter wird geschaltet", options: ["in Reihe", "parallel"], correct: "in Reihe" },
+                { id: "b2", label: "Voltmeter wird geschaltet", options: ["in Reihe", "parallel"], correct: "parallel" }
+            ],
+            solution: "Amperemeter: in Reihe; Voltmeter: parallel"
+        },
+        {
+            id: "STERN1_F05",
+            type: "multicheck",
+            afb: 2,
+            points: 2,
+            question: `Welche Aussagen gelten für die <strong>REIHENSCHALTUNG</strong>?`,
+            options: [
+                { id: "a", text: "Die Stromstärke ist an allen Stellen gleich groß", correct: true },
+                { id: "b", text: "Die Teilspannungen addieren sich zur Gesamtspannung", correct: true },
+                { id: "c", text: "Die Teilströme addieren sich zum Gesamtstrom", correct: false },
+                { id: "d", text: "An allen Bauteilen liegt dieselbe Spannung", correct: false }
+            ],
+            solution: "Reihenschaltung: I überall gleich, U addiert sich"
+        },
+        {
+            id: "STERN1_F06",
+            type: "multicheck",
+            afb: 2,
+            points: 2,
+            question: `Welche Aussagen gelten für die <strong>PARALLELSCHALTUNG</strong>?`,
+            options: [
+                { id: "a", text: "Die Stromstärke ist an allen Stellen gleich groß", correct: false },
+                { id: "b", text: "Die Teilströme addieren sich zum Gesamtstrom", correct: true },
+                { id: "c", text: "An allen Zweigen liegt dieselbe Spannung", correct: true },
+                { id: "d", text: "Die Teilspannungen addieren sich", correct: false }
+            ],
+            solution: "Parallelschaltung: I addiert sich, U überall gleich"
+        },
+        {
+            id: "STERN1_F07",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen sind <strong>in Reihe</strong> geschaltet. Durch L₁ fließen 0,5 A. Wie groß ist <em>I</em>₂?`,
+            correctValue: 0.5,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Reihenschaltung: Stromstärke überall gleich → <em>I</em>₂ = 0,5 A"
+        },
+        {
+            id: "STERN1_F08",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen sind <strong>parallel</strong>. <em>I</em>₁ = 0,3 A, <em>I</em>₂ = 0,4 A, <em>I</em>₃ = 0,3 A. Berechne <em>I</em><sub>ges</sub>.`,
+            correctValue: 1,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Parallelschaltung: <em>I</em><sub>ges</sub> = 0,3 A + 0,4 A + 0,3 A = 1 A"
+        },
+        {
+            id: "STERN1_F09",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Zwei Zweige parallel: <em>I</em>₁ = 400 mA, <em>I</em>₂ = 600 mA. Berechne <em>I</em><sub>ges</sub> in <strong>Ampere</strong>.`,
+            correctValue: 1,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "400 mA = 0,4 A; 600 mA = 0,6 A → <em>I</em><sub>ges</sub> = 1 A"
+        },
+        {
+            id: "STERN1_F10",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen <strong>in Reihe</strong> an 12 V: <em>U</em>₁ = 3 V, <em>U</em>₂ = 5 V. Berechne <em>U</em>₃.`,
+            correctValue: 4,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "<em>U</em>₃ = 12 V − 3 V − 5 V = 4 V"
+        },
+        {
+            id: "STERN1_F11",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen sind <strong>parallel</strong> an eine 9-V-Batterie angeschlossen. Wie groß ist die Spannung an L₁?`,
+            correctValue: 9,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "Parallelschaltung: <em>U</em>₁ = <em>U</em><sub>ges</sub> = 9 V"
+        },
+        {
+            id: "STERN1_F12",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Gemischte Schaltung: L₁ und L₂ in Reihe, L₃ parallel dazu. Gesamtspannung 12 V. <em>U</em>₁ = 4 V, <em>U</em>₂ = 8 V. Berechne <em>U</em>₃.`,
+            correctValue: 12,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "L₃ ist parallel zum Reihenzweig → <em>U</em>₃ = <em>U</em><sub>ges</sub> = 12 V"
+        }
+    ],
+    
+    // ═══════════════════════════════════════════════════════════
+    // STERN2 (★★) – 9 Aufgaben, 30 Punkte
+    // ═══════════════════════════════════════════════════════════
+    stern2: [
+        {
+            id: "STERN2_F01",
+            type: "text",
+            afb: 1,
+            points: 3,
+            question: `Gib an (Texteingabe):`,
+            fields: [
+                { id: "f1", label: "Formelzeichen der Stromstärke", correct: ["I"], caseSensitive: true },
+                { id: "f2", label: "Einheit der Stromstärke", correct: ["Ampere", "A"], caseSensitive: false },
+                { id: "f3", label: "Messgerät für Stromstärke", correct: ["Amperemeter", "Strommesser"], caseSensitive: false }
+            ],
+            solution: "I; Ampere; Amperemeter"
+        },
+        {
+            id: "STERN2_F02",
+            type: "text",
+            afb: 1,
+            points: 3,
+            question: `Gib an (Texteingabe):`,
+            fields: [
+                { id: "f1", label: "Formelzeichen der Spannung", correct: ["U"], caseSensitive: true },
+                { id: "f2", label: "Einheit der Spannung", correct: ["Volt", "V"], caseSensitive: false },
+                { id: "f3", label: "Messgerät für Spannung", correct: ["Voltmeter", "Spannungsmesser"], caseSensitive: false }
+            ],
+            solution: "U; Volt; Voltmeter"
+        },
+        {
+            id: "STERN2_F03",
+            type: "dropdown",
+            afb: 1,
+            points: 4,
+            question: `Ordne die Regeln der richtigen Schaltungsart zu:`,
+            blanks: [
+                { id: "b1", label: "Stromstärke ist überall gleich", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b2", label: "Teilströme addieren sich", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" },
+                { id: "b3", label: "Teilspannungen addieren sich", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b4", label: "Spannung an allen Zweigen gleich", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" }
+            ],
+            solution: "Reihe; Parallel; Reihe; Parallel"
+        },
+        {
+            id: "STERN2_F04",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Messgeräte-Anschluss:`,
+            blanks: [
+                { id: "b1", label: "Amperemeter wird geschaltet", options: ["in Reihe", "parallel"], correct: "in Reihe" },
+                { id: "b2", label: "Voltmeter wird geschaltet", options: ["in Reihe", "parallel"], correct: "parallel" }
+            ],
+            solution: "in Reihe; parallel"
+        },
+        {
+            id: "STERN2_F05",
+            type: "number",
+            afb: 2,
+            points: 4,
+            question: `Vier Motoren sind <strong>parallel</strong> geschaltet. <em>I</em>₁ = 0,5 A, <em>I</em>₂ = 0,3 A, <em>I</em>₃ = 0,4 A, <em>I</em>₄ = 0,3 A. Berechne <em>I</em><sub>ges</sub>.`,
+            correctValue: 1.5,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "<em>I</em><sub>ges</sub> = 0,5 A + 0,3 A + 0,4 A + 0,3 A = 1,5 A"
+        },
+        {
+            id: "STERN2_F06",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Gemischte Schaltung: L₁ in Reihe mit (L₂ ∥ L₃). <em>I</em><sub>ges</sub> = 0,8 A, <em>I</em>₂ = 0,5 A. Berechne <em>I</em>₃.`,
+            correctValue: 0.3,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "<em>I</em>₃ = <em>I</em><sub>ges</sub> − <em>I</em>₂ = 0,8 A − 0,5 A = 0,3 A (da L₂∥L₃)"
+        },
+        {
+            id: "STERN2_F07",
+            type: "number",
+            afb: 2,
+            points: 2,
+            question: `Zwei Zweige parallel: <em>I</em>₁ = 800 mA, <em>I</em>₂ = 0,7 A. Berechne <em>I</em><sub>ges</sub> in <strong>Ampere</strong>.`,
+            correctValue: 1.5,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "800 mA = 0,8 A → <em>I</em><sub>ges</sub> = 0,8 A + 0,7 A = 1,5 A"
+        },
+        {
+            id: "STERN2_F08",
+            type: "number",
+            afb: 2,
+            points: 4,
+            question: `Drei Lampen <strong>in Reihe</strong> an 18 V: <em>U</em>₁ = 4 V, <em>U</em>₂ = 6 V. Berechne <em>U</em>₃.`,
+            correctValue: 8,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "<em>U</em>₃ = 18 V − 4 V − 6 V = 8 V"
+        },
+        {
+            id: "STERN2_F09",
+            type: "multi-number",
+            afb: 2,
+            points: 5,
+            question: `Gemischte Schaltung: (L₁ + L₂) in Reihe, parallel zu L₃. Gesamtspannung 24 V. <em>U</em>₁ = 10 V. Berechne <em>U</em>₂ und <em>U</em>₃.`,
+            fields: [
+                { id: "u2", label: "U₂", correctValue: 14, unit: "V", tolerance: 0.1 },
+                { id: "u3", label: "U₃", correctValue: 24, unit: "V", tolerance: 0.1 }
+            ],
+            solution: "<em>U</em>₃ = 24 V (parallel); <em>U</em>₂ = 24 V − 10 V = 14 V"
+        }
+    ],
+    
+    // ═══════════════════════════════════════════════════════════
+    // STERN3 (★★★) – 14 Aufgaben, 52 Punkte
+    // ═══════════════════════════════════════════════════════════
+    stern3: [
+        {
+            id: "STERN3_F01",
+            type: "dropdown",
+            afb: 2,
+            points: 4,
+            question: `Ordne die Regeln der richtigen Schaltungsart zu:`,
+            blanks: [
+                { id: "b1", label: "Die Stromstärke ist an allen Stellen gleich groß", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b2", label: "Die Teilströme addieren sich zum Gesamtstrom", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" },
+                { id: "b3", label: "Die Teilspannungen addieren sich zur Gesamtspannung", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b4", label: "An allen Zweigen liegt dieselbe Spannung", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" }
+            ],
+            solution: "Reihe; Parallel; Reihe; Parallel"
+        },
+        {
+            id: "STERN3_F02",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Messgeräte-Anschluss:`,
+            blanks: [
+                { id: "b1", label: "Amperemeter misst Stromstärke und wird geschaltet", options: ["in Reihe", "parallel"], correct: "in Reihe" },
+                { id: "b2", label: "Voltmeter misst Spannung und wird geschaltet", options: ["in Reihe", "parallel"], correct: "parallel" }
+            ],
+            solution: "in Reihe; parallel"
+        },
+        {
+            id: "STERN3_F03",
+            type: "multicheck",
+            afb: 2,
+            points: 3,
+            question: `Welche Aussagen beschreiben die <strong>Reihenschaltung</strong> KORREKT?`,
+            options: [
+                { id: "a", text: "Der Strom teilt sich an Verzweigungen auf", correct: false },
+                { id: "b", text: "Fällt ein Verbraucher aus, fließt kein Strom mehr", correct: true },
+                { id: "c", text: "Die Gesamtspannung verteilt sich auf die Verbraucher", correct: true },
+                { id: "d", text: "Jeder Verbraucher kann unabhängig geschaltet werden", correct: false }
+            ],
+            solution: "b und c sind korrekt"
+        },
+        {
+            id: "STERN3_F04",
+            type: "multicheck",
+            afb: 2,
+            points: 3,
+            question: `Welche Aussagen beschreiben die <strong>Parallelschaltung</strong> KORREKT?`,
+            options: [
+                { id: "a", text: "Der Gesamtstrom ist die Summe der Teilströme", correct: true },
+                { id: "b", text: "Die Spannung teilt sich auf die Verbraucher auf", correct: false },
+                { id: "c", text: "Fällt ein Verbraucher aus, funktionieren die anderen weiter", correct: true },
+                { id: "d", text: "Alle Verbraucher müssen identisch sein", correct: false }
+            ],
+            solution: "a und c sind korrekt"
+        },
+        {
+            id: "STERN3_F05",
+            type: "number",
+            afb: 2,
+            points: 5,
+            question: `Vier Motoren sind <strong>parallel</strong>: <em>I</em>₁ = 0,6 A, <em>I</em>₂ = 0,4 A, <em>I</em>₃ = 0,5 A, <em>I</em>₄ = 0,5 A. Berechne <em>I</em><sub>ges</sub>.`,
+            correctValue: 2,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "<em>I</em><sub>ges</sub> = 0,6 A + 0,4 A + 0,5 A + 0,5 A = 2 A"
+        },
+        {
+            id: "STERN3_F06",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Gemischt: L₁ in Reihe mit (L₂ ∥ L₃). <em>I</em><sub>ges</sub> = 1,2 A, <em>I</em>₂ = 0,7 A. Berechne <em>I</em>₃.`,
+            correctValue: 0.5,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "<em>I</em>₃ = <em>I</em><sub>ges</sub> − <em>I</em>₂ = 1,2 A − 0,7 A = 0,5 A"
+        },
+        {
+            id: "STERN3_F07",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Zweige parallel: <em>I</em>₁ = 500 mA, <em>I</em>₂ = 0,8 A, <em>I</em>₃ = 700 mA. Berechne <em>I</em><sub>ges</sub> in <strong>Ampere</strong>.`,
+            correctValue: 2,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "500 mA = 0,5 A; 700 mA = 0,7 A → <em>I</em><sub>ges</sub> = 0,5 A + 0,8 A + 0,7 A = 2 A"
+        },
+        {
+            id: "STERN3_F08",
+            type: "number",
+            afb: 3,
+            points: 3,
+            question: `<strong>Fehleranalyse:</strong> Parallelschaltung mit 3 Zweigen. Angegeben: <em>I</em><sub>ges</sub> = 1 A, <em>I</em>₁ = 0,4 A, <em>I</em>₂ = 0,3 A, <em>I</em>₃ = 0,4 A. Berechne die Differenz zum korrekten <em>I</em><sub>ges</sub>.`,
+            correctValue: 0.1,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Korrekt: 0,4 + 0,3 + 0,4 = 1,1 A. Differenz: 1,1 A − 1 A = 0,1 A"
+        },
+        {
+            id: "STERN3_F09",
+            type: "number",
+            afb: 2,
+            points: 5,
+            question: `Vier Lampen <strong>in Reihe</strong> an 24 V: <em>U</em>₁ = 6 V, <em>U</em>₂ = 8 V, <em>U</em>₃ = 4 V. Berechne <em>U</em>₄.`,
+            correctValue: 6,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "<em>U</em>₄ = 24 V − 6 V − 8 V − 4 V = 6 V"
+        },
+        {
+            id: "STERN3_F10",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Gemischt: (L₁ + L₂) in Reihe, parallel zu L₃. <em>U</em><sub>ges</sub> = 18 V, <em>U</em>₁ = 6 V. Berechne <em>U</em>₂.`,
+            correctValue: 12,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "<em>U</em>₂ = <em>U</em><sub>ges</sub> − <em>U</em>₁ = 18 V − 6 V = 12 V"
+        },
+        {
+            id: "STERN3_F11",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `<em>U</em>₁ = 4500 mV, <em>U</em>₂ = 3,5 V (Reihenschaltung an 12 V). Berechne <em>U</em>₃ in <strong>Volt</strong>.`,
+            correctValue: 4,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "4500 mV = 4,5 V → <em>U</em>₃ = 12 V − 4,5 V − 3,5 V = 4 V"
+        },
+        {
+            id: "STERN3_F12",
+            type: "number",
+            afb: 3,
+            points: 3,
+            question: `<strong>Fehleranalyse:</strong> Reihenschaltung an 12 V. Angegeben: <em>U</em>₁ = 5 V, <em>U</em>₂ = 4 V, <em>U</em>₃ = 4 V. Berechne die Differenz zur Gesamtspannung.`,
+            correctValue: 1,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "Summe: 5 V + 4 V + 4 V = 13 V. Differenz: 13 V − 12 V = 1 V"
+        },
+        {
+            id: "STERN3_F13",
+            type: "number",
+            afb: 3,
+            points: 6,
+            question: `<strong>EXTREM:</strong> Verschachtelte Schaltung mit 5 Lampen. (L₁ + L₂) parallel zu [L₃ ∥ (L₄ ∥ L₅)]. <em>I</em><sub>ges</sub> = 2 A, <em>I</em>₁ = 0,8 A, <em>I</em>₃ = 0,4 A, <em>I</em>₄ = 0,4 A. Berechne <em>I</em>₅.`,
+            correctValue: 0.4,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Oberer Zweig: <em>I</em>₁ = <em>I</em>₂ = 0,8 A. Unterer Bereich: 2 A − 0,8 A = 1,2 A. <em>I</em>₃ + (<em>I</em>₄ + <em>I</em>₅) = 1,2 A. <em>I</em>₅ = 1,2 A − 0,4 A − 0,4 A = 0,4 A"
+        },
+        {
+            id: "STERN3_F14",
+            type: "multi-number",
+            afb: 3,
+            points: 6,
+            question: `<strong>EXTREM:</strong> (L₁ + L₂) ∥ [L₃ ∥ (L₄ ∥ L₅)] an 24 V. <em>U</em>₁ = 8 V. Berechne <em>U</em>₂, <em>U</em>₃, <em>U</em>₄, <em>U</em>₅.`,
+            fields: [
+                { id: "u2", label: "U₂", correctValue: 16, unit: "V", tolerance: 0.1 },
+                { id: "u3", label: "U₃", correctValue: 24, unit: "V", tolerance: 0.1 },
+                { id: "u4", label: "U₄", correctValue: 24, unit: "V", tolerance: 0.1 },
+                { id: "u5", label: "U₅", correctValue: 24, unit: "V", tolerance: 0.1 }
+            ],
+            solution: "<em>U</em>₂ = 24 V − 8 V = 16 V; <em>U</em>₃ = <em>U</em>₄ = <em>U</em>₅ = 24 V (alle parallel zur Gesamtspannung)"
+        }
+    ]
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+
+let state = {
+    level: null,
+    seat: null,
+    currentQuestion: 0,
+    answers: {},
+    startTime: null,
+    timeRemaining: CONFIG.TEST_DURATION * 60,
+    submitted: false
+};
+
+let submissionCode = '';
+let timerInterval = null;
+let gradedAnswers = [];
+let totalEarned = 0;
+
+// ═══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', init);
+
+function init() {
+    createSeatGrid();
+    setupLevelButtons();
+    checkSavedState();
+}
+
+function createSeatGrid() {
+    const grid = document.getElementById('seatGrid');
+    for (let i = 1; i <= 30; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'seat-btn';
+        btn.textContent = `P${i.toString().padStart(2, '0')}`;
+        btn.dataset.seat = `P${i.toString().padStart(2, '0')}`;
+        btn.onclick = () => selectSeat(btn.dataset.seat);
+        grid.appendChild(btn);
+    }
+}
+
+function setupLevelButtons() {
+    document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.onclick = () => selectLevel(btn.dataset.level);
+    });
+}
+
+function selectLevel(level) {
+    state.level = level;
+    document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.level === level);
+    });
+    updateStartButton();
+}
+
+function selectSeat(seat) {
+    state.seat = seat;
+    document.querySelectorAll('.seat-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.seat === seat);
+    });
+    updateStartButton();
+}
+
+function updateStartButton() {
+    document.getElementById('startBtn').disabled = !(state.level && state.seat);
+}
+
+function checkSavedState() {
+    // Check all possible storage keys
+    for (const level of Object.keys(CONFIG.LEVELS)) {
+        const key = CONFIG.STORAGE_KEY_PREFIX + level;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if (data.submitted) {
+                    // Restore submitted state
+                    state = { ...state, ...data };
+                    submissionCode = data.submissionCode || '';
+                    gradedAnswers = data.gradedAnswers || [];
+                    totalEarned = data.totalEarned || 0;
+                    showScreen('feedbackScreen');
+                    renderFeedback();
+                    return;
+                } else if (data.startTime) {
+                    // Restore in-progress quiz
+                    state = { ...state, ...data };
+                    showScreen('quizScreen');
+                    startTimer();
+                    renderQuizUI();
+                    return;
+                }
+            } catch (e) {
+                console.error('Error loading saved state:', e);
+            }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+document.getElementById('startBtn').onclick = startQuiz;
+
+function startQuiz() {
+    state.startTime = Date.now();
+    state.answers = {};
+    state.currentQuestion = 0;
+    state.timeRemaining = CONFIG.TEST_DURATION * 60;
+    
+    saveState();
+    showScreen('quizScreen');
+    startTimer();
+    renderQuizUI();
+}
+
+function getQuestions() {
+    return QUESTIONS[state.level] || [];
+}
+
+function renderQuizUI() {
+    const levelInfo = CONFIG.LEVELS[state.level];
+    
+    // Update badge
+    const badge = document.getElementById('levelBadge');
+    badge.textContent = `${levelInfo.symbol} ${levelInfo.name}`;
+    badge.className = `level-badge ${state.level}`;
+    badge.style.background = levelInfo.color;
+    
+    // Render navigation
+    renderQuestionNav();
+    
+    // Render current question
+    renderQuestion();
+    
+    // Update progress
+    updateProgress();
+}
+
+function renderQuestionNav() {
+    const nav = document.getElementById('questionNav');
+    const questions = getQuestions();
+    nav.innerHTML = '';
+    
+    questions.forEach((q, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'nav-btn';
+        if (i === state.currentQuestion) btn.classList.add('current');
+        if (state.answers[q.id] !== undefined) btn.classList.add('answered');
+        btn.textContent = i + 1;
+        btn.onclick = () => goToQuestion(i);
+        nav.appendChild(btn);
+    });
+}
+
+function renderQuestion() {
+    const questions = getQuestions();
+    const q = questions[state.currentQuestion];
+    const container = document.getElementById('questionContainer');
+    
+    let html = `
+        <div class="question-card">
+            <div class="question-header-row">
+                <span class="question-num">Frage ${state.currentQuestion + 1} von ${questions.length}</span>
+                <span class="question-points">${q.points} P</span>
+            </div>
+            <div class="question-text">${q.question}</div>
+    `;
+    
+    // SVG if present
+    if (q.svg) {
+        html += `<div class="circuit-container">${q.svg}</div>`;
+    }
+    
+    // Render based on type
+    switch (q.type) {
+        case 'mc':
+            html += renderMC(q);
+            break;
+        case 'multicheck':
+            html += renderMulticheck(q);
+            break;
+        case 'dropdown':
+            html += renderDropdown(q);
+            break;
+        case 'number':
+            html += renderNumber(q);
+            break;
+        case 'text':
+            html += renderText(q);
+            break;
+        case 'multi-number':
+            html += renderMultiNumber(q);
+            break;
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+    
+    // Update navigation buttons
+    document.getElementById('prevBtn').disabled = state.currentQuestion === 0;
+    document.getElementById('nextBtn').style.display = state.currentQuestion < questions.length - 1 ? 'block' : 'none';
+    document.getElementById('submitBtn').style.display = state.currentQuestion === questions.length - 1 ? 'block' : 'none';
+}
+
+function renderMC(q) {
+    const saved = state.answers[q.id];
+    let html = '<div class="options">';
+    q.options.forEach(opt => {
+        const selected = saved === opt.letter ? 'selected' : '';
+        html += `
+            <div class="option ${selected}" onclick="selectMC('${q.id}', '${opt.letter}')">
+                <span class="option-letter">${opt.letter}</span>
+                <span>${opt.text}</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+}
+
+function selectMC(qid, letter) {
+    state.answers[qid] = letter;
+    saveState();
+    renderQuestion();
+    renderQuestionNav();
+    updateProgress();
+}
+
+function renderMulticheck(q) {
+    const saved = state.answers[q.id] || {};
+    let html = '<div class="options multicheck">';
+    q.options.forEach(opt => {
+        const checked = saved[opt.id] ? 'checked' : '';
+        html += `
+            <div class="option ${checked}" onclick="toggleCheck('${q.id}', '${opt.id}')">
+                <span class="check-box">${saved[opt.id] ? '✓' : ''}</span>
+                <span>${opt.text}</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+}
+
+function toggleCheck(qid, optid) {
+    if (!state.answers[qid]) state.answers[qid] = {};
+    state.answers[qid][optid] = !state.answers[qid][optid];
+    saveState();
+    renderQuestion();
+    renderQuestionNav();
+    updateProgress();
+}
+
+function renderDropdown(q) {
+    let html = '<div class="dropdown-section">';
+    q.blanks.forEach((blank, i) => {
+        const saved = state.answers[q.id] ? state.answers[q.id][blank.id] : '';
+        html += `
+            <div class="dropdown-row">
+                <span>${blank.label}:</span>
+                <select onchange="selectDropdown('${q.id}', '${blank.id}', this.value)">
+                    <option value="">-- Wähle --</option>
+                    ${blank.options.map(opt => `<option value="${opt}" ${saved === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                </select>
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+}
+
+function selectDropdown(qid, blankid, value) {
+    if (!state.answers[qid]) state.answers[qid] = {};
+    state.answers[qid][blankid] = value;
+    saveState();
+    renderQuestionNav();
+    updateProgress();
+}
+
+function renderNumber(q) {
+    const saved = state.answers[q.id] || {};
+    return `
+        <div class="number-input-row">
+            <input type="text" class="number-input" placeholder="Antwort" 
+                   value="${saved.value || ''}" 
+                   onchange="setNumber('${q.id}', this.value)">
+            <span class="unit-label">${q.unit}</span>
+        </div>
+    `;
+}
+
+function setNumber(qid, value) {
+    const q = getQuestions().find(x => x.id === qid);
+    if (!state.answers[qid]) state.answers[qid] = {};
+    state.answers[qid].value = value.replace(',', '.');
+    state.answers[qid].unit = q.unit;
+    saveState();
+    renderQuestionNav();
+    updateProgress();
+}
+
+function renderText(q) {
+    let html = '<div class="text-input-section">';
+    q.fields.forEach(field => {
+        const saved = state.answers[q.id] ? state.answers[q.id][field.id] : '';
+        html += `
+            <div class="dropdown-row">
+                <span>${field.label}:</span>
+                <input type="text" class="text-input" 
+                       value="${saved || ''}" 
+                       onchange="setText('${q.id}', '${field.id}', this.value)">
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+}
+
+function setText(qid, fieldid, value) {
+    if (!state.answers[qid]) state.answers[qid] = {};
+    state.answers[qid][fieldid] = value;
+    saveState();
+    renderQuestionNav();
+    updateProgress();
+}
+
+function renderMultiNumber(q) {
+    let html = '<div class="multi-number-section">';
+    q.fields.forEach(field => {
+        const saved = state.answers[q.id] ? state.answers[q.id][field.id] : '';
+        html += `
+            <div class="number-input-row">
+                <span>${field.label} =</span>
+                <input type="text" class="number-input" 
+                       value="${saved || ''}" 
+                       onchange="setMultiNumber('${q.id}', '${field.id}', this.value)">
+                <span class="unit-label">${field.unit}</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+}
+
+function setMultiNumber(qid, fieldid, value) {
+    if (!state.answers[qid]) state.answers[qid] = {};
+    state.answers[qid][fieldid] = value.replace(',', '.');
+    saveState();
+    renderQuestionNav();
+    updateProgress();
+}
+
+function updateProgress() {
+    const questions = getQuestions();
+    const levelInfo = CONFIG.LEVELS[state.level];
+    const answered = questions.filter(q => state.answers[q.id] !== undefined).length;
+    const percent = (answered / questions.length) * 100;
+    
+    document.getElementById('progressFill').style.width = `${percent}%`;
+    document.getElementById('progressText').textContent = 
+        `${answered} von ${questions.length} beantwortet`;
+}
+
+function goToQuestion(index) {
+    state.currentQuestion = index;
+    renderQuestion();
+    renderQuestionNav();
+}
+
+function prevQuestion() {
+    if (state.currentQuestion > 0) {
+        state.currentQuestion--;
+        renderQuestion();
+        renderQuestionNav();
+    }
+}
+
+function nextQuestion() {
+    const questions = getQuestions();
+    if (state.currentQuestion < questions.length - 1) {
+        state.currentQuestion++;
+        renderQuestion();
+        renderQuestionNav();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════════════
+
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        state.timeRemaining--;
+        saveState();
+        updateTimerDisplay();
+        
+        if (state.timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            submitQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const mins = Math.floor(state.timeRemaining / 60);
+    const secs = state.timeRemaining % 60;
+    const display = document.getElementById('timer');
+    display.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    
+    display.classList.remove('warning', 'danger');
+    if (state.timeRemaining <= 300) display.classList.add('danger');
+    else if (state.timeRemaining <= 600) display.classList.add('warning');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUBMISSION
+// ═══════════════════════════════════════════════════════════════
+
+function showSubmitModal() {
+    document.getElementById('submitModal').classList.add('active');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+function submitQuiz() {
+    closeModal('submitModal');
+    clearInterval(timerInterval);
+    
+    // Grade the quiz
+    gradeQuiz();
+    
+    // Generate submission code
+    generateSubmissionCode();
+    
+    // Mark as submitted
+    state.submitted = true;
+    const elapsed = CONFIG.TEST_DURATION * 60 - state.timeRemaining;
+    
+    // Save everything
+    const key = CONFIG.STORAGE_KEY_PREFIX + state.level;
+    localStorage.setItem(key, JSON.stringify({
+        ...state,
+        submissionCode: submissionCode,
+        gradedAnswers: gradedAnswers,
+        totalEarned: totalEarned,
+        elapsed: elapsed
+    }));
+    
+    // Show feedback
+    showScreen('feedbackScreen');
+    renderFeedback();
+}
+
+function gradeQuiz() {
+    const questions = getQuestions();
+    gradedAnswers = [];
+    totalEarned = 0;
+    
+    questions.forEach(q => {
+        const answer = state.answers[q.id];
+        let earned = 0;
+        let correct = false;
+        
+        switch (q.type) {
+            case 'mc':
+                if (answer === q.correct) {
+                    earned = q.points;
+                    correct = true;
+                }
+                break;
+                
+            case 'multicheck':
+                if (answer) {
+                    let correctCount = 0;
+                    let wrongCount = 0;
+                    q.options.forEach(opt => {
+                        if (opt.correct && answer[opt.id]) correctCount++;
+                        else if (!opt.correct && answer[opt.id]) wrongCount++;
+                    });
+                    const totalCorrect = q.options.filter(o => o.correct).length;
+                    earned = Math.max(0, Math.round((correctCount - wrongCount) / totalCorrect * q.points));
+                    correct = earned === q.points;
+                }
+                break;
+                
+            case 'dropdown':
+                if (answer) {
+                    let correctBlanks = 0;
+                    q.blanks.forEach(blank => {
+                        if (answer[blank.id] === blank.correct) correctBlanks++;
+                    });
+                    earned = Math.round(correctBlanks / q.blanks.length * q.points);
+                    correct = earned === q.points;
+                }
+                break;
+                
+            case 'number':
+                if (answer && answer.value) {
+                    const val = parseFloat(answer.value);
+                    if (!isNaN(val) && Math.abs(val - q.correctValue) <= q.tolerance) {
+                        earned = q.points;
+                        correct = true;
+                    }
+                }
+                break;
+                
+            case 'text':
+                if (answer) {
+                    let correctFields = 0;
+                    q.fields.forEach(field => {
+                        const userVal = (answer[field.id] || '').trim();
+                        const matches = field.correct.some(c => 
+                            field.caseSensitive ? userVal === c : userVal.toLowerCase() === c.toLowerCase()
+                        );
+                        if (matches) correctFields++;
+                    });
+                    earned = Math.round(correctFields / q.fields.length * q.points);
+                    correct = earned === q.points;
+                }
+                break;
+                
+            case 'multi-number':
+                if (answer) {
+                    let correctFields = 0;
+                    q.fields.forEach(field => {
+                        const val = parseFloat(answer[field.id] || '');
+                        if (!isNaN(val) && Math.abs(val - field.correctValue) <= field.tolerance) {
+                            correctFields++;
+                        }
+                    });
+                    earned = Math.round(correctFields / q.fields.length * q.points);
+                    correct = earned === q.points;
+                }
+                break;
+        }
+        
+        gradedAnswers.push({
+            id: q.id,
+            earned: earned,
+            max: q.points,
+            correct: correct
+        });
+        totalEarned += earned;
+    });
+}
+
+function generateSubmissionCode() {
+    const data = {
+        v: CONFIG.VERSION,
+        l: state.level,
+        s: state.seat,
+        p: totalEarned,
+        m: CONFIG.LEVELS[state.level].totalPoints,
+        a: state.answers,
+        t: Date.now()
+    };
+    
+    const json = JSON.stringify(data);
+    submissionCode = LZString.compressToBase64(json);
+}
+
+function getGrade(percent) {
+    for (const grade of CONFIG.GRADE_SCALE) {
+        if (percent >= grade.percent) return grade.np;
+    }
+    return 0;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEEDBACK
+// ═══════════════════════════════════════════════════════════════
+
+function renderFeedback() {
+    const levelInfo = CONFIG.LEVELS[state.level];
+    const maxPoints = levelInfo.totalPoints;
+    const percent = (totalEarned / maxPoints) * 100;
+    const grade = getGrade(percent);
+    const elapsed = CONFIG.TEST_DURATION * 60 - state.timeRemaining;
+    const elapsedMins = Math.floor(elapsed / 60);
+    const elapsedSecs = elapsed % 60;
+    
+    // Header
+    document.getElementById('feedbackSeat').textContent = state.seat;
+    document.getElementById('feedbackDate').textContent = new Date().toLocaleDateString('de-DE');
+    document.getElementById('gradeDisplay').textContent = `${levelInfo.symbol} ${grade} NP ${levelInfo.symbol}`;
+    document.getElementById('pointsDisplay').textContent = `${totalEarned} / ${maxPoints} Punkte (${percent.toFixed(1)}%)`;
+    document.getElementById('timeDisplay').textContent = `Bearbeitungszeit: ${elapsedMins}:${elapsedSecs.toString().padStart(2, '0')} von 45:00`;
+    
+    // Update header color based on grade
+    const header = document.getElementById('feedbackHeader');
+    if (grade >= 10) header.style.background = 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)';
+    else if (grade >= 5) header.style.background = 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)';
+    else header.style.background = 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)';
+    
+    // QR Code
+    const qrContainer = document.getElementById('feedbackQR');
+    qrContainer.innerHTML = '';
+    if (submissionCode) {
+        new QRCode(qrContainer, {
+            text: submissionCode,
+            width: 150,
+            height: 150
+        });
+    }
+    document.getElementById('feedbackCode').textContent = submissionCode || 'Nicht verfügbar';
+    
+    // Feedback content
+    const questions = getQuestions();
+    let feedbackHTML = '';
+    
+    questions.forEach((q, i) => {
+        const graded = gradedAnswers[i];
+        const statusClass = graded.correct ? 'correct' : (graded.earned > 0 ? 'partial' : 'wrong');
+        const statusIcon = graded.correct ? '✅' : (graded.earned > 0 ? '⚠️' : '❌');
+        
+        feedbackHTML += `
+            <div class="feedback-item ${statusClass}">
+                <div class="feedback-item-header">
+                    <span>${statusIcon} Frage ${i + 1}</span>
+                    <span>${graded.earned} / ${graded.max} P</span>
+                </div>
+                <div class="feedback-item-body">
+                    <div class="question-text">${q.question}</div>
+                    ${q.svg ? `<div class="circuit-container">${q.svg}</div>` : ''}
+                    <div class="your-answer"><strong>Deine Antwort:</strong> ${formatAnswer(q, state.answers[q.id])}</div>
+                    <div class="correct-answer"><strong>Richtige Antwort:</strong> ${q.solution}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    document.getElementById('feedbackContent').innerHTML = feedbackHTML;
+    
+    // Points overview
+    document.getElementById('pointsOverview').innerHTML = `
+        <h3 style="margin-bottom: 15px;">📊 Punkteübersicht</h3>
+        <div class="points-row"><span>Erreichte Punkte</span><span>${totalEarned} P</span></div>
+        <div class="points-row"><span>Maximale Punkte</span><span>${maxPoints} P</span></div>
+        <div class="points-row"><span>Prozent</span><span>${percent.toFixed(1)}%</span></div>
+        <div class="points-row total"><span>NOTE</span><span>${grade} NP</span></div>
+    `;
+}
+
+function formatAnswer(q, answer) {
+    if (!answer) return '<em>Keine Antwort</em>';
+    
+    switch (q.type) {
+        case 'mc':
+            const opt = q.options.find(o => o.letter === answer);
+            return opt ? `${answer}) ${opt.text}` : answer;
+        case 'multicheck':
+            const checked = q.options.filter(o => answer[o.id]).map(o => o.text);
+            return checked.length ? checked.join(', ') : '<em>Nichts ausgewählt</em>';
+        case 'dropdown':
+            return q.blanks.map(b => `${b.label}: ${answer[b.id] || '-'}`).join('; ');
+        case 'number':
+            return answer.value ? `${answer.value} ${q.unit}` : '<em>Keine Antwort</em>';
+        case 'text':
+            return q.fields.map(f => `${f.label}: ${answer[f.id] || '-'}`).join('; ');
+        case 'multi-number':
+            return q.fields.map(f => `${f.label}: ${answer[f.id] || '-'} ${f.unit}`).join('; ');
+        default:
+            return JSON.stringify(answer);
+    }
+}
+
+function copyCode() {
+    navigator.clipboard.writeText(submissionCode).then(() => {
+        alert('Code kopiert!');
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+}
+
+function saveState() {
+    if (!state.level) return;
+    const key = CONFIG.STORAGE_KEY_PREFIX + state.level;
+    localStorage.setItem(key, JSON.stringify(state));
+}
+
+function loadState() {
+    if (!state.level) return null;
+    const key = CONFIG.STORAGE_KEY_PREFIX + state.level;
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : null;
+}
+
+function showResetModal() {
+    document.getElementById('resetCodeInput').value = '';
+    document.getElementById('resetModal').classList.add('active');
+}
+
+function tryReset() {
+    const code = document.getElementById('resetCodeInput').value;
+    if (code === CONFIG.RESET_CODE) {
+        closeModal('resetModal');
+        resetQuiz();
+    } else {
+        alert('Falscher Code!');
+    }
+}
+
+function resetQuiz() {
+    clearInterval(timerInterval);
+    const key = CONFIG.STORAGE_KEY_PREFIX + state.level;
+    localStorage.removeItem(key);
+    state = {
+        level: null,
+        seat: null,
+        currentQuestion: 0,
+        answers: {},
+        startTime: null,
+        timeRemaining: CONFIG.TEST_DURATION * 60,
+        submitted: false
+    };
+    submissionCode = '';
+    gradedAnswers = [];
+    totalEarned = 0;
+    
+    showScreen('setupScreen');
+    document.querySelectorAll('.level-btn, .seat-btn').forEach(btn => btn.classList.remove('selected'));
+    document.getElementById('startBtn').disabled = true;
+}
+</script>
+</body>
+</html>
