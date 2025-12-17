@@ -823,8 +823,8 @@
 
 <script>
 const CONFIG = {
-    VERSION: 5.2,
-    STORAGE_KEY: 'quiz_v52_bewegung_10gy',
+    VERSION: 5.4,
+    STORAGE_KEY: 'quiz_v54_bewegung_10gy',
     TOTAL_POINTS: 88,
     BONUS_POINTS: 3,
     TEST_DURATION: 90,
@@ -879,11 +879,11 @@ const QUESTIONS = [
     // BLOCK 2: CALC (F11-F18) - 16P
     { id: 'F11', type: 'calc', points: 2, afb: 2,
       text: 'Ein Sportwagen fährt auf der Autobahn mit 108 km/h. Rechne diese Geschwindigkeit in m/s um.',
-      accepted: [{ value: 30, unit: 'm/s', tolerance: 0.5 }, { value: 108, unit: 'km/h', tolerance: 1 }],
+      accepted: [{ value: 30, unit: 'm/s', tolerance: 0.5 }],
       unitOptions: ['m/s', 'km/h', 'm', 's'] },
     { id: 'F12', type: 'calc', points: 2, afb: 2,
-      text: 'Ein Radfahrer fährt mit konstanten 25 m/s. Welche Strecke s legt er in 40 Sekunden zurück?',
-      accepted: [{ value: 1000, unit: 'm', tolerance: 1 }, { value: 1, unit: 'km', tolerance: 0.01 }],
+      text: 'Ein Radfahrer fährt mit konstanten 5 m/s. Welche Strecke s legt er in 40 Sekunden zurück?',
+      accepted: [{ value: 200, unit: 'm', tolerance: 1 }, { value: 0.2, unit: 'km', tolerance: 0.01 }],
       unitOptions: ['m', 'km', 'm/s', 's'] },
     { id: 'F13', type: 'calc', points: 2, afb: 2,
       text: 'Ein E-Scooter beschleunigt gleichmäßig mit a = 5 m/s² aus dem Stand. Welche Geschwindigkeit v erreicht er nach 6 Sekunden?',
@@ -927,7 +927,7 @@ const QUESTIONS = [
       correct: [0, 1, 2, 1] },
 
     { id: 'C', type: 'diagram-dropdown', points: 6, afb: 2,
-      text: 'Ein Aufzug fährt vom Erdgeschoss in den 5. Stock. Das a(t)-Diagramm zeigt 6 Phasen. Ordne jeder Phase die Bewegungsart zu.',
+      text: 'Ein Aufzug fährt vom Erdgeschoss in den 5. Stock. Er beschleunigt zunächst sanft (Komfortmodus), dann stärker. Das a(t)-Diagramm zeigt 6 Phasen. Ordne jeder Phase die Bewegungsart zu.',
       diagram: 'at-elevator',
       phases: 6,
       options: ['Beschleunigung', 'Gleichförmige Bewegung', 'Verzögerung', 'Stillstand'],
@@ -1001,13 +1001,30 @@ function loadState() {
 function clearState() { try { localStorage.removeItem(CONFIG.STORAGE_KEY); } catch (e) {} }
 
 function markAsSubmitted() {
-    try { localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({ submitted: true, version: CONFIG.VERSION, seat: state.seat })); } catch (e) {}
+    try { 
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({ 
+            submitted: true, 
+            version: CONFIG.VERSION, 
+            seat: state.seat,
+            answers: state.answers,
+            submissionCode: submissionCode,
+            totalEarned: totalEarned,
+            bonusEarned: bonusEarned,
+            elapsed: state.startTime ? Math.floor((Date.now() - state.startTime) / 1000) : 0
+        })); 
+    } catch (e) {}
 }
 
 function init() {
     const saved = loadState();
     if (saved && saved.version === CONFIG.VERSION) {
-        if (saved.submitted) { state.seat = saved.seat; state.submitted = true; showResultAfterReload(); return; }
+        if (saved.submitted) { 
+            state.seat = saved.seat; 
+            state.submitted = true;
+            state.answers = saved.answers || {};
+            showResultAfterReload(); 
+            return; 
+        }
         if (saved.seat) {
             state.seat = saved.seat; state.currentQuestion = saved.currentQuestion || 0;
             state.answers = saved.answers || {}; state.startTime = saved.startTime; state.timeRemaining = saved.timeRemaining;
@@ -1532,12 +1549,42 @@ function unlockSolutions() {
 }
 
 function showResultAfterReload() {
+    // Gespeicherte Daten laden
+    const saved = loadState();
+    if (saved) {
+        state.answers = saved.answers || {};
+        submissionCode = saved.submissionCode || '';
+        totalEarned = saved.totalEarned || 0;
+        bonusEarned = saved.bonusEarned || 0;
+        
+        // Grading neu berechnen falls nötig
+        if (Object.keys(state.answers).length > 0) {
+            gradeAllAnswers();
+        }
+    }
+    
     document.getElementById('setupScreen').style.display = 'none';
     document.getElementById('resultScreen').style.display = 'block';
     document.getElementById('resultSeat').textContent = state.seat;
-    document.getElementById('resultTime').textContent = '--:--';
-    document.getElementById('qrcode').innerHTML = '<p style="color:#666; font-size:0.9em;">Quiz bereits abgegeben.</p>';
-    document.getElementById('textCode').textContent = 'Code nicht verfügbar nach Reload.';
+    
+    const elapsed = saved?.elapsed || 0;
+    const mins = Math.floor(elapsed / 60), secs = elapsed % 60;
+    document.getElementById('resultTime').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    
+    // QR-Code und Textcode anzeigen (falls verfügbar)
+    if (submissionCode) {
+        document.getElementById('textCode').textContent = submissionCode;
+        try {
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), { text: submissionCode, width: 350, height: 350, correctLevel: QRCode.CorrectLevel.L });
+        } catch(e) { 
+            document.getElementById('qrcode').innerHTML = '<p style="color:#c00;">QR-Code Fehler</p>'; 
+        }
+    } else {
+        document.getElementById('qrcode').innerHTML = '<p style="color:#666; font-size:0.9em;">Quiz bereits abgegeben.<br>Code nicht mehr verfügbar.</p>';
+        document.getElementById('textCode').textContent = 'Code nicht verfügbar.';
+    }
+    
     startUnlockTimer();
 }
 
