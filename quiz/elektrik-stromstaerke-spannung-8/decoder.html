@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoder: Elektrizitätslehre Quiz Klasse 8</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { 
+            text-align: center; 
+            margin-bottom: 10px;
+            font-size: 1.8em;
+            color: #fff;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .input-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.2); }
+        .tab-btn.active { border-color: #667eea; background: rgba(102,126,234,0.3); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Camera Section */
+        #cameraSection { margin-bottom: 20px; }
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        #cameraSelect {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 1em;
+        }
+        #cameraSelect option { background: #1a1a2e; color: #fff; }
+        .cam-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+        .cam-btn.start { background: #4caf50; color: white; }
+        .cam-btn.stop { background: #f44336; color: white; }
+        .cam-btn:hover { transform: scale(1.05); }
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* Text Input */
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font-family: monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        textarea::placeholder { color: #888; }
+        .decode-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .decode-btn:hover { transform: scale(1.02); }
+        
+        /* Results Section */
+        .results-section {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px;
+        }
+        .results-section.visible { display: block; }
+        .result-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .result-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        .result-card .label { color: #888; font-size: 0.85em; margin-bottom: 5px; }
+        .result-card .value { font-size: 1.5em; font-weight: bold; color: #fff; }
+        .result-card.grade .value { font-size: 2em; }
+        .result-card.points .value { color: #4caf50; }
+        .result-card.percent .value { color: #2196f3; }
+        
+        /* Questions Detail */
+        .questions-detail { margin-top: 20px; }
+        .questions-detail h3 { 
+            color: #fff; 
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .question-row {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            gap: 15px;
+        }
+        .question-row.correct { border-left: 4px solid #4caf50; }
+        .question-row.partial { border-left: 4px solid #ff9800; }
+        .question-row.wrong { border-left: 4px solid #f44336; }
+        .q-id { 
+            font-family: monospace; 
+            font-size: 0.85em; 
+            color: #888;
+            min-width: 100px;
+        }
+        .q-points {
+            font-weight: bold;
+            min-width: 70px;
+            text-align: right;
+        }
+        .q-points.full { color: #4caf50; }
+        .q-points.partial { color: #ff9800; }
+        .q-points.zero { color: #f44336; }
+        .q-answer {
+            flex: 1;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        .q-correct {
+            font-size: 0.85em;
+            color: #888;
+        }
+        
+        /* Level Summary */
+        .level-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .level-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid;
+        }
+        .level-card.basis { border-color: #9e9e9e; }
+        .level-card.stern1 { border-color: #ff9800; }
+        .level-card.stern2 { border-color: #2196f3; }
+        .level-card.stern3 { border-color: #9c27b0; }
+        .level-card h4 { color: #fff; margin-bottom: 8px; }
+        .level-card .stats { color: #aaa; font-size: 0.9em; }
+        
+        /* Print Button */
+        .print-btn {
+            padding: 12px 25px;
+            background: #607d8b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+        }
+        .print-btn:hover { background: #546e7a; }
+        
+        @media print {
+            body { background: white; color: black; }
+            .input-section { display: none; }
+            .print-btn { display: none; }
+            .results-section { background: white; }
+            .result-card { border: 1px solid #ddd; }
+            .question-row { border: 1px solid #ddd; }
+        }
+        
+        /* Status messages */
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .status.success { background: rgba(76,175,80,0.2); color: #4caf50; }
+        .status.error { background: rgba(244,67,54,0.2); color: #f44336; }
+        .status.info { background: rgba(33,150,243,0.2); color: #2196f3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Quiz-Decoder</h1>
+        <p class="subtitle">Elektrizitätslehre Klasse 8 – Lehrerauswertung</p>
+        
+        <div class="input-section">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('camera')">📷 QR-Code scannen</button>
+                <button class="tab-btn" onclick="switchTab('text')">⌨️ Code eingeben</button>
+            </div>
+            
+            <div id="cameraTab" class="tab-content active">
+                <div id="cameraSection">
+                    <div class="camera-controls">
+                        <select id="cameraSelect">
+                            <option value="">Kamera auswählen...</option>
+                        </select>
+                        <button class="cam-btn start" onclick="startCamera()">▶ Starten</button>
+                        <button class="cam-btn stop" onclick="stopCamera()">⬛ Stoppen</button>
+                    </div>
+                    <div id="reader"></div>
+                </div>
+                <div id="scanStatus" class="status info" style="display:none;"></div>
+            </div>
+            
+            <div id="textTab" class="tab-content">
+                <textarea id="codeInput" placeholder="Hier den Code aus dem Schüler-Quiz einfügen..."></textarea>
+                <button class="decode-btn" onclick="decodeText()">🔍 Code auswerten</button>
+            </div>
+        </div>
+        
+        <div id="resultsSection" class="results-section">
+            <div class="result-header">
+                <div class="result-card">
+                    <div class="label">Platz</div>
+                    <div class="value" id="resSeat">-</div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Level</div>
+                    <div class="value" id="resLevel">-</div>
+                </div>
+                <div class="result-card points">
+                    <div class="label">Punkte</div>
+                    <div class="value" id="resPoints">-</div>
+                </div>
+                <div class="result-card percent">
+                    <div class="label">Prozent</div>
+                    <div class="value" id="resPercent">-</div>
+                </div>
+                <div class="result-card grade">
+                    <div class="label">Note (NP)</div>
+                    <div class="value" id="resGrade">-</div>
+                </div>
+            </div>
+            
+            <div class="level-summary" id="levelSummary"></div>
+            
+            <div class="questions-detail">
+                <h3>📋 Aufgabenübersicht</h3>
+                <div id="questionsDetail"></div>
+            </div>
+            
+            <button class="print-btn" onclick="window.print()">🖨️ Drucken</button>
+        </div>
+    </div>
+    
+    <script>
+    // ═══════════════════════════════════════════════════════════════
+    // CONFIGURATION - MUST MATCH index.html
+    // ═══════════════════════════════════════════════════════════════
+    const CONFIG = {
+        MAX_POINTS: 140,  // Total points across all levels
+        LEVELS: {
+            basis: { name: '○ Basis', points: 28, questions: 13, color: '#9e9e9e' },
+            stern1: { name: '★ Stern 1', points: 30, questions: 12, color: '#ff9800' },
+            stern2: { name: '★★ Stern 2', points: 30, questions: 9, color: '#2196f3' },
+            stern3: { name: '★★★ Stern 3', points: 52, questions: 14, color: '#9c27b0' }
+        }
+    };
+    
+    // 14-NP-Skala für Klasse 8
+    const GRADE_SCALE = [
+        { np: 14, percent: 100 },
+        { np: 13, percent: 96 },
+        { np: 12, percent: 90.67 },
+        { np: 11, percent: 86 },
+        { np: 10, percent: 80 },
+        { np: 9, percent: 73.33 },
+        { np: 8, percent: 66.67 },
+        { np: 7, percent: 60 },
+        { np: 6, percent: 53.33 },
+        { np: 5, percent: 46.67 },
+        { np: 4, percent: 40 },
+        { np: 3, percent: 33.33 },
+        { np: 2, percent: 26.67 },
+        { np: 1, percent: 20 },
+        { np: 0, percent: 0 }
+    ];
+    
+    // ═══════════════════════════════════════════════════════════════
+    // QUESTIONS ARRAY - IDENTICAL TO index.html
+    // ═══════════════════════════════════════════════════════════════
+    const QUESTIONS = [
+        // ═══════════════════════════════════════════════════════════
+        // BASIS (○) – 13 Aufgaben, 28 Punkte
+        // ═══════════════════════════════════════════════════════════
+        { id: "BASIS_F01", level: "basis", type: "mc", points: 2, correct: "B" },
+        { id: "BASIS_F02", level: "basis", type: "mc", points: 2, correct: "A" },
+        { id: "BASIS_F03", level: "basis", type: "mc", points: 2, correct: "A" },
+        { id: "BASIS_F04", level: "basis", type: "mc", points: 2, correct: "B" },
+        { id: "BASIS_F05", level: "basis", type: "dropdown", points: 2, blanks: [{ id: "blank1", correct: "Amperemeter" }, { id: "blank2", correct: "Voltmeter" }] },
+        { id: "BASIS_F06", level: "basis", type: "dropdown", points: 2, blanks: [{ id: "blank1", correct: "in Reihe" }, { id: "blank2", correct: "parallel" }] },
+        { id: "BASIS_F07", level: "basis", type: "mc", points: 2, correct: "A" },
+        { id: "BASIS_F08", level: "basis", type: "mc", points: 2, correct: "B" },
+        { id: "BASIS_F09", level: "basis", type: "mc", points: 2, correct: "A" },
+        { id: "BASIS_F10", level: "basis", type: "multicheck", points: 2, options: [{ id: "a", correct: false }, { id: "b", correct: true }, { id: "c", correct: true }, { id: "d", correct: false }] },
+        { id: "BASIS_F11", level: "basis", type: "number", points: 2, correctValue: 3, unit: "A", tolerance: 0.1 },
+        { id: "BASIS_F12", level: "basis", type: "number", points: 3, correctValue: 7, unit: "V", tolerance: 0.1 },
+        { id: "BASIS_F13", level: "basis", type: "multi-number", points: 3, fields: [{ id: "u1", correctValue: 9 }, { id: "u2", correctValue: 9 }] },
+        
+        // ═══════════════════════════════════════════════════════════
+        // STERN 1 (★) – 12 Aufgaben, 30 Punkte
+        // ═══════════════════════════════════════════════════════════
+        { id: "STERN1_F01", level: "stern1", type: "dropdown", points: 2, blanks: [{ id: "blank1", correct: "I" }, { id: "blank2", correct: "Ampere" }] },
+        { id: "STERN1_F02", level: "stern1", type: "dropdown", points: 2, blanks: [{ id: "blank1", correct: "Ladung" }, { id: "blank2", correct: "Zeit" }] },
+        { id: "STERN1_F03", level: "stern1", type: "dropdown", points: 2, blanks: [{ id: "blank1", correct: "U" }, { id: "blank2", correct: "Volt" }] },
+        { id: "STERN1_F04", level: "stern1", type: "dropdown", points: 2, blanks: [{ id: "blank1", correct: "in Reihe" }, { id: "blank2", correct: "parallel" }] },
+        { id: "STERN1_F05", level: "stern1", type: "multicheck", points: 2, options: [{ id: "a", correct: true }, { id: "b", correct: true }, { id: "c", correct: false }, { id: "d", correct: false }] },
+        { id: "STERN1_F06", level: "stern1", type: "multicheck", points: 2, options: [{ id: "a", correct: false }, { id: "b", correct: true }, { id: "c", correct: true }, { id: "d", correct: false }] },
+        { id: "STERN1_F07", level: "stern1", type: "number", points: 3, correctValue: 4.5, unit: "V", tolerance: 0.1 },
+        { id: "STERN1_F08", level: "stern1", type: "number", points: 3, correctValue: 3, unit: "A", tolerance: 0.1 },
+        { id: "STERN1_F09", level: "stern1", type: "number", points: 3, correctValue: 4, unit: "V", tolerance: 0.1 },
+        { id: "STERN1_F10", level: "stern1", type: "number", points: 3, correctValue: 2, unit: "A", tolerance: 0.1 },
+        { id: "STERN1_F11", level: "stern1", type: "number", points: 3, correctValue: 6, unit: "V", tolerance: 0.1 },
+        { id: "STERN1_F12", level: "stern1", type: "text-multi", points: 3, fields: [{ id: "f1", correct: ["I"] }, { id: "f2", correct: ["Ampere", "A"] }, { id: "f3", correct: ["Amperemeter", "Strommesser"] }] },
+        
+        // ═══════════════════════════════════════════════════════════
+        // STERN 2 (★★) – 9 Aufgaben, 30 Punkte
+        // ═══════════════════════════════════════════════════════════
+        { id: "STERN2_F01", level: "stern2", type: "text-multi", points: 3, fields: [{ id: "f1", correct: ["U"] }, { id: "f2", correct: ["Volt", "V"] }, { id: "f3", correct: ["Voltmeter", "Spannungsmesser"] }] },
+        { id: "STERN2_F02", level: "stern2", type: "multi-number", points: 3, fields: [{ id: "i1", correctValue: 2 }, { id: "i2", correctValue: 2 }, { id: "i3", correctValue: 2 }] },
+        { id: "STERN2_F03", level: "stern2", type: "multi-number", points: 4, fields: [{ id: "u1", correctValue: 3 }, { id: "u2", correctValue: 3 }, { id: "u3", correctValue: 3 }] },
+        { id: "STERN2_F04", level: "stern2", type: "number", points: 3, correctValue: 5, unit: "A", tolerance: 0.1 },
+        { id: "STERN2_F05", level: "stern2", type: "multi-number", points: 4, fields: [{ id: "i1", correctValue: 2 }, { id: "i2", correctValue: 3 }] },
+        { id: "STERN2_F06", level: "stern2", type: "multi-number", points: 4, fields: [{ id: "u1", correctValue: 4 }, { id: "u2", correctValue: 8 }] },
+        { id: "STERN2_F07", level: "stern2", type: "number", points: 3, correctValue: 1.5, unit: "A", tolerance: 0.1 },
+        { id: "STERN2_F08", level: "stern2", type: "number", points: 3, correctValue: 6, unit: "V", tolerance: 0.1 },
+        { id: "STERN2_F09", level: "stern2", type: "number", points: 3, correctValue: 4.5, unit: "V", tolerance: 0.1 },
+        
+        // ═══════════════════════════════════════════════════════════
+        // STERN 3 (★★★) – 14 Aufgaben, 52 Punkte
+        // ═══════════════════════════════════════════════════════════
+        { id: "STERN3_F01", level: "stern3", type: "text", points: 3, correct: ["Energie", "elektrische Energie"] },
+        { id: "STERN3_F02", level: "stern3", type: "text", points: 3, correct: ["Ladung", "elektrische Ladung"] },
+        { id: "STERN3_F03", level: "stern3", type: "multicheck", points: 3, options: [{ id: "a", correct: true }, { id: "b", correct: false }, { id: "c", correct: true }, { id: "d", correct: false }] },
+        { id: "STERN3_F04", level: "stern3", type: "number", points: 4, correctValue: 0.5, unit: "A", tolerance: 0.05 },
+        { id: "STERN3_F05", level: "stern3", type: "number", points: 4, correctValue: 2.5, unit: "A", tolerance: 0.1 },
+        { id: "STERN3_F06", level: "stern3", type: "number", points: 4, correctValue: 2, unit: "V", tolerance: 0.1 },
+        { id: "STERN3_F07", level: "stern3", type: "multi-number", points: 4, fields: [{ id: "u1", correctValue: 5 }, { id: "u2", correctValue: 7 }] },
+        { id: "STERN3_F08", level: "stern3", type: "multi-number", points: 4, fields: [{ id: "i1", correctValue: 1 }, { id: "i2", correctValue: 2 }] },
+        { id: "STERN3_F09", level: "stern3", type: "number", points: 4, correctValue: 3, unit: "V", tolerance: 0.1 },
+        { id: "STERN3_F10", level: "stern3", type: "number", points: 4, correctValue: 1, unit: "A", tolerance: 0.1 },
+        { id: "STERN3_F11", level: "stern3", type: "multi-number", points: 4, fields: [{ id: "i1", correctValue: 3 }, { id: "i2", correctValue: 2 }, { id: "iges", correctValue: 5 }] },
+        { id: "STERN3_F12", level: "stern3", type: "multi-number", points: 4, fields: [{ id: "u1", correctValue: 4 }, { id: "u2", correctValue: 6 }, { id: "uges", correctValue: 10 }] },
+        { id: "STERN3_F13", level: "stern3", type: "number", points: 4, correctValue: 4.5, unit: "A", tolerance: 0.1 },
+        { id: "STERN3_F14", level: "stern3", type: "number", points: 3, correctValue: 2.5, unit: "V", tolerance: 0.1 }
+    ];
+    
+    // ═══════════════════════════════════════════════════════════════
+    // CAMERA HANDLING
+    // ═══════════════════════════════════════════════════════════════
+    let html5QrCode = null;
+    let cameras = [];
+    
+    async function initCameras() {
+        try {
+            const devices = await Html5Qrcode.getCameras();
+            cameras = devices;
+            const select = document.getElementById('cameraSelect');
+            select.innerHTML = '<option value="">Kamera auswählen...</option>';
+            devices.forEach((device, index) => {
+                const option = document.createElement('option');
+                option.value = device.id;
+                option.textContent = device.label || `Kamera ${index + 1}`;
+                select.appendChild(option);
+            });
+            
+            // Select back camera by default if available
+            const backCam = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rück'));
+            if (backCam) select.value = backCam.id;
+            else if (devices.length > 0) select.value = devices[0].id;
+        } catch (err) {
+            showStatus('scanStatus', 'Kamera-Zugriff nicht möglich: ' + err.message, 'error');
+        }
+    }
+    
+    async function startCamera() {
+        const cameraId = document.getElementById('cameraSelect').value;
+        if (!cameraId) {
+            showStatus('scanStatus', 'Bitte eine Kamera auswählen!', 'error');
+            return;
+        }
+        
+        if (html5QrCode) {
+            await stopCamera();
+        }
+        
+        html5QrCode = new Html5Qrcode("reader");
+        try {
+            await html5QrCode.start(
+                cameraId,
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                onScanSuccess,
+                onScanError
+            );
+            showStatus('scanStatus', '📷 Kamera aktiv - QR-Code vor die Kamera halten', 'info');
+        } catch (err) {
+            showStatus('scanStatus', 'Kamera konnte nicht gestartet werden: ' + err.message, 'error');
+        }
+    }
+    
+    async function stopCamera() {
+        if (html5QrCode) {
+            try {
+                await html5QrCode.stop();
+                html5QrCode = null;
+            } catch (err) {
+                console.log('Camera stop error:', err);
+            }
+        }
+        document.getElementById('scanStatus').style.display = 'none';
+    }
+    
+    function onScanSuccess(decodedText) {
+        stopCamera();
+        showStatus('scanStatus', '✓ QR-Code erkannt!', 'success');
+        processCode(decodedText);
+    }
+    
+    function onScanError(error) {
+        // Ignore scan errors (happens constantly when no QR visible)
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // TAB SWITCHING
+    // ═══════════════════════════════════════════════════════════════
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        if (tab === 'camera') {
+            document.querySelector('.tab-btn:first-child').classList.add('active');
+            document.getElementById('cameraTab').classList.add('active');
+        } else {
+            document.querySelector('.tab-btn:last-child').classList.add('active');
+            document.getElementById('textTab').classList.add('active');
+            stopCamera();
+        }
+    }
+    
+    function decodeText() {
+        const code = document.getElementById('codeInput').value.trim();
+        if (!code) {
+            alert('Bitte einen Code eingeben!');
+            return;
+        }
+        processCode(code);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // CODE PROCESSING
+    // ═══════════════════════════════════════════════════════════════
+    function processCode(code) {
+        try {
+            const decompressed = LZString.decompressFromEncodedURIComponent(code);
+            if (!decompressed) throw new Error('Dekomprimierung fehlgeschlagen');
+            
+            const data = JSON.parse(decompressed);
+            displayResults(data);
+        } catch (err) {
+            alert('Fehler beim Dekodieren: ' + err.message + '\n\nBitte Code prüfen.');
+            console.error('Decode error:', err);
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // RESULTS DISPLAY
+    // ═══════════════════════════════════════════════════════════════
+    function displayResults(data) {
+        const { seat, level, answers, totalEarned, maxPoints, submittedAt } = data;
+        
+        // Calculate grade
+        const percent = (totalEarned / maxPoints) * 100;
+        const np = calculateGrade(percent);
+        
+        // Update header cards
+        document.getElementById('resSeat').textContent = seat || '-';
+        document.getElementById('resLevel').textContent = CONFIG.LEVELS[level]?.name || level;
+        document.getElementById('resPoints').textContent = `${totalEarned} / ${maxPoints}`;
+        document.getElementById('resPercent').textContent = percent.toFixed(1) + '%';
+        document.getElementById('resGrade').textContent = np + ' NP';
+        
+        // Filter questions for this level
+        const levelQuestions = QUESTIONS.filter(q => q.level === level);
+        
+        // Calculate level breakdown
+        const levelStats = {};
+        levelQuestions.forEach(q => {
+            if (!levelStats[q.level]) {
+                levelStats[q.level] = { earned: 0, max: 0, questions: 0 };
+            }
+            const answer = answers[q.id];
+            const earned = answer?.earned || 0;
+            levelStats[q.level].earned += earned;
+            levelStats[q.level].max += q.points;
+            levelStats[q.level].questions++;
+        });
+        
+        // Display level summary
+        const summaryHtml = Object.entries(levelStats).map(([lvl, stats]) => `
+            <div class="level-card ${lvl}">
+                <h4>${CONFIG.LEVELS[lvl]?.name || lvl}</h4>
+                <div class="stats">
+                    ${stats.earned} / ${stats.max} Punkte (${stats.questions} Aufgaben)
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('levelSummary').innerHTML = summaryHtml;
+        
+        // Display question details
+        const detailHtml = levelQuestions.map(q => {
+            const answer = answers[q.id] || {};
+            const earned = answer.earned || 0;
+            const max = q.points;
+            
+            let statusClass = 'wrong';
+            if (earned === max) statusClass = 'correct';
+            else if (earned > 0) statusClass = 'partial';
+            
+            let pointsClass = 'zero';
+            if (earned === max) pointsClass = 'full';
+            else if (earned > 0) pointsClass = 'partial';
+            
+            // Format answer for display
+            let answerDisplay = formatAnswer(answer.answer, q.type);
+            let correctDisplay = formatCorrect(q);
+            
+            return `
+                <div class="question-row ${statusClass}">
+                    <span class="q-id">${q.id}</span>
+                    <span class="q-points ${pointsClass}">${earned} / ${max} P</span>
+                    <span class="q-answer">Antwort: ${answerDisplay}</span>
+                    <span class="q-correct">Lösung: ${correctDisplay}</span>
+                </div>
+            `;
+        }).join('');
+        document.getElementById('questionsDetail').innerHTML = detailHtml;
+        
+        // Show results section
+        document.getElementById('resultsSection').classList.add('visible');
+    }
+    
+    function formatAnswer(answer, type) {
+        if (answer === undefined || answer === null) return '(keine Antwort)';
+        
+        if (type === 'mc') return answer;
+        if (type === 'number') return answer;
+        if (type === 'text') return answer;
+        if (type === 'dropdown' && typeof answer === 'object') {
+            return Object.entries(answer).map(([k, v]) => v).join(', ');
+        }
+        if (type === 'multi-number' && typeof answer === 'object') {
+            return Object.entries(answer).map(([k, v]) => `${k}=${v}`).join(', ');
+        }
+        if (type === 'multicheck' && Array.isArray(answer)) {
+            return answer.join(', ') || '(keine)';
+        }
+        if (type === 'text-multi' && typeof answer === 'object') {
+            return Object.entries(answer).map(([k, v]) => v).join(', ');
+        }
+        
+        return JSON.stringify(answer);
+    }
+    
+    function formatCorrect(q) {
+        if (q.type === 'mc') return q.correct;
+        if (q.type === 'number') return `${q.correctValue} ${q.unit || ''}`;
+        if (q.type === 'text') return q.correct.join(' / ');
+        if (q.type === 'dropdown') {
+            return q.blanks.map(b => b.correct).join(', ');
+        }
+        if (q.type === 'multi-number') {
+            return q.fields.map(f => `${f.id}=${f.correctValue}`).join(', ');
+        }
+        if (q.type === 'multicheck') {
+            return q.options.filter(o => o.correct).map(o => o.id).join(', ');
+        }
+        if (q.type === 'text-multi') {
+            return q.fields.map(f => f.correct[0]).join(', ');
+        }
+        
+        return '?';
+    }
+    
+    function calculateGrade(percent) {
+        for (const grade of GRADE_SCALE) {
+            if (percent >= grade.percent) {
+                return grade.np;
+            }
+        }
+        return 0;
+    }
+    
+    function showStatus(elementId, message, type) {
+        const el = document.getElementById(elementId);
+        el.textContent = message;
+        el.className = 'status ' + type;
+        el.style.display = 'block';
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+        initCameras();
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR-Codes: Elektrik Quiz Klasse 8</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 10px; color: #333; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        .info-box p { margin-bottom: 8px; }
+        .info-box code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .qr-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .qr-card h3 { margin-bottom: 5px; color: #333; }
+        .qr-card .desc { color: #666; font-size: 0.9em; margin-bottom: 15px; }
+        .qr-card .qr-container { 
+            display: inline-block; 
+            padding: 10px; 
+            background: white;
+            border-radius: 8px;
+        }
+        .qr-card .url {
+            margin-top: 15px;
+            font-size: 0.75em;
+            color: #888;
+            word-break: break-all;
+        }
+        .qr-card a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        .qr-card a:hover { background: #5a6fd6; }
+        .codes-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .codes-section h3 { margin-bottom: 15px; }
+        .code-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .code-row:last-child { border-bottom: none; }
+        .code-row .label { color: #666; }
+        .code-row .value { 
+            font-family: monospace; 
+            font-weight: bold;
+            background: #f5f5f5;
+            padding: 4px 12px;
+            border-radius: 4px;
+        }
+        @media print {
+            .qr-card a { display: none; }
+            body { background: white; }
+            .qr-card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 Elektrik Quiz Klasse 8</h1>
+        <p class="subtitle">Stromstärke und Spannung – QR-Codes & Links</p>
+        
+        <div class="info-box">
+            <p><strong>Hinweis:</strong> Die URLs unten müssen nach dem Upload zu GitHub Pages angepasst werden.</p>
+            <p>URL: <code>https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/</code></p>
+        </div>
+        
+        <div class="qr-grid">
+            <div class="qr-card">
+                <h3>📱 Schüler-Quiz</h3>
+                <p class="desc">Hauptquiz für Schüler</p>
+                <div class="qr-container" id="qr-quiz"></div>
+                <p class="url" id="url-quiz"></p>
+                <a href="index.html" target="_blank">Öffnen →</a>
+            </div>
+            
+            <div class="qr-card">
+                <h3>🔓 Lehrer-Decoder</h3>
+                <p class="desc">Auswertung per QR-Scan</p>
+                <div class="qr-container" id="qr-decoder"></div>
+                <p class="url" id="url-decoder"></p>
+                <a href="decoder.html" target="_blank">Öffnen →</a>
+            </div>
+        </div>
+        
+        <div class="codes-section">
+            <h3>🔐 Wichtige Codes</h3>
+            <div class="code-row">
+                <span class="label">Unlock-Code (vorzeitige Abgabe)</span>
+                <span class="value">STROM</span>
+            </div>
+            <div class="code-row">
+                <span class="label">Reset-Code (Fortschritt löschen)</span>
+                <span class="value">3141</span>
+            </div>
+        </div>
+        
+        <div class="codes-section">
+            <h3>📊 Quiz-Übersicht</h3>
+            <div class="code-row">
+                <span class="label">○ Basis</span>
+                <span class="value">13 Aufgaben / 28 Punkte</span>
+            </div>
+            <div class="code-row">
+                <span class="label">★ Stern 1</span>
+                <span class="value">12 Aufgaben / 30 Punkte</span>
+            </div>
+            <div class="code-row">
+                <span class="label">★★ Stern 2</span>
+                <span class="value">9 Aufgaben / 30 Punkte</span>
+            </div>
+            <div class="code-row">
+                <span class="label">★★★ Stern 3</span>
+                <span class="value">14 Aufgaben / 52 Punkte</span>
+            </div>
+            <div class="code-row">
+                <span class="label"><strong>Gesamt</strong></span>
+                <span class="value"><strong>48 Aufgaben / 140 Punkte</strong></span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Determine base URL
+        const baseUrl = window.location.href.replace(/\/[^\/]*$/, '/');
+        
+        const quizUrl = baseUrl + 'index.html';
+        const decoderUrl = baseUrl + 'decoder.html';
+        
+        // Generate QR codes
+        new QRCode(document.getElementById('qr-quiz'), {
+            text: quizUrl,
+            width: 150,
+            height: 150,
+            colorDark: '#333',
+            colorLight: '#fff'
+        });
+        
+        new QRCode(document.getElementById('qr-decoder'), {
+            text: decoderUrl,
+            width: 150,
+            height: 150,
+            colorDark: '#333',
+            colorLight: '#fff'
+        });
+        
+        // Display URLs
+        document.getElementById('url-quiz').textContent = quizUrl;
+        document.getElementById('url-decoder').textContent = decoderUrl;
+    </script>
+</body>
+</html>

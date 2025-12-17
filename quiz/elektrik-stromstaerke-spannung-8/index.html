@@ -1,0 +1,2728 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quiz: Elektrizitätslehre Klasse 8</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        /* Setup Screen */
+        .setup-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .setup-title { font-size: 1.8em; color: #333; margin-bottom: 10px; }
+        .setup-subtitle { color: #666; margin-bottom: 30px; }
+        .seat-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+        .seat-btn {
+            padding: 12px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .seat-btn:hover { border-color: #667eea; background: #f0f4ff; }
+        .seat-btn.selected { border-color: #667eea; background: #667eea; color: white; }
+        .level-select {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .level-btn {
+            padding: 15px 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+        .level-btn:hover { transform: scale(1.05); }
+        .level-btn.selected { border-color: #4caf50; background: #e8f5e9; }
+        .level-btn[data-level="basis"] { border-color: #9e9e9e; }
+        .level-btn[data-level="stern1"] { border-color: #ff9800; }
+        .level-btn[data-level="stern2"] { border-color: #2196f3; }
+        .level-btn[data-level="stern3"] { border-color: #9c27b0; }
+        .start-btn {
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .start-btn:hover { transform: scale(1.05); }
+        .start-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Quiz Screen */
+        .quiz-header {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .timer { font-size: 1.5em; font-weight: bold; color: #333; }
+        .timer.warning { color: #f44336; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .progress-info { font-size: 0.9em; color: #666; }
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .question-id { font-weight: bold; color: #667eea; }
+        .question-points { 
+            background: #4caf50; 
+            color: white; 
+            padding: 4px 12px; 
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+        .question-text { font-size: 1.1em; line-height: 1.6; margin-bottom: 15px; }
+        .circuit-container {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+        .options { margin: 15px 0; }
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option:hover { border-color: #667eea; background: #f8f9ff; }
+        .option.selected { border-color: #667eea; background: #e8edff; }
+        .option-letter {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0e0e0;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-weight: bold;
+        }
+        .option.selected .option-letter { background: #667eea; color: white; }
+        
+        /* Multi-check */
+        .multi-check { margin: 15px 0; }
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .check-item:hover { border-color: #667eea; }
+        .check-item.checked { border-color: #4caf50; background: #e8f5e9; }
+        .check-box {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #666;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .check-item.checked .check-box { background: #4caf50; border-color: #4caf50; color: white; }
+        
+        /* Dropdown */
+        .dropdown-container { margin: 10px 0; }
+        .dropdown-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            min-width: 200px;
+            cursor: pointer;
+        }
+        .dropdown-select:focus { border-color: #667eea; outline: none; }
+        
+        /* Number input */
+        .number-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .number-input {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.1em;
+            width: 120px;
+            text-align: center;
+        }
+        .number-input:focus { border-color: #667eea; outline: none; }
+        .unit-select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        /* Text input */
+        .text-input {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 100%;
+            max-width: 300px;
+        }
+        .text-input:focus { border-color: #667eea; outline: none; }
+        
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-btn.prev { background: #e0e0e0; color: #333; }
+        .nav-btn.next { background: #667eea; color: white; }
+        .nav-btn.submit { background: #4caf50; color: white; }
+        .nav-btn:hover { transform: scale(1.05); }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Overview */
+        .overview-btn {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .overview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .overview-modal.active { display: flex; }
+        .overview-content {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .overview-item {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .overview-item.answered { background: #e8f5e9; border-color: #4caf50; }
+        .overview-item.current { background: #e8edff; border-color: #667eea; }
+        .close-overview {
+            padding: 10px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        /* Result Screen */
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .result-title { font-size: 2em; margin-bottom: 20px; }
+        .qr-container {
+            background: white;
+            padding: 20px;
+            display: inline-block;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        #qrcode { margin: 0 auto; }
+        .text-code {
+            font-family: monospace;
+            font-size: 0.9em;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            word-break: break-all;
+            margin: 15px 0;
+        }
+        .unlock-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .unlock-timer {
+            font-size: 1.2em;
+            color: #666;
+            margin: 10px 0;
+        }
+        .unlock-input {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: center;
+            width: 150px;
+        }
+        .unlock-btn {
+            padding: 12px 30px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        /* Feedback Screen */
+        .feedback-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .grade-display {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        .points-display {
+            font-size: 1.5em;
+            color: #333;
+        }
+        .feedback-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .feedback-item.correct { border-left: 4px solid #4caf50; }
+        .feedback-item.wrong { border-left: 4px solid #f44336; }
+        .feedback-item.partial { border-left: 4px solid #ff9800; }
+        .solution-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .your-answer {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .submission-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .mini-qr { width: 80px; height: 80px; }
+        .mini-code { font-family: monospace; font-size: 0.8em; word-break: break-all; max-width: 200px; }
+        .print-btn {
+            padding: 15px 40px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        /* Reset Modal */
+        .reset-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .reset-modal.active { display: flex; }
+        .reset-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+        }
+        .reset-input {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1.2em;
+            text-align: center;
+            width: 150px;
+            margin: 15px 0;
+        }
+        .reset-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .reset-confirm { padding: 12px 30px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .reset-cancel { padding: 12px 30px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; cursor: pointer; }
+        
+        /* Level badges */
+        .level-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: white;
+        }
+        .level-badge.basis { background: #9e9e9e; }
+        .level-badge.stern1 { background: #ff9800; }
+        .level-badge.stern2 { background: #2196f3; }
+        .level-badge.stern3 { background: #9c27b0; }
+        
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SETUP SCREEN -->
+        <div id="setupScreen" class="screen active">
+            <div class="setup-card">
+                <h1 class="setup-title">⚡ Elektrizitätslehre Quiz</h1>
+                <p class="setup-subtitle">Klasse 8 – Stromstärke & Spannung</p>
+                
+                <h3>1. Wähle deinen Sitzplatz:</h3>
+                <div class="seat-grid" id="seatGrid"></div>
+                
+                <h3 style="margin-top: 30px;">2. Wähle dein Niveau:</h3>
+                <div class="level-select">
+                    <button class="level-btn" data-level="basis">○ Basis<br><small>13 Aufg. · 28 P</small></button>
+                    <button class="level-btn" data-level="stern1">★ Stern 1<br><small>12 Aufg. · 30 P</small></button>
+                    <button class="level-btn" data-level="stern2">★★ Stern 2<br><small>9 Aufg. · 30 P</small></button>
+                    <button class="level-btn" data-level="stern3">★★★ Stern 3<br><small>14 Aufg. · 52 P</small></button>
+                </div>
+                
+                <button class="start-btn" id="startBtn" disabled>Quiz starten</button>
+            </div>
+        </div>
+        
+        <!-- QUIZ SCREEN -->
+        <div id="quizScreen" class="screen">
+            <div class="quiz-header">
+                <div>
+                    <span class="level-badge" id="levelBadge"></span>
+                    <span style="margin-left: 10px;">Platz: <strong id="seatDisplay"></strong></span>
+                </div>
+                <div class="timer" id="timer">45:00</div>
+                <div class="progress-info">
+                    Frage <span id="currentQ">1</span>/<span id="totalQ">13</span>
+                    <button class="overview-btn no-print" onclick="showOverview()">📋 Übersicht</button>
+                </div>
+            </div>
+            
+            <div id="questionContainer"></div>
+            
+            <div class="nav-buttons no-print">
+                <button class="nav-btn prev" id="prevBtn" onclick="prevQuestion()">← Zurück</button>
+                <button class="nav-btn" style="background:#f44336;color:white;" onclick="showResetModal()">🔄 Reset</button>
+                <button class="nav-btn next" id="nextBtn" onclick="nextQuestion()">Weiter →</button>
+            </div>
+        </div>
+        
+        <!-- RESULT SCREEN -->
+        <div id="resultScreen" class="screen">
+            <div class="result-card">
+                <h1 class="result-title">✅ Quiz abgegeben!</h1>
+                <p>Zeige diesen QR-Code dem Lehrer:</p>
+                
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                </div>
+                
+                <div class="text-code" id="textCode"></div>
+                
+                <div class="unlock-section">
+                    <p>Musterlösung verfügbar in:</p>
+                    <div class="unlock-timer" id="unlockTimer">5:00</div>
+                    <p style="margin-top: 15px;">Oder Code eingeben:</p>
+                    <input type="text" class="unlock-input" id="unlockInput" placeholder="Code">
+                    <button class="unlock-btn" onclick="tryUnlock()">Freischalten</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FEEDBACK SCREEN -->
+        <div id="feedbackScreen" class="screen">
+            <div class="feedback-header">
+                <h2>📊 Dein Ergebnis</h2>
+                <div class="grade-display" id="gradeDisplay">--</div>
+                <div class="points-display"><span id="earnedPoints">0</span> / <span id="maxPoints">0</span> Punkte</div>
+            </div>
+            
+            <div id="feedbackContainer"></div>
+            
+            <div class="submission-info" id="feedbackSubmission">
+                <div class="mini-qr" id="feedbackQR"></div>
+                <div class="mini-code" id="feedbackCode"></div>
+            </div>
+            
+            <button class="print-btn no-print" onclick="window.print()">📄 Als PDF speichern</button>
+        </div>
+        
+        <!-- OVERVIEW MODAL -->
+        <div class="overview-modal" id="overviewModal">
+            <div class="overview-content">
+                <h3>Aufgaben-Übersicht</h3>
+                <p style="color: #666; margin: 10px 0;">Klicke auf eine Aufgabe, um zu ihr zu springen.</p>
+                <div class="overview-grid" id="overviewGrid"></div>
+                <button class="close-overview" onclick="closeOverview()">Schließen</button>
+            </div>
+        </div>
+        
+        <!-- RESET MODAL -->
+        <div class="reset-modal" id="resetModal">
+            <div class="reset-content">
+                <h3>⚠️ Quiz zurücksetzen?</h3>
+                <p>Lehrer-Code eingeben:</p>
+                <input type="password" class="reset-input" id="resetInput" placeholder="Code">
+                <div class="reset-buttons">
+                    <button class="reset-cancel" onclick="closeResetModal()">Abbrechen</button>
+                    <button class="reset-confirm" onclick="confirmReset()">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // ═══════════════════════════════════════════════════════════════
+    // KONFIGURATION
+    // ═══════════════════════════════════════════════════════════════
+    const CONFIG = {
+        VERSION: '1.0',
+        STORAGE_KEY: 'elektrik_quiz_v1_kl8',
+        TEST_DURATION: 45,  // Minuten
+        UNLOCK_TIME: 300,   // 5 Minuten bis Auto-Unlock
+        UNLOCK_CODE: 'STROM',
+        RESET_CODE: '3141',
+        LEVELS: {
+            basis: { name: '○ Basis', points: 28, questions: 13, color: '#9e9e9e' },
+            stern1: { name: '★ Stern 1', points: 30, questions: 12, color: '#ff9800' },
+            stern2: { name: '★★ Stern 2', points: 30, questions: 9, color: '#2196f3' },
+            stern3: { name: '★★★ Stern 3', points: 52, questions: 14, color: '#9c27b0' }
+        }
+    };
+    
+    // 14-NP-Skala für Klasse 8
+    const GRADE_SCALE = [
+        { np: 14, percent: 100 },
+        { np: 13, percent: 96 },
+        { np: 12, percent: 90.67 },
+        { np: 11, percent: 86 },
+        { np: 10, percent: 80 },
+        { np: 9, percent: 73.33 },
+        { np: 8, percent: 66.67 },
+        { np: 7, percent: 60 },
+        { np: 6, percent: 53.33 },
+        { np: 5, percent: 46.67 },
+        { np: 4, percent: 40 },
+        { np: 3, percent: 33.33 },
+        { np: 2, percent: 26.67 },
+        { np: 1, percent: 20 },
+        { np: 0, percent: 0 }
+    ];
+    
+    // ═══════════════════════════════════════════════════════════════
+    // QUESTIONS ARRAY - ALLE 48 AUFGABEN
+    // ═══════════════════════════════════════════════════════════════
+    const QUESTIONS = [
+        // ═══════════════════════════════════════════════════════════
+        // BASIS (○) – 13 Aufgaben, 28 Punkte
+        // ═══════════════════════════════════════════════════════════
+        
+        // F1: MC - Formelzeichen I
+        {
+            id: "BASIS_F01",
+            level: "basis",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Das <strong>Formelzeichen</strong> für die elektrische Stromstärke ist:`,
+            options: [
+                { letter: "A", text: "<em>U</em>" },
+                { letter: "B", text: "<em>I</em>" },
+                { letter: "C", text: "<em>R</em>" },
+                { letter: "D", text: "<em>P</em>" }
+            ],
+            correct: "B",
+            solution: "Das Formelzeichen der Stromstärke ist <strong>I</strong> (von Intensität)."
+        },
+        
+        // F2: MC - Einheit Stromstärke
+        {
+            id: "BASIS_F02",
+            level: "basis",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Die <strong>Einheit</strong> der elektrischen Stromstärke heißt:`,
+            options: [
+                { letter: "A", text: "Ampere (A)" },
+                { letter: "B", text: "Volt (V)" },
+                { letter: "C", text: "Watt (W)" },
+                { letter: "D", text: "Ohm (Ω)" }
+            ],
+            correct: "A",
+            solution: "Die Einheit der Stromstärke ist <strong>Ampere (A)</strong>."
+        },
+        
+        // F3: MC - Formelzeichen U
+        {
+            id: "BASIS_F03",
+            level: "basis",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Das <strong>Formelzeichen</strong> für die elektrische Spannung ist:`,
+            options: [
+                { letter: "A", text: "<em>U</em>" },
+                { letter: "B", text: "<em>I</em>" },
+                { letter: "C", text: "<em>S</em>" },
+                { letter: "D", text: "<em>V</em>" }
+            ],
+            correct: "A",
+            solution: "Das Formelzeichen der Spannung ist <strong>U</strong>."
+        },
+        
+        // F4: MC - Einheit Spannung
+        {
+            id: "BASIS_F04",
+            level: "basis",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `Die <strong>Einheit</strong> der elektrischen Spannung heißt:`,
+            options: [
+                { letter: "A", text: "Ampere (A)" },
+                { letter: "B", text: "Volt (V)" },
+                { letter: "C", text: "Watt (W)" },
+                { letter: "D", text: "Joule (J)" }
+            ],
+            correct: "B",
+            solution: "Die Einheit der Spannung ist <strong>Volt (V)</strong>."
+        },
+        
+        // F5: Dropdown - Messgeräte
+        {
+            id: "BASIS_F05",
+            level: "basis",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Vervollständige die Sätze:`,
+            blanks: [
+                {
+                    id: "blank1",
+                    label: "Die Stromstärke misst man mit einem",
+                    options: ["Amperemeter", "Voltmeter", "Ohmmeter", "Wattmeter"],
+                    correct: "Amperemeter"
+                },
+                {
+                    id: "blank2",
+                    label: "Die Spannung misst man mit einem",
+                    options: ["Amperemeter", "Voltmeter", "Ohmmeter", "Wattmeter"],
+                    correct: "Voltmeter"
+                }
+            ],
+            solution: "<strong>Amperemeter</strong> für Stromstärke, <strong>Voltmeter</strong> für Spannung."
+        },
+        
+        // F6: Dropdown - Schaltart
+        {
+            id: "BASIS_F06",
+            level: "basis",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Wie werden die Messgeräte angeschlossen?`,
+            blanks: [
+                {
+                    id: "blank1",
+                    label: "Das Amperemeter wird",
+                    options: ["in Reihe", "parallel"],
+                    correct: "in Reihe"
+                },
+                {
+                    id: "blank2",
+                    label: "Das Voltmeter wird",
+                    options: ["in Reihe", "parallel"],
+                    correct: "parallel"
+                }
+            ],
+            solution: "Amperemeter: <strong>in Reihe</strong>; Voltmeter: <strong>parallel</strong>."
+        },
+        
+        // F7: MC - Reihenschaltung I
+        {
+            id: "BASIS_F07",
+            level: "basis",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `In einer <strong>Reihenschaltung</strong> gilt für die <strong>Stromstärke</strong>:`,
+            options: [
+                { letter: "A", text: "Die Stromstärke ist überall gleich groß" },
+                { letter: "B", text: "Die Teilströme addieren sich" },
+                { letter: "C", text: "Die Stromstärke wird immer kleiner" },
+                { letter: "D", text: "Die Stromstärke verdoppelt sich" }
+            ],
+            correct: "A",
+            solution: "Reihenschaltung: Die Stromstärke ist <strong>überall gleich groß</strong>."
+        },
+        
+        // F8: MC - Reihenschaltung U
+        {
+            id: "BASIS_F08",
+            level: "basis",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `In einer <strong>Reihenschaltung</strong> gilt für die <strong>Spannung</strong>:`,
+            options: [
+                { letter: "A", text: "Die Spannung ist überall gleich groß" },
+                { letter: "B", text: "Die Teilspannungen addieren sich zur Gesamtspannung" },
+                { letter: "C", text: "Die Spannung halbiert sich" },
+                { letter: "D", text: "Die Spannung bleibt unverändert" }
+            ],
+            correct: "B",
+            solution: "Reihenschaltung: Die Teilspannungen <strong>addieren sich</strong> zur Gesamtspannung."
+        },
+        
+        // F9: MC - Parallelschaltung U
+        {
+            id: "BASIS_F09",
+            level: "basis",
+            type: "mc",
+            afb: 1,
+            points: 2,
+            question: `In einer <strong>Parallelschaltung</strong> gilt für die <strong>Spannung</strong>:`,
+            options: [
+                { letter: "A", text: "Die Spannung ist an allen Zweigen gleich" },
+                { letter: "B", text: "Die Teilspannungen addieren sich" },
+                { letter: "C", text: "Die Spannung teilt sich auf" },
+                { letter: "D", text: "Die Spannung verdoppelt sich" }
+            ],
+            correct: "A",
+            solution: "Parallelschaltung: Die Spannung ist an allen Zweigen <strong>gleich</strong>."
+        },
+        
+        // F10: Berechnung - Reihenschaltung I
+        {
+            id: "BASIS_F10",
+            level: "basis",
+            type: "number",
+            afb: 2,
+            points: 2,
+            question: `Zwei Lampen sind <strong>in Reihe</strong> geschaltet. Durch L₁ fließen 0,4 A. Wie groß ist <em>I</em>₂?`,
+            svg: `<svg width="340" height="160" viewBox="0 0 340 160">
+                <line x1="40" y1="40" x2="90" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="130" y1="40" x2="170" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="210" y1="40" x2="300" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="40" x2="300" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="120" x2="200" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="108" x2="200" y2="132" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="112" x2="180" y2="128" stroke="#000" stroke-width="4"/>
+                <text x="206" y="118" font-family="serif" font-size="10">+</text>
+                <text x="166" y="118" font-family="serif" font-size="10">−</text>
+                <line x1="180" y1="120" x2="40" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="120" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="110" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="97" y1="27" x2="123" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="123" y1="27" x2="97" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="190" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="177" y1="27" x2="203" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="203" y1="27" x2="177" y2="53" stroke="#000" stroke-width="2"/>
+                <text x="110" y="80" text-anchor="middle" font-family="serif" font-size="11">L₁</text>
+                <text x="190" y="80" text-anchor="middle" font-family="serif" font-size="11">L₂</text>
+                <text x="110" y="18" text-anchor="middle" font-family="serif" font-size="10">
+                    <tspan font-style="italic">I</tspan>₁ = 0,4 A
+                </text>
+                <text x="190" y="18" text-anchor="middle" font-family="serif" font-size="10" fill="#c00" font-weight="bold">
+                    <tspan font-style="italic">I</tspan>₂ = ?
+                </text>
+            </svg>`,
+            correctValue: 0.4,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Reihenschaltung: Stromstärke überall gleich → <em>I</em>₂ = <em>I</em>₁ = <strong>0,4 A</strong>"
+        },
+        
+        // F11: Berechnung - Parallelschaltung I
+        {
+            id: "BASIS_F11",
+            level: "basis",
+            type: "number",
+            afb: 2,
+            points: 2,
+            question: `Zwei Lampen sind <strong>parallel</strong>. <em>I</em>₁ = 0,3 A, <em>I</em>₂ = 0,2 A. Berechne <em>I</em><sub>ges</sub>.`,
+            svg: `<svg width="340" height="200" viewBox="0 0 340 200">
+                <line x1="40" y1="40" x2="100" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="40" x2="100" y2="140" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="60" x2="140" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="60" x2="240" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="120" x2="140" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="120" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="60" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="90" x2="300" y2="90" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="90" x2="300" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="170" x2="200" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="158" x2="200" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="162" x2="180" y2="178" stroke="#000" stroke-width="4"/>
+                <text x="206" y="168" font-family="serif" font-size="10">+</text>
+                <text x="166" y="168" font-family="serif" font-size="10">−</text>
+                <line x1="180" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="60" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="47" x2="173" y2="73" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="47" x2="147" y2="73" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="120" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="107" x2="173" y2="133" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="107" x2="147" y2="133" stroke="#000" stroke-width="2"/>
+                <text x="200" y="55" font-family="serif" font-size="10">L₁: <tspan font-style="italic">I</tspan>₁ = 0,3 A</text>
+                <text x="200" y="125" font-family="serif" font-size="10">L₂: <tspan font-style="italic">I</tspan>₂ = 0,2 A</text>
+                <text x="270" y="75" font-family="serif" font-size="10" fill="#c00" font-weight="bold">
+                    <tspan font-style="italic">I</tspan><tspan font-size="8" baseline-shift="sub">ges</tspan> = ?
+                </text>
+            </svg>`,
+            correctValue: 0.5,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Parallelschaltung: <em>I</em><sub>ges</sub> = 0,3 A + 0,2 A = <strong>0,5 A</strong>"
+        },
+        
+        // F12: Berechnung - Reihenschaltung U
+        {
+            id: "BASIS_F12",
+            level: "basis",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Zwei Lampen in <strong>Reihe</strong> an 12 V. An L₁ liegen 5 V. Berechne <em>U</em>₂.`,
+            svg: `<svg width="340" height="160" viewBox="0 0 340 160">
+                <line x1="40" y1="40" x2="90" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="130" y1="40" x2="170" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="210" y1="40" x2="300" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="40" x2="300" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="120" x2="200" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="108" x2="200" y2="132" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="112" x2="180" y2="128" stroke="#000" stroke-width="4"/>
+                <text x="190" y="145" font-family="serif" font-size="10">12 V</text>
+                <line x1="180" y1="120" x2="40" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="120" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="110" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="97" y1="27" x2="123" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="123" y1="27" x2="97" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="190" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="177" y1="27" x2="203" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="203" y1="27" x2="177" y2="53" stroke="#000" stroke-width="2"/>
+                <text x="110" y="80" text-anchor="middle" font-family="serif" font-size="11">L₁</text>
+                <text x="190" y="80" text-anchor="middle" font-family="serif" font-size="11">L₂</text>
+                <text x="110" y="18" text-anchor="middle" font-family="serif" font-size="10">
+                    <tspan font-style="italic">U</tspan>₁ = 5 V
+                </text>
+                <text x="190" y="18" text-anchor="middle" font-family="serif" font-size="10" fill="#c00" font-weight="bold">
+                    <tspan font-style="italic">U</tspan>₂ = ?
+                </text>
+            </svg>`,
+            correctValue: 7,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "<em>U</em>₂ = <em>U</em><sub>ges</sub> − <em>U</em>₁ = 12 V − 5 V = <strong>7 V</strong>"
+        },
+        
+        // F13: Berechnung - Parallelschaltung U
+        {
+            id: "BASIS_F13",
+            level: "basis",
+            type: "multi-number",
+            afb: 2,
+            points: 3,
+            question: `Zwei Lampen sind <strong>parallel</strong> an 9 V angeschlossen. Wie groß ist <em>U</em>₁ und <em>U</em>₂?`,
+            svg: `<svg width="340" height="200" viewBox="0 0 340 200">
+                <line x1="40" y1="40" x2="100" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="40" x2="100" y2="140" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="60" x2="140" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="60" x2="240" y2="60" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="120" x2="140" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="120" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="60" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="90" x2="300" y2="90" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="90" x2="300" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="170" x2="200" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="158" x2="200" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="162" x2="180" y2="178" stroke="#000" stroke-width="4"/>
+                <text x="190" y="195" font-family="serif" font-size="10">9 V</text>
+                <line x1="180" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="60" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="47" x2="173" y2="73" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="47" x2="147" y2="73" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="120" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="107" x2="173" y2="133" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="107" x2="147" y2="133" stroke="#000" stroke-width="2"/>
+                <text x="200" y="55" font-family="serif" font-size="10" fill="#c00" font-weight="bold">L₁: <tspan font-style="italic">U</tspan>₁ = ?</text>
+                <text x="200" y="125" font-family="serif" font-size="10" fill="#c00" font-weight="bold">L₂: <tspan font-style="italic">U</tspan>₂ = ?</text>
+            </svg>`,
+            fields: [
+                { id: "u1", label: "U₁", correctValue: 9, unit: "V", tolerance: 0.1 },
+                { id: "u2", label: "U₂", correctValue: 9, unit: "V", tolerance: 0.1 }
+            ],
+            solution: "Parallelschaltung: An allen Zweigen liegt dieselbe Spannung!<br><em>U</em>₁ = <em>U</em>₂ = <em>U</em><sub>ges</sub> = <strong>9 V</strong>"
+        },
+        
+        // ═══════════════════════════════════════════════════════════
+        // STERN 1 (★) – 12 Aufgaben, 30 Punkte
+        // ═══════════════════════════════════════════════════════════
+        
+        // STERN1 F1: Dropdown - Formelzeichen/Einheit I
+        {
+            id: "STERN1_F01",
+            level: "stern1",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Vervollständige die Sätze zur Stromstärke:`,
+            blanks: [
+                {
+                    id: "blank1",
+                    label: "Das Formelzeichen der Stromstärke ist",
+                    options: ["I", "U", "R", "P"],
+                    correct: "I"
+                },
+                {
+                    id: "blank2",
+                    label: "Die Einheit der Stromstärke heißt",
+                    options: ["Ampere", "Volt", "Watt", "Ohm"],
+                    correct: "Ampere"
+                }
+            ],
+            solution: "Formelzeichen: <strong>I</strong>; Einheit: <strong>Ampere</strong>"
+        },
+        
+        // STERN1 F2: Dropdown - Definition
+        {
+            id: "STERN1_F02",
+            level: "stern1",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Was gibt die Stromstärke an?`,
+            blanks: [
+                {
+                    id: "blank1",
+                    label: "Die Stromstärke gibt an, wie viel",
+                    options: ["Ladung", "Energie", "Spannung", "Widerstand"],
+                    correct: "Ladung"
+                },
+                {
+                    id: "blank2",
+                    label: "pro",
+                    options: ["Zeit", "Strecke", "Masse", "Volumen"],
+                    correct: "Zeit"
+                }
+            ],
+            solution: "Die Stromstärke gibt an, wie viel <strong>Ladung</strong> pro <strong>Zeit</strong> fließt."
+        },
+        
+        // STERN1 F3: Dropdown - Formelzeichen/Einheit U
+        {
+            id: "STERN1_F03",
+            level: "stern1",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Vervollständige die Sätze zur Spannung:`,
+            blanks: [
+                {
+                    id: "blank1",
+                    label: "Das Formelzeichen der Spannung ist",
+                    options: ["U", "I", "S", "V"],
+                    correct: "U"
+                },
+                {
+                    id: "blank2",
+                    label: "Die Einheit der Spannung heißt",
+                    options: ["Volt", "Ampere", "Watt", "Joule"],
+                    correct: "Volt"
+                }
+            ],
+            solution: "Formelzeichen: <strong>U</strong>; Einheit: <strong>Volt</strong>"
+        },
+        
+        // STERN1 F4: Tabelle - Messgeräte
+        {
+            id: "STERN1_F04",
+            level: "stern1",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Ordne die Messgeräte der richtigen Anschlussart zu:`,
+            blanks: [
+                {
+                    id: "blank1",
+                    label: "Amperemeter wird geschaltet",
+                    options: ["in Reihe", "parallel"],
+                    correct: "in Reihe"
+                },
+                {
+                    id: "blank2",
+                    label: "Voltmeter wird geschaltet",
+                    options: ["in Reihe", "parallel"],
+                    correct: "parallel"
+                }
+            ],
+            solution: "Amperemeter: <strong>in Reihe</strong>; Voltmeter: <strong>parallel</strong>"
+        },
+        
+        // STERN1 F5: Mehrfachauswahl - Reihenschaltung
+        {
+            id: "STERN1_F05",
+            level: "stern1",
+            type: "multicheck",
+            afb: 2,
+            points: 2,
+            question: `Welche Aussagen gelten für die <strong>REIHENSCHALTUNG</strong>? (Mehrere richtig!)`,
+            options: [
+                { id: "a", text: "Die Stromstärke ist an allen Stellen gleich groß", correct: true },
+                { id: "b", text: "Die Teilspannungen addieren sich zur Gesamtspannung", correct: true },
+                { id: "c", text: "Die Teilströme addieren sich zum Gesamtstrom", correct: false },
+                { id: "d", text: "An allen Bauteilen liegt dieselbe Spannung", correct: false }
+            ],
+            solution: "Reihenschaltung: ☑ Stromstärke überall gleich ☑ Spannungen addieren sich"
+        },
+        
+        // STERN1 F6: Mehrfachauswahl - Parallelschaltung
+        {
+            id: "STERN1_F06",
+            level: "stern1",
+            type: "multicheck",
+            afb: 2,
+            points: 2,
+            question: `Welche Aussagen gelten für die <strong>PARALLELSCHALTUNG</strong>? (Mehrere richtig!)`,
+            options: [
+                { id: "a", text: "Die Stromstärke ist an allen Stellen gleich groß", correct: false },
+                { id: "b", text: "Die Teilströme addieren sich zum Gesamtstrom", correct: true },
+                { id: "c", text: "An allen Zweigen liegt dieselbe Spannung", correct: true },
+                { id: "d", text: "Die Teilspannungen addieren sich", correct: false }
+            ],
+            solution: "Parallelschaltung: ☑ Ströme addieren sich ☑ Spannung überall gleich"
+        },
+        
+        // STERN1 F7: Berechnung - 3 Lampen Reihe I
+        {
+            id: "STERN1_F07",
+            level: "stern1",
+            type: "multi-number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen sind <strong>in Reihe</strong> geschaltet. Durch L₁ fließen 0,5 A. Bestimme <em>I</em>₂ und <em>I</em>₃.`,
+            svg: `<svg width="400" height="160" viewBox="0 0 400 160">
+                <line x1="40" y1="40" x2="80" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="120" y1="40" x2="160" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="40" x2="240" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="280" y1="40" x2="360" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="40" x2="360" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="120" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="108" x2="240" y2="132" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="112" x2="220" y2="128" stroke="#000" stroke-width="4"/>
+                <line x1="220" y1="120" x2="40" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="120" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="100" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="87" y1="27" x2="113" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="113" y1="27" x2="87" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="180" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="167" y1="27" x2="193" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="193" y1="27" x2="167" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="260" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="247" y1="27" x2="273" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="273" y1="27" x2="247" y2="53" stroke="#000" stroke-width="2"/>
+                <text x="100" y="80" text-anchor="middle" font-family="serif" font-size="10">L₁</text>
+                <text x="180" y="80" text-anchor="middle" font-family="serif" font-size="10">L₂</text>
+                <text x="260" y="80" text-anchor="middle" font-family="serif" font-size="10">L₃</text>
+                <text x="100" y="18" text-anchor="middle" font-family="serif" font-size="9"><tspan font-style="italic">I</tspan>₁ = 0,5 A</text>
+                <text x="180" y="18" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold"><tspan font-style="italic">I</tspan>₂ = ?</text>
+                <text x="260" y="18" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold"><tspan font-style="italic">I</tspan>₃ = ?</text>
+            </svg>`,
+            fields: [
+                { id: "i2", label: "I₂", correctValue: 0.5, unit: "A", tolerance: 0.01 },
+                { id: "i3", label: "I₃", correctValue: 0.5, unit: "A", tolerance: 0.01 }
+            ],
+            solution: "Reihenschaltung: Stromstärke überall gleich → <em>I</em>₂ = <em>I</em>₃ = <em>I</em>₁ = <strong>0,5 A</strong>"
+        },
+        
+        // STERN1 F8: Berechnung - 3 Lampen Parallel I
+        {
+            id: "STERN1_F08",
+            level: "stern1",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen <strong>parallel</strong>: <em>I</em>₁ = 0,3 A, <em>I</em>₂ = 0,4 A, <em>I</em>₃ = 0,3 A. Berechne <em>I</em><sub>ges</sub>.`,
+            svg: `<svg width="360" height="240" viewBox="0 0 360 240">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="180" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="140" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="50" x2="240" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="105" x2="140" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="105" x2="240" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="160" x2="140" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="160" x2="240" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="50" x2="240" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="105" x2="320" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="105" x2="320" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="210" x2="200" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="198" x2="200" y2="222" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="202" x2="180" y2="218" stroke="#000" stroke-width="4"/>
+                <line x1="180" y1="210" x2="40" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="210" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="37" x2="173" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="37" x2="147" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="105" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="92" x2="173" y2="118" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="92" x2="147" y2="118" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="160" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="147" x2="173" y2="173" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="147" x2="147" y2="173" stroke="#000" stroke-width="2"/>
+                <text x="200" y="45" font-family="serif" font-size="9">L₁: <tspan font-style="italic">I</tspan>₁ = 0,3 A</text>
+                <text x="200" y="110" font-family="serif" font-size="9">L₂: <tspan font-style="italic">I</tspan>₂ = 0,4 A</text>
+                <text x="200" y="165" font-family="serif" font-size="9">L₃: <tspan font-style="italic">I</tspan>₃ = 0,3 A</text>
+                <text x="280" y="90" font-family="serif" font-size="9" fill="#c00" font-weight="bold"><tspan font-style="italic">I</tspan><tspan font-size="7" baseline-shift="sub">ges</tspan> = ?</text>
+            </svg>`,
+            correctValue: 1,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "<em>I</em><sub>ges</sub> = 0,3 A + 0,4 A + 0,3 A = <strong>1 A</strong>"
+        },
+        
+        // STERN1 F9: Berechnung - Einheitenumrechnung
+        {
+            id: "STERN1_F09",
+            level: "stern1",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Zwei Zweige parallel: <em>I</em>₁ = 400 mA, <em>I</em>₂ = 600 mA. Berechne <em>I</em><sub>ges</sub> in <strong>Ampere</strong>.`,
+            correctValue: 1,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "400 mA = 0,4 A; 600 mA = 0,6 A<br><em>I</em><sub>ges</sub> = 0,4 A + 0,6 A = <strong>1 A</strong>"
+        },
+        
+        // STERN1 F10: Berechnung - 3 Lampen Reihe U
+        {
+            id: "STERN1_F10",
+            level: "stern1",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen <strong>in Reihe</strong> an 12 V: <em>U</em>₁ = 3 V, <em>U</em>₂ = 5 V. Berechne <em>U</em>₃.`,
+            svg: `<svg width="400" height="160" viewBox="0 0 400 160">
+                <line x1="40" y1="40" x2="80" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="120" y1="40" x2="160" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="40" x2="240" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="280" y1="40" x2="360" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="40" x2="360" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="120" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="108" x2="240" y2="132" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="112" x2="220" y2="128" stroke="#000" stroke-width="4"/>
+                <text x="230" y="145" font-family="serif" font-size="9">12 V</text>
+                <line x1="220" y1="120" x2="40" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="120" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="100" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="87" y1="27" x2="113" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="113" y1="27" x2="87" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="180" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="167" y1="27" x2="193" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="193" y1="27" x2="167" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="260" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="247" y1="27" x2="273" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="273" y1="27" x2="247" y2="53" stroke="#000" stroke-width="2"/>
+                <text x="100" y="80" text-anchor="middle" font-family="serif" font-size="10">L₁</text>
+                <text x="180" y="80" text-anchor="middle" font-family="serif" font-size="10">L₂</text>
+                <text x="260" y="80" text-anchor="middle" font-family="serif" font-size="10">L₃</text>
+                <text x="100" y="18" text-anchor="middle" font-family="serif" font-size="9"><tspan font-style="italic">U</tspan>₁ = 3 V</text>
+                <text x="180" y="18" text-anchor="middle" font-family="serif" font-size="9"><tspan font-style="italic">U</tspan>₂ = 5 V</text>
+                <text x="260" y="18" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold"><tspan font-style="italic">U</tspan>₃ = ?</text>
+            </svg>`,
+            correctValue: 4,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "<em>U</em>₃ = 12 V − 3 V − 5 V = <strong>4 V</strong>"
+        },
+        
+        // STERN1 F11: Berechnung - 3 Lampen Parallel U
+        {
+            id: "STERN1_F11",
+            level: "stern1",
+            type: "multi-number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen sind <strong>parallel</strong> an eine 9-V-Batterie angeschlossen. Wie groß ist die Spannung an jeder Lampe?`,
+            svg: `<svg width="360" height="240" viewBox="0 0 360 240">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="180" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="140" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="50" x2="240" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="105" x2="140" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="105" x2="240" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="160" x2="140" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="160" x2="240" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="50" x2="240" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="105" x2="320" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="105" x2="320" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="210" x2="200" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="198" x2="200" y2="222" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="202" x2="180" y2="218" stroke="#000" stroke-width="4"/>
+                <text x="190" y="232" font-family="serif" font-size="9">9 V</text>
+                <line x1="180" y1="210" x2="40" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="210" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="37" x2="173" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="37" x2="147" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="105" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="92" x2="173" y2="118" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="92" x2="147" y2="118" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="160" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="147" x2="173" y2="173" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="147" x2="147" y2="173" stroke="#000" stroke-width="2"/>
+                <text x="200" y="45" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₁: <tspan font-style="italic">U</tspan>₁ = ?</text>
+                <text x="200" y="110" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₂: <tspan font-style="italic">U</tspan>₂ = ?</text>
+                <text x="200" y="165" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₃: <tspan font-style="italic">U</tspan>₃ = ?</text>
+            </svg>`,
+            fields: [
+                { id: "u1", label: "U₁", correctValue: 9, unit: "V", tolerance: 0.1 },
+                { id: "u2", label: "U₂", correctValue: 9, unit: "V", tolerance: 0.1 },
+                { id: "u3", label: "U₃", correctValue: 9, unit: "V", tolerance: 0.1 }
+            ],
+            solution: "Parallelschaltung: Spannung überall gleich → <em>U</em>₁ = <em>U</em>₂ = <em>U</em>₃ = <strong>9 V</strong>"
+        },
+        
+        // STERN1 F12: Berechnung - Gemischte Schaltung
+        {
+            id: "STERN1_F12",
+            level: "stern1",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Gemischte Schaltung: L₁ und L₂ in Reihe, L₃ parallel dazu. Gesamtspannung 12 V. <em>U</em>₁ = 4 V, <em>U</em>₂ = 8 V. Berechne <em>U</em>₃.`,
+            svg: `<svg width="360" height="200" viewBox="0 0 360 200">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="130" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="170" y1="50" x2="200" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="50" x2="280" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="110" x2="160" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="110" x2="280" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="280" y1="50" x2="280" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="280" y1="80" x2="320" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="80" x2="320" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="170" x2="200" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="158" x2="200" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="162" x2="180" y2="178" stroke="#000" stroke-width="4"/>
+                <text x="190" y="195" font-family="serif" font-size="9">12 V</text>
+                <line x1="180" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="150" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="137" y1="37" x2="163" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="163" y1="37" x2="137" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="220" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="207" y1="37" x2="233" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="233" y1="37" x2="207" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="180" cy="110" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="167" y1="97" x2="193" y2="123" stroke="#000" stroke-width="2"/>
+                <line x1="193" y1="97" x2="167" y2="123" stroke="#000" stroke-width="2"/>
+                <text x="150" y="25" text-anchor="middle" font-family="serif" font-size="9">L₁: <tspan font-style="italic">U</tspan>₁ = 4 V</text>
+                <text x="220" y="25" text-anchor="middle" font-family="serif" font-size="9">L₂: <tspan font-style="italic">U</tspan>₂ = 8 V</text>
+                <text x="240" y="115" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₃: <tspan font-style="italic">U</tspan>₃ = ?</text>
+            </svg>`,
+            correctValue: 12,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "L₃ ist parallel zum gesamten Reihenzweig.<br>Parallelschaltung: <em>U</em>₃ = <em>U</em><sub>ges</sub> = <strong>12 V</strong><br>(Probe: <em>U</em>₁ + <em>U</em>₂ = 4 V + 8 V = 12 V ✓)"
+        },
+        
+        // ═══════════════════════════════════════════════════════════
+        // STERN 2 (★★) – 9 Aufgaben, 30 Punkte
+        // ═══════════════════════════════════════════════════════════
+        
+        // STERN2 F1: Texteingabe - Stromstärke
+        {
+            id: "STERN2_F01",
+            level: "stern2",
+            type: "text-multi",
+            afb: 1,
+            points: 3,
+            question: `Vervollständige die Angaben zur Stromstärke:`,
+            fields: [
+                { id: "f1", label: "Formelzeichen der Stromstärke", correct: ["I"], placeholder: "z.B. X" },
+                { id: "f2", label: "Einheit der Stromstärke", correct: ["Ampere", "A"], placeholder: "z.B. Volt" },
+                { id: "f3", label: "Messgerät für Stromstärke", correct: ["Amperemeter", "Strommesser"], placeholder: "z.B. Voltmeter" }
+            ],
+            solution: "Formelzeichen: <strong>I</strong>; Einheit: <strong>Ampere</strong>; Messgerät: <strong>Amperemeter</strong>"
+        },
+        
+        // STERN2 F2: Texteingabe - Spannung
+        {
+            id: "STERN2_F02",
+            level: "stern2",
+            type: "text-multi",
+            afb: 1,
+            points: 3,
+            question: `Vervollständige die Angaben zur Spannung:`,
+            fields: [
+                { id: "f1", label: "Formelzeichen der Spannung", correct: ["U"], placeholder: "z.B. X" },
+                { id: "f2", label: "Einheit der Spannung", correct: ["Volt", "V"], placeholder: "z.B. Ampere" },
+                { id: "f3", label: "Messgerät für Spannung", correct: ["Voltmeter", "Spannungsmesser"], placeholder: "z.B. Amperemeter" }
+            ],
+            solution: "Formelzeichen: <strong>U</strong>; Einheit: <strong>Volt</strong>; Messgerät: <strong>Voltmeter</strong>"
+        },
+        
+        // STERN2 F3: Tabelle - Zuordnung
+        {
+            id: "STERN2_F03",
+            level: "stern2",
+            type: "dropdown",
+            afb: 1,
+            points: 4,
+            question: `Ordne die Regeln der richtigen Schaltungsart zu:`,
+            blanks: [
+                { id: "b1", label: "Die Stromstärke ist überall gleich groß", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b2", label: "Die Teilströme addieren sich", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" },
+                { id: "b3", label: "Die Teilspannungen addieren sich", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b4", label: "An allen Zweigen liegt dieselbe Spannung", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" }
+            ],
+            solution: "Reihe: I gleich, U addiert; Parallel: I addiert, U gleich"
+        },
+        
+        // STERN2 F4: Dropdown - Messgeräte
+        {
+            id: "STERN2_F04",
+            level: "stern2",
+            type: "dropdown",
+            afb: 2,
+            points: 2,
+            question: `Wie werden die Messgeräte angeschlossen und warum?`,
+            blanks: [
+                { id: "b1", label: "Das Amperemeter wird geschaltet, weil es den durchfließenden Strom messen muss", options: ["in Reihe", "parallel"], correct: "in Reihe" },
+                { id: "b2", label: "Das Voltmeter wird geschaltet, weil es die Spannung zwischen zwei Punkten misst", options: ["in Reihe", "parallel"], correct: "parallel" }
+            ],
+            solution: "Amperemeter: <strong>in Reihe</strong> (misst durchfließenden Strom)<br>Voltmeter: <strong>parallel</strong> (misst Spannung zwischen zwei Punkten)"
+        },
+        
+        // STERN2 F5: Berechnung - Gemischte Schaltung I
+        {
+            id: "STERN2_F05",
+            level: "stern2",
+            type: "multi-number",
+            afb: 2,
+            points: 4,
+            question: `Gemischte Schaltung: L₁ in Reihe mit (L₂ || L₃). <em>I</em><sub>ges</sub> = 1 A, <em>I</em>₂ = 0,6 A. Berechne <em>I</em>₁ und <em>I</em>₃.`,
+            svg: `<svg width="380" height="200" viewBox="0 0 380 200">
+                <line x1="40" y1="40" x2="80" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="120" y1="40" x2="160" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="160" y1="40" x2="160" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="160" y1="55" x2="200" y2="55" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="55" x2="290" y2="55" stroke="#000" stroke-width="2"/>
+                <line x1="160" y1="105" x2="200" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="105" x2="290" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="290" y1="55" x2="290" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="290" y1="80" x2="340" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="80" x2="340" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="170" x2="220" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="158" x2="220" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="162" x2="200" y2="178" stroke="#000" stroke-width="4"/>
+                <line x1="200" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="100" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="87" y1="27" x2="113" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="113" y1="27" x2="87" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="220" cy="55" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="207" y1="42" x2="233" y2="68" stroke="#000" stroke-width="2"/>
+                <line x1="233" y1="42" x2="207" y2="68" stroke="#000" stroke-width="2"/>
+                <circle cx="220" cy="105" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="207" y1="92" x2="233" y2="118" stroke="#000" stroke-width="2"/>
+                <line x1="233" y1="92" x2="207" y2="118" stroke="#000" stroke-width="2"/>
+                <text x="100" y="75" text-anchor="middle" font-family="serif" font-size="9">L₁</text>
+                <text x="255" y="50" font-family="serif" font-size="9">L₂: <tspan font-style="italic">I</tspan>₂ = 0,6 A</text>
+                <text x="255" y="110" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₃: <tspan font-style="italic">I</tspan>₃ = ?</text>
+                <text x="65" y="25" font-family="serif" font-size="9"><tspan font-style="italic">I</tspan><tspan font-size="7" baseline-shift="sub">ges</tspan> = 1 A</text>
+                <text x="100" y="18" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold"><tspan font-style="italic">I</tspan>₁ = ?</text>
+            </svg>`,
+            fields: [
+                { id: "i1", label: "I₁", correctValue: 1, unit: "A", tolerance: 0.01 },
+                { id: "i3", label: "I₃", correctValue: 0.4, unit: "A", tolerance: 0.01 }
+            ],
+            solution: "Reihenschaltung: <em>I</em>₁ = <em>I</em><sub>ges</sub> = <strong>1 A</strong><br>Parallelschaltung: <em>I</em>₃ = 1 A − 0,6 A = <strong>0,4 A</strong>"
+        },
+        
+        // STERN2 F6: Berechnung - 4 Motoren parallel
+        {
+            id: "STERN2_F06",
+            level: "stern2",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Vier Motoren parallel: <em>I</em><sub>ges</sub> = 2,4 A. <em>I</em>₁ = 0,8 A, <em>I</em>₂ = 0,5 A, <em>I</em>₃ = 0,6 A. Berechne <em>I</em>₄.`,
+            svg: `<svg width="360" height="260" viewBox="0 0 360 260">
+                <line x1="40" y1="25" x2="100" y2="25" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="25" x2="100" y2="195" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="40" x2="140" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="40" x2="240" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="85" x2="140" y2="85" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="85" x2="240" y2="85" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="130" x2="140" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="130" x2="240" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="175" x2="140" y2="175" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="175" x2="240" y2="175" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="40" x2="240" y2="175" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="107" x2="320" y2="107" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="107" x2="320" y2="230" stroke="#000" stroke-width="2"/>
+                <line x1="320" y1="230" x2="200" y2="230" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="218" x2="200" y2="242" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="222" x2="180" y2="238" stroke="#000" stroke-width="4"/>
+                <line x1="180" y1="230" x2="40" y2="230" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="230" x2="40" y2="25" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <text x="160" y="45" text-anchor="middle" font-family="serif" font-size="10" font-weight="bold">M</text>
+                <circle cx="160" cy="85" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <text x="160" y="90" text-anchor="middle" font-family="serif" font-size="10" font-weight="bold">M</text>
+                <circle cx="160" cy="130" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <text x="160" y="135" text-anchor="middle" font-family="serif" font-size="10" font-weight="bold">M</text>
+                <circle cx="160" cy="175" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <text x="160" y="180" text-anchor="middle" font-family="serif" font-size="10" font-weight="bold">M</text>
+                <text x="200" y="35" font-family="serif" font-size="8">M₁: 0,8 A</text>
+                <text x="200" y="90" font-family="serif" font-size="8">M₂: 0,5 A</text>
+                <text x="200" y="135" font-family="serif" font-size="8">M₃: 0,6 A</text>
+                <text x="200" y="180" font-family="serif" font-size="8" fill="#c00" font-weight="bold">M₄: ? A</text>
+                <text x="280" y="95" font-family="serif" font-size="8"><tspan font-style="italic">I</tspan><tspan font-size="6" baseline-shift="sub">ges</tspan> = 2,4 A</text>
+            </svg>`,
+            correctValue: 0.5,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "<em>I</em>₄ = 2,4 A − 0,8 A − 0,5 A − 0,6 A = <strong>0,5 A</strong>"
+        },
+        
+        // STERN2 F7: Berechnung - Einheitenumrechnung
+        {
+            id: "STERN2_F07",
+            level: "stern2",
+            type: "number",
+            afb: 2,
+            points: 2,
+            question: `Drei Zweige parallel: <em>I</em>₁ = 250 mA, <em>I</em>₂ = 0,35 A, <em>I</em>₃ = 400 mA. Berechne <em>I</em><sub>ges</sub> in <strong>Ampere</strong>.`,
+            correctValue: 1,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "250 mA = 0,25 A; 400 mA = 0,4 A<br><em>I</em><sub>ges</sub> = 0,25 A + 0,35 A + 0,4 A = <strong>1 A</strong>"
+        },
+        
+        // STERN2 F8: Berechnung - Reihenschaltung U
+        {
+            id: "STERN2_F08",
+            level: "stern2",
+            type: "number",
+            afb: 2,
+            points: 4,
+            question: `Drei Lampen <strong>in Reihe</strong> an 18 V: <em>U</em>₁ = 4 V, <em>U</em>₂ = 6 V. Berechne <em>U</em>₃.`,
+            svg: `<svg width="400" height="160" viewBox="0 0 400 160">
+                <line x1="40" y1="40" x2="80" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="120" y1="40" x2="160" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="40" x2="240" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="280" y1="40" x2="360" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="40" x2="360" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="120" x2="240" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="108" x2="240" y2="132" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="112" x2="220" y2="128" stroke="#000" stroke-width="4"/>
+                <text x="230" y="145" font-family="serif" font-size="9">18 V</text>
+                <line x1="220" y1="120" x2="40" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="120" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="100" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="87" y1="27" x2="113" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="113" y1="27" x2="87" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="180" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="167" y1="27" x2="193" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="193" y1="27" x2="167" y2="53" stroke="#000" stroke-width="2"/>
+                <circle cx="260" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="247" y1="27" x2="273" y2="53" stroke="#000" stroke-width="2"/>
+                <line x1="273" y1="27" x2="247" y2="53" stroke="#000" stroke-width="2"/>
+                <text x="100" y="80" text-anchor="middle" font-family="serif" font-size="10">L₁</text>
+                <text x="180" y="80" text-anchor="middle" font-family="serif" font-size="10">L₂</text>
+                <text x="260" y="80" text-anchor="middle" font-family="serif" font-size="10">L₃</text>
+                <text x="100" y="18" text-anchor="middle" font-family="serif" font-size="9">4 V</text>
+                <text x="180" y="18" text-anchor="middle" font-family="serif" font-size="9">6 V</text>
+                <text x="260" y="18" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold">? V</text>
+            </svg>`,
+            correctValue: 8,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "<em>U</em>₃ = 18 V − 4 V − 6 V = <strong>8 V</strong>"
+        },
+        
+        // STERN2 F9: Berechnung - Gemischte Schaltung U
+        {
+            id: "STERN2_F09",
+            level: "stern2",
+            type: "multi-number",
+            afb: 2,
+            points: 5,
+            question: `Gemischte Schaltung: (L₁ + L₂) in Reihe, parallel zu L₃. Gesamtspannung 24 V. <em>U</em>₁ = 10 V. Berechne <em>U</em>₂ und <em>U</em>₃.`,
+            svg: `<svg width="380" height="200" viewBox="0 0 380 200">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="130" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="170" y1="50" x2="200" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="50" x2="290" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="110" x2="160" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="110" x2="290" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="290" y1="50" x2="290" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="290" y1="80" x2="340" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="80" x2="340" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="170" x2="220" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="158" x2="220" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="162" x2="200" y2="178" stroke="#000" stroke-width="4"/>
+                <text x="210" y="195" font-family="serif" font-size="9">24 V</text>
+                <line x1="200" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="150" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="137" y1="37" x2="163" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="163" y1="37" x2="137" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="220" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="207" y1="37" x2="233" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="233" y1="37" x2="207" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="180" cy="110" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="167" y1="97" x2="193" y2="123" stroke="#000" stroke-width="2"/>
+                <line x1="193" y1="97" x2="167" y2="123" stroke="#000" stroke-width="2"/>
+                <text x="150" y="25" text-anchor="middle" font-family="serif" font-size="9">L₁: 10 V</text>
+                <text x="220" y="25" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₂: ?</text>
+                <text x="240" y="115" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₃: ?</text>
+            </svg>`,
+            fields: [
+                { id: "u2", label: "U₂", correctValue: 14, unit: "V", tolerance: 0.1 },
+                { id: "u3", label: "U₃", correctValue: 24, unit: "V", tolerance: 0.1 }
+            ],
+            solution: "<strong>Parallelschaltung:</strong> <em>U</em>₃ = <em>U</em><sub>ges</sub> = <strong>24 V</strong><br><strong>Reihenschaltung oben:</strong> <em>U</em>₂ = 24 V − 10 V = <strong>14 V</strong>"
+        },
+        
+        // ═══════════════════════════════════════════════════════════
+        // STERN 3 (★★★) – 14 Aufgaben, 52 Punkte
+        // ═══════════════════════════════════════════════════════════
+        
+        // STERN3 F1: Zuordnung - Regeln
+        {
+            id: "STERN3_F01",
+            level: "stern3",
+            type: "dropdown",
+            afb: 2,
+            points: 4,
+            question: `Ordne die Regeln der richtigen Schaltungsart zu:`,
+            blanks: [
+                { id: "b1", label: "Die Stromstärke ist an allen Stellen gleich groß", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b2", label: "Die Teilströme addieren sich zum Gesamtstrom", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" },
+                { id: "b3", label: "Die Teilspannungen addieren sich zur Gesamtspannung", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Reihenschaltung" },
+                { id: "b4", label: "An allen Zweigen liegt dieselbe Spannung", options: ["Reihenschaltung", "Parallelschaltung"], correct: "Parallelschaltung" }
+            ],
+            solution: "Reihe: I gleich, U addiert; Parallel: I addiert, U gleich"
+        },
+        
+        // STERN3 F2: Dropdown - Definition
+        {
+            id: "STERN3_F02",
+            level: "stern3",
+            type: "dropdown",
+            afb: 1,
+            points: 2,
+            question: `Was geben Stromstärke und Spannung an?`,
+            blanks: [
+                { id: "b1", label: "Die Stromstärke gibt an, wie viel ... pro Zeit fließt", options: ["Ladung", "Energie", "Spannung"], correct: "Ladung" },
+                { id: "b2", label: "Die Spannung gibt an, wie viel ... pro Ladung übertragen wird", options: ["Ladung", "Energie", "Stromstärke"], correct: "Energie" }
+            ],
+            solution: "Stromstärke: <strong>Ladung</strong> pro Zeit; Spannung: <strong>Energie</strong> pro Ladung"
+        },
+        
+        // STERN3 F3: Mehrfachauswahl - Reihenschaltung (erweitert)
+        {
+            id: "STERN3_F03",
+            level: "stern3",
+            type: "multicheck",
+            afb: 2,
+            points: 3,
+            question: `Welche Aussagen gelten für die <strong>REIHENSCHALTUNG</strong>?`,
+            options: [
+                { id: "a", text: "Die Stromstärke ist an allen Stellen gleich groß", correct: true },
+                { id: "b", text: "Die Teilspannungen addieren sich zur Gesamtspannung", correct: true },
+                { id: "c", text: "Der Strom teilt sich an Verzweigungen auf", correct: false },
+                { id: "d", text: "Fällt ein Bauteil aus, ist der gesamte Stromkreis unterbrochen", correct: true },
+                { id: "e", text: "An allen Bauteilen liegt dieselbe Spannung", correct: false }
+            ],
+            solution: "☑ I überall gleich ☑ U addiert sich ☑ Ausfall = Unterbrechung"
+        },
+        
+        // STERN3 F4: Mehrfachauswahl - Parallelschaltung (erweitert)
+        {
+            id: "STERN3_F04",
+            level: "stern3",
+            type: "multicheck",
+            afb: 2,
+            points: 3,
+            question: `Welche Aussagen gelten für die <strong>PARALLELSCHALTUNG</strong>?`,
+            options: [
+                { id: "a", text: "Die Stromstärke ist an allen Stellen gleich groß", correct: false },
+                { id: "b", text: "Die Teilströme addieren sich zum Gesamtstrom", correct: true },
+                { id: "c", text: "An allen Zweigen liegt dieselbe Spannung", correct: true },
+                { id: "d", text: "Fällt ein Zweig aus, funktionieren die anderen weiter", correct: true },
+                { id: "e", text: "Die Teilspannungen addieren sich", correct: false }
+            ],
+            solution: "☑ Ströme addieren sich ☑ Spannung überall gleich ☑ Andere Zweige funktionieren weiter"
+        },
+        
+        // STERN3 F5: Verschachtelte Schaltung I
+        {
+            id: "STERN3_F05",
+            level: "stern3",
+            type: "multi-number",
+            afb: 3,
+            points: 5,
+            question: `<strong>Verschachtelte Schaltung:</strong> L₁ und L₂ in Reihe, parallel zu L₃.<br><em>I</em><sub>ges</sub> = 1,5 A, <em>I</em>₃ = 0,9 A. Berechne <em>I</em>₁ und <em>I</em>₂.`,
+            svg: `<svg width="400" height="200" viewBox="0 0 400 200">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="130" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="170" y1="50" x2="200" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="50" x2="300" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="110" x2="160" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="110" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="50" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="80" x2="360" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="80" x2="360" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="170" x2="240" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="158" x2="240" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="162" x2="220" y2="178" stroke="#000" stroke-width="4"/>
+                <line x1="220" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="150" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="137" y1="37" x2="163" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="163" y1="37" x2="137" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="220" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="207" y1="37" x2="233" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="233" y1="37" x2="207" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="180" cy="110" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="167" y1="97" x2="193" y2="123" stroke="#000" stroke-width="2"/>
+                <line x1="193" y1="97" x2="167" y2="123" stroke="#000" stroke-width="2"/>
+                <text x="150" y="25" text-anchor="middle" font-family="serif" font-size="9">L₁</text>
+                <text x="220" y="25" text-anchor="middle" font-family="serif" font-size="9">L₂</text>
+                <text x="180" y="145" text-anchor="middle" font-family="serif" font-size="9">L₃: 0,9 A</text>
+                <text x="60" y="20" font-family="serif" font-size="9"><tspan font-style="italic">I</tspan><tspan font-size="7" baseline-shift="sub">ges</tspan> = 1,5 A</text>
+                <text x="260" y="45" font-family="serif" font-size="9" fill="#c00" font-weight="bold"><tspan font-style="italic">I</tspan>₁ = <tspan font-style="italic">I</tspan>₂ = ?</text>
+            </svg>`,
+            fields: [
+                { id: "i1", label: "I₁", correctValue: 0.6, unit: "A", tolerance: 0.01 },
+                { id: "i2", label: "I₂", correctValue: 0.6, unit: "A", tolerance: 0.01 }
+            ],
+            solution: "<strong>Parallelschaltung:</strong> <em>I</em>₁,₂ = 1,5 A − 0,9 A = <strong>0,6 A</strong><br><strong>Reihenschaltung oben:</strong> <em>I</em>₁ = <em>I</em>₂ = <strong>0,6 A</strong>"
+        },
+        
+        // STERN3 F6: Einheitenumrechnung
+        {
+            id: "STERN3_F06",
+            level: "stern3",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Zweige parallel: <em>I</em>₁ = 200 mA, <em>I</em>₂ = 0,35 A, <em>I</em>₃ = 450 mA. Berechne <em>I</em><sub>ges</sub> in Ampere.`,
+            correctValue: 1,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "200 mA = 0,2 A; 450 mA = 0,45 A<br><em>I</em><sub>ges</sub> = 0,2 A + 0,35 A + 0,45 A = <strong>1 A</strong>"
+        },
+        
+        // STERN3 F7: Motor-Schaltung
+        {
+            id: "STERN3_F07",
+            level: "stern3",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Motor M₁ in Reihe mit zwei parallel geschalteten Motoren M₂ und M₃.<br><em>I</em>₁ = 2 A, <em>I</em>₂ = 1,2 A. Berechne <em>I</em>₃.`,
+            svg: `<svg width="380" height="180" viewBox="0 0 380 180">
+                <line x1="40" y1="40" x2="80" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="120" y1="40" x2="160" y2="40" stroke="#000" stroke-width="2"/>
+                <line x1="160" y1="40" x2="160" y2="120" stroke="#000" stroke-width="2"/>
+                <line x1="160" y1="55" x2="200" y2="55" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="55" x2="290" y2="55" stroke="#000" stroke-width="2"/>
+                <line x1="160" y1="105" x2="200" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="105" x2="290" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="290" y1="55" x2="290" y2="105" stroke="#000" stroke-width="2"/>
+                <line x1="290" y1="80" x2="340" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="80" x2="340" y2="150" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="150" x2="220" y2="150" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="138" x2="220" y2="162" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="142" x2="200" y2="158" stroke="#000" stroke-width="4"/>
+                <line x1="200" y1="150" x2="40" y2="150" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="150" x2="40" y2="40" stroke="#000" stroke-width="2"/>
+                <circle cx="100" cy="40" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <text x="100" y="45" text-anchor="middle" font-family="serif" font-size="10" font-weight="bold">M</text>
+                <circle cx="220" cy="55" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <text x="220" y="60" text-anchor="middle" font-family="serif" font-size="10" font-weight="bold">M</text>
+                <circle cx="220" cy="105" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <text x="220" y="110" text-anchor="middle" font-family="serif" font-size="10" font-weight="bold">M</text>
+                <text x="100" y="75" text-anchor="middle" font-family="serif" font-size="9">M₁: 2 A</text>
+                <text x="260" y="50" font-family="serif" font-size="9">M₂: 1,2 A</text>
+                <text x="260" y="110" font-family="serif" font-size="9" fill="#c00" font-weight="bold">M₃: ?</text>
+            </svg>`,
+            correctValue: 0.8,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "Reihenschaltung: <em>I</em>₁ = <em>I</em>₂ + <em>I</em>₃<br><em>I</em>₃ = 2 A − 1,2 A = <strong>0,8 A</strong>"
+        },
+        
+        // STERN3 F8: Fehleranalyse Strom
+        {
+            id: "STERN3_F08",
+            level: "stern3",
+            type: "text",
+            afb: 3,
+            points: 3,
+            question: `Ein Schüler misst in einer Parallelschaltung:<br><em>I</em><sub>ges</sub> = 1,5 A, <em>I</em>₁ = 0,6 A, <em>I</em>₂ = 0,7 A, <em>I</em>₃ = 0,4 A<br>Prüfe die Werte. Wie groß ist der Fehler?`,
+            correct: ["0,2", "0.2", "0,2 A", "0.2 A"],
+            placeholder: "z.B. 0,3 A",
+            solution: "Summe: 0,6 + 0,7 + 0,4 = 1,7 A ≠ 1,5 A<br>Fehler: <strong>0,2 A</strong> zu hoch"
+        },
+        
+        // STERN3 F9: Verschachtelte Schaltung U
+        {
+            id: "STERN3_F09",
+            level: "stern3",
+            type: "multi-number",
+            afb: 3,
+            points: 5,
+            question: `<strong>Verschachtelte Schaltung:</strong> L₁ und L₂ in Reihe, parallel zu L₃.<br>Gesamtspannung 18 V, <em>U</em>₁ = 6 V. Berechne <em>U</em>₂ und <em>U</em>₃.`,
+            svg: `<svg width="400" height="200" viewBox="0 0 400 200">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="130" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="170" y1="50" x2="200" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="50" x2="300" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="110" x2="160" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="110" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="50" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="80" x2="360" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="80" x2="360" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="360" y1="170" x2="240" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="158" x2="240" y2="182" stroke="#000" stroke-width="2"/>
+                <line x1="220" y1="162" x2="220" y2="178" stroke="#000" stroke-width="4"/>
+                <text x="230" y="195" font-family="serif" font-size="9">18 V</text>
+                <line x1="220" y1="170" x2="40" y2="170" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="170" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="150" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="137" y1="37" x2="163" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="163" y1="37" x2="137" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="220" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="207" y1="37" x2="233" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="233" y1="37" x2="207" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="180" cy="110" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="167" y1="97" x2="193" y2="123" stroke="#000" stroke-width="2"/>
+                <line x1="193" y1="97" x2="167" y2="123" stroke="#000" stroke-width="2"/>
+                <text x="150" y="25" text-anchor="middle" font-family="serif" font-size="9">L₁: 6 V</text>
+                <text x="220" y="25" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₂: ?</text>
+                <text x="240" y="115" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₃: ?</text>
+            </svg>`,
+            fields: [
+                { id: "u2", label: "U₂", correctValue: 12, unit: "V", tolerance: 0.1 },
+                { id: "u3", label: "U₃", correctValue: 18, unit: "V", tolerance: 0.1 }
+            ],
+            solution: "<strong>Parallelschaltung:</strong> <em>U</em>₃ = <em>U</em><sub>ges</sub> = <strong>18 V</strong><br><strong>Reihenschaltung oben:</strong> <em>U</em>₂ = 18 V − 6 V = <strong>12 V</strong>"
+        },
+        
+        // STERN3 F10: Lichterkette
+        {
+            id: "STERN3_F10",
+            level: "stern3",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Eine Lichterkette mit 20 gleichen Lampen in Reihe an 230 V. Berechne die Spannung pro Lampe.`,
+            correctValue: 11.5,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "Gleiche Lampen → <em>U</em> = 230 V ÷ 20 = <strong>11,5 V</strong>"
+        },
+        
+        // STERN3 F11: Fehleranalyse Spannung
+        {
+            id: "STERN3_F11",
+            level: "stern3",
+            type: "text",
+            afb: 3,
+            points: 3,
+            question: `Ein Schüler misst in einer Reihenschaltung an 48 V:<br><em>U</em>₁ = 18 V, <em>U</em>₂ = 20 V, <em>U</em>₃ = 15 V<br>Wie groß ist der Fehler?`,
+            correct: ["5", "5 V"],
+            placeholder: "z.B. 3 V",
+            solution: "Summe: 18 + 20 + 15 = 53 V ≠ 48 V<br>Fehler: <strong>5 V</strong> zu hoch"
+        },
+        
+        // STERN3 F12: Einheitenumrechnung U
+        {
+            id: "STERN3_F12",
+            level: "stern3",
+            type: "number",
+            afb: 2,
+            points: 3,
+            question: `Drei Lampen in Reihe: <em>U</em>₁ = 4,5 V, <em>U</em>₂ = 3500 mV, <em>U</em>₃ = 4 V. Berechne <em>U</em><sub>ges</sub> in Volt.`,
+            correctValue: 12,
+            unit: "V",
+            tolerance: 0.1,
+            solution: "3500 mV = 3,5 V<br><em>U</em><sub>ges</sub> = 4,5 V + 3,5 V + 4 V = <strong>12 V</strong>"
+        },
+        
+        // STERN3 F13: EXTREM Verschachtelt I
+        {
+            id: "STERN3_F13",
+            level: "stern3",
+            type: "number",
+            afb: 3,
+            points: 6,
+            question: `<strong>⚡ EXTREM verschachtelt:</strong> (L₁–L₂) parallel zu (L₃ parallel zu (L₄||L₅))<br><em>I</em><sub>ges</sub> = 3 A, <em>I</em>₁,₂ = 0,8 A, <em>I</em>₄ = 0,6 A, <em>I</em>₅ = 0,4 A<br>Berechne <em>I</em>₃.`,
+            svg: `<svg width="450" height="280" viewBox="0 0 450 280">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="220" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="140" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="50" x2="220" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="260" y1="50" x2="340" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="130" x2="150" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="150" y1="100" x2="150" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="150" y1="110" x2="190" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="230" y1="110" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="150" y1="180" x2="200" y2="180" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="150" x2="200" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="160" x2="230" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="270" y1="160" x2="300" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="200" x2="230" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="270" y1="200" x2="300" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="160" x2="300" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="180" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="110" x2="340" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="50" x2="340" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="80" x2="400" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="400" y1="80" x2="400" y2="250" stroke="#000" stroke-width="2"/>
+                <line x1="400" y1="250" x2="260" y2="250" stroke="#000" stroke-width="2"/>
+                <line x1="260" y1="238" x2="260" y2="262" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="242" x2="240" y2="258" stroke="#000" stroke-width="4"/>
+                <line x1="240" y1="250" x2="40" y2="250" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="250" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="37" x2="173" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="37" x2="147" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="240" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="227" y1="37" x2="253" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="253" y1="37" x2="227" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="210" cy="110" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="197" y1="97" x2="223" y2="123" stroke="#000" stroke-width="2"/>
+                <line x1="223" y1="97" x2="197" y2="123" stroke="#000" stroke-width="2"/>
+                <circle cx="250" cy="160" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="237" y1="147" x2="263" y2="173" stroke="#000" stroke-width="2"/>
+                <line x1="263" y1="147" x2="237" y2="173" stroke="#000" stroke-width="2"/>
+                <circle cx="250" cy="200" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="237" y1="187" x2="263" y2="213" stroke="#000" stroke-width="2"/>
+                <line x1="263" y1="187" x2="237" y2="213" stroke="#000" stroke-width="2"/>
+                <text x="160" y="25" text-anchor="middle" font-family="serif" font-size="9">L₁</text>
+                <text x="240" y="25" text-anchor="middle" font-family="serif" font-size="9">L₂</text>
+                <text x="300" y="45" font-family="serif" font-size="8"><tspan font-style="italic">I</tspan>₁,₂ = 0,8 A</text>
+                <text x="210" y="140" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₃: ?</text>
+                <text x="320" y="160" font-family="serif" font-size="8">L₄: 0,6 A</text>
+                <text x="320" y="205" font-family="serif" font-size="8">L₅: 0,4 A</text>
+                <text x="60" y="20" font-family="serif" font-size="9"><tspan font-style="italic">I</tspan><tspan font-size="7" baseline-shift="sub">ges</tspan> = 3 A</text>
+            </svg>`,
+            correctValue: 1.2,
+            unit: "A",
+            tolerance: 0.01,
+            solution: "<strong>Schritt 1:</strong> <em>I</em><sub>unten</sub> = 3 A − 0,8 A = 2,2 A<br><strong>Schritt 2:</strong> <em>I</em>₄,₅ = 0,6 A + 0,4 A = 1,0 A<br><strong>Schritt 3:</strong> <em>I</em>₃ = 2,2 A − 1,0 A = <strong>1,2 A</strong>"
+        },
+        
+        // STERN3 F14: EXTREM Verschachtelt U
+        {
+            id: "STERN3_F14",
+            level: "stern3",
+            type: "multi-number",
+            afb: 3,
+            points: 6,
+            question: `<strong>⚡ EXTREM verschachtelt:</strong> (L₁–L₂) parallel zu (L₃||(L₄||L₅))<br><em>U</em><sub>ges</sub> = 24 V, <em>U</em>₁ = 8 V. Berechne <em>U</em>₂, <em>U</em>₃, <em>U</em>₄, <em>U</em>₅.`,
+            svg: `<svg width="450" height="280" viewBox="0 0 450 280">
+                <line x1="40" y1="30" x2="100" y2="30" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="30" x2="100" y2="220" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="50" x2="140" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="180" y1="50" x2="220" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="260" y1="50" x2="340" y2="50" stroke="#000" stroke-width="2"/>
+                <line x1="100" y1="130" x2="150" y2="130" stroke="#000" stroke-width="2"/>
+                <line x1="150" y1="100" x2="150" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="150" y1="110" x2="190" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="230" y1="110" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="150" y1="180" x2="200" y2="180" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="150" x2="200" y2="210" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="160" x2="230" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="270" y1="160" x2="300" y2="160" stroke="#000" stroke-width="2"/>
+                <line x1="200" y1="200" x2="230" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="270" y1="200" x2="300" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="160" x2="300" y2="200" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="180" x2="300" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="300" y1="110" x2="340" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="50" x2="340" y2="110" stroke="#000" stroke-width="2"/>
+                <line x1="340" y1="80" x2="400" y2="80" stroke="#000" stroke-width="2"/>
+                <line x1="400" y1="80" x2="400" y2="250" stroke="#000" stroke-width="2"/>
+                <line x1="400" y1="250" x2="260" y2="250" stroke="#000" stroke-width="2"/>
+                <line x1="260" y1="238" x2="260" y2="262" stroke="#000" stroke-width="2"/>
+                <line x1="240" y1="242" x2="240" y2="258" stroke="#000" stroke-width="4"/>
+                <text x="250" y="272" font-family="serif" font-size="9">24 V</text>
+                <line x1="240" y1="250" x2="40" y2="250" stroke="#000" stroke-width="2"/>
+                <line x1="40" y1="250" x2="40" y2="30" stroke="#000" stroke-width="2"/>
+                <circle cx="160" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="147" y1="37" x2="173" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="173" y1="37" x2="147" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="240" cy="50" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="227" y1="37" x2="253" y2="63" stroke="#000" stroke-width="2"/>
+                <line x1="253" y1="37" x2="227" y2="63" stroke="#000" stroke-width="2"/>
+                <circle cx="210" cy="110" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="197" y1="97" x2="223" y2="123" stroke="#000" stroke-width="2"/>
+                <line x1="223" y1="97" x2="197" y2="123" stroke="#000" stroke-width="2"/>
+                <circle cx="250" cy="160" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="237" y1="147" x2="263" y2="173" stroke="#000" stroke-width="2"/>
+                <line x1="263" y1="147" x2="237" y2="173" stroke="#000" stroke-width="2"/>
+                <circle cx="250" cy="200" r="18" fill="white" stroke="#000" stroke-width="2"/>
+                <line x1="237" y1="187" x2="263" y2="213" stroke="#000" stroke-width="2"/>
+                <line x1="263" y1="187" x2="237" y2="213" stroke="#000" stroke-width="2"/>
+                <text x="160" y="25" text-anchor="middle" font-family="serif" font-size="9">L₁: 8 V</text>
+                <text x="240" y="25" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₂: ?</text>
+                <text x="210" y="140" text-anchor="middle" font-family="serif" font-size="9" fill="#c00" font-weight="bold">L₃: ?</text>
+                <text x="320" y="160" font-family="serif" font-size="8" fill="#c00" font-weight="bold">L₄: ?</text>
+                <text x="320" y="205" font-family="serif" font-size="8" fill="#c00" font-weight="bold">L₅: ?</text>
+            </svg>`,
+            fields: [
+                { id: "u2", label: "U₂", correctValue: 16, unit: "V", tolerance: 0.1 },
+                { id: "u3", label: "U₃", correctValue: 24, unit: "V", tolerance: 0.1 },
+                { id: "u4", label: "U₄", correctValue: 24, unit: "V", tolerance: 0.1 },
+                { id: "u5", label: "U₅", correctValue: 24, unit: "V", tolerance: 0.1 }
+            ],
+            solution: "<strong>Schritt 1:</strong> <em>U</em>₂ = 24 V − 8 V = <strong>16 V</strong><br><strong>Schritt 2:</strong> <em>U</em>₃ = <em>U</em><sub>ges</sub> = <strong>24 V</strong> (parallel)<br><strong>Schritt 3:</strong> <em>U</em>₄ = <em>U</em>₅ = <em>U</em><sub>ges</sub> = <strong>24 V</strong> (parallel)"
+        }
+    ];
+    
+    // ═══════════════════════════════════════════════════════════════
+    // STATE MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════
+    let state = {
+        seat: null,
+        level: null,
+        currentQuestion: 0,
+        answers: {},
+        submitted: false,
+        startTime: null
+    };
+    
+    let submissionCode = '';
+    let timerInterval = null;
+    let unlockInterval = null;
+    let unlockRemaining = CONFIG.UNLOCK_TIME;
+    
+    // ═══════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════
+    function init() {
+        createSeatGrid();
+        setupLevelButtons();
+        
+        // Check for saved state
+        const saved = loadState();
+        if (saved && saved.submitted) {
+            state = saved;
+            submissionCode = saved.submissionCode || '';
+            showResultAfterReload();
+        } else if (saved && saved.seat && saved.level) {
+            state = saved;
+            startQuiz(true);
+        }
+    }
+    
+    function createSeatGrid() {
+        const grid = document.getElementById('seatGrid');
+        for (let i = 1; i <= 30; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'seat-btn';
+            btn.textContent = 'P' + String(i).padStart(2, '0');
+            btn.onclick = () => selectSeat(i);
+            grid.appendChild(btn);
+        }
+    }
+    
+    function setupLevelButtons() {
+        document.querySelectorAll('.level-btn').forEach(btn => {
+            btn.onclick = () => selectLevel(btn.dataset.level);
+        });
+    }
+    
+    function selectSeat(num) {
+        state.seat = 'P' + String(num).padStart(2, '0');
+        document.querySelectorAll('.seat-btn').forEach(b => b.classList.remove('selected'));
+        document.querySelector(`.seat-btn:nth-child(${num})`).classList.add('selected');
+        updateStartButton();
+    }
+    
+    function selectLevel(level) {
+        state.level = level;
+        document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('selected'));
+        document.querySelector(`[data-level="${level}"]`).classList.add('selected');
+        updateStartButton();
+    }
+    
+    function updateStartButton() {
+        document.getElementById('startBtn').disabled = !(state.seat && state.level);
+    }
+    
+    document.getElementById('startBtn').onclick = () => startQuiz(false);
+    
+    // ═══════════════════════════════════════════════════════════════
+    // QUIZ LOGIC
+    // ═══════════════════════════════════════════════════════════════
+    function startQuiz(isRestore) {
+        showScreen('quizScreen');
+        
+        if (!isRestore) {
+            state.startTime = Date.now();
+            state.answers = {};
+            state.currentQuestion = 0;
+        }
+        
+        // Update header
+        const levelInfo = CONFIG.LEVELS[state.level];
+        document.getElementById('levelBadge').textContent = levelInfo.name;
+        document.getElementById('levelBadge').className = 'level-badge ' + state.level;
+        document.getElementById('seatDisplay').textContent = state.seat;
+        document.getElementById('totalQ').textContent = levelInfo.questions;
+        
+        // Start timer
+        startTimer();
+        
+        // Show first question
+        renderQuestion();
+        saveState();
+    }
+    
+    function getQuestionsForLevel() {
+        return QUESTIONS.filter(q => q.level === state.level);
+    }
+    
+    function renderQuestion() {
+        const questions = getQuestionsForLevel();
+        const q = questions[state.currentQuestion];
+        const container = document.getElementById('questionContainer');
+        
+        document.getElementById('currentQ').textContent = state.currentQuestion + 1;
+        document.getElementById('prevBtn').disabled = state.currentQuestion === 0;
+        
+        const isLast = state.currentQuestion === questions.length - 1;
+        const nextBtn = document.getElementById('nextBtn');
+        if (isLast) {
+            nextBtn.textContent = '✅ Abgeben';
+            nextBtn.className = 'nav-btn submit';
+        } else {
+            nextBtn.textContent = 'Weiter →';
+            nextBtn.className = 'nav-btn next';
+        }
+        
+        let html = `
+            <div class="question-card">
+                <div class="question-header">
+                    <span class="question-id">${q.id.replace('_', ' ').replace('F', ' · F')} · AFB ${q.afb}</span>
+                    <span class="question-points">${q.points} P</span>
+                </div>
+                <div class="question-text">${q.question}</div>
+        `;
+        
+        // SVG if present
+        if (q.svg) {
+            html += `<div class="circuit-container">${q.svg}</div>`;
+        }
+        
+        // Render based on type
+        html += renderQuestionInput(q);
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+        // Restore answer if exists
+        restoreAnswer(q);
+    }
+    
+    function renderQuestionInput(q) {
+        const answer = state.answers[q.id];
+        
+        switch (q.type) {
+            case 'mc':
+                return q.options.map(opt => `
+                    <div class="option ${answer === opt.letter ? 'selected' : ''}" onclick="selectMC('${q.id}', '${opt.letter}')">
+                        <span class="option-letter">${opt.letter}</span>
+                        <span>${opt.text}</span>
+                    </div>
+                `).join('');
+                
+            case 'dropdown':
+                return q.blanks.map((b, i) => `
+                    <div class="dropdown-container">
+                        <label>${b.label}: </label>
+                        <select class="dropdown-select" onchange="selectDropdown('${q.id}', '${b.id}', this.value)">
+                            <option value="">-- Auswählen --</option>
+                            ${b.options.map(opt => `<option value="${opt}" ${(answer && answer[b.id] === opt) ? 'selected' : ''}>${opt}</option>`).join('')}
+                        </select>
+                    </div>
+                `).join('');
+                
+            case 'multicheck':
+                return `<div class="multi-check">
+                    ${q.options.map(opt => `
+                        <div class="check-item ${answer && answer.includes(opt.id) ? 'checked' : ''}" onclick="toggleCheck('${q.id}', '${opt.id}')">
+                            <span class="check-box">${answer && answer.includes(opt.id) ? '✓' : ''}</span>
+                            <span>${opt.text}</span>
+                        </div>
+                    `).join('')}
+                </div>`;
+                
+            case 'number':
+                return `<div class="number-input-group">
+                    <input type="number" class="number-input" id="input_${q.id}" 
+                           value="${answer ? answer.value : ''}" 
+                           onchange="saveNumber('${q.id}')" 
+                           step="any" placeholder="?">
+                    <span>${q.unit}</span>
+                </div>`;
+                
+            case 'multi-number':
+                return `<div class="number-input-group">
+                    ${q.fields.map(f => `
+                        <div style="margin: 5px 10px;">
+                            <label>${f.label} = </label>
+                            <input type="number" class="number-input" id="input_${q.id}_${f.id}"
+                                   value="${answer && answer[f.id] ? answer[f.id] : ''}"
+                                   onchange="saveMultiNumber('${q.id}')"
+                                   step="any" placeholder="?">
+                            <span>${f.unit}</span>
+                        </div>
+                    `).join('')}
+                </div>`;
+                
+            case 'text':
+                return `<div class="number-input-group">
+                    <input type="text" class="text-input" id="input_${q.id}"
+                           value="${answer || ''}"
+                           onchange="saveText('${q.id}')"
+                           placeholder="${q.placeholder || ''}">
+                </div>`;
+                
+            case 'text-multi':
+                return q.fields.map(f => `
+                    <div class="dropdown-container">
+                        <label>${f.label}: </label>
+                        <input type="text" class="text-input" id="input_${q.id}_${f.id}"
+                               value="${answer && answer[f.id] ? answer[f.id] : ''}"
+                               onchange="saveTextMulti('${q.id}')"
+                               placeholder="${f.placeholder || ''}">
+                    </div>
+                `).join('');
+                
+            default:
+                return '<p>Unbekannter Aufgabentyp</p>';
+        }
+    }
+    
+    function restoreAnswer(q) {
+        // Already handled in renderQuestionInput
+    }
+    
+    // Answer handlers
+    window.selectMC = function(qid, letter) {
+        state.answers[qid] = letter;
+        renderQuestion();
+        saveState();
+    };
+    
+    window.selectDropdown = function(qid, blankId, value) {
+        if (!state.answers[qid]) state.answers[qid] = {};
+        state.answers[qid][blankId] = value;
+        saveState();
+    };
+    
+    window.toggleCheck = function(qid, optId) {
+        if (!state.answers[qid]) state.answers[qid] = [];
+        const idx = state.answers[qid].indexOf(optId);
+        if (idx > -1) {
+            state.answers[qid].splice(idx, 1);
+        } else {
+            state.answers[qid].push(optId);
+        }
+        renderQuestion();
+        saveState();
+    };
+    
+    window.saveNumber = function(qid) {
+        const input = document.getElementById('input_' + qid);
+        state.answers[qid] = { value: parseFloat(input.value.replace(',', '.')) };
+        saveState();
+    };
+    
+    window.saveMultiNumber = function(qid) {
+        const q = QUESTIONS.find(x => x.id === qid);
+        if (!state.answers[qid]) state.answers[qid] = {};
+        q.fields.forEach(f => {
+            const input = document.getElementById(`input_${qid}_${f.id}`);
+            if (input && input.value) {
+                state.answers[qid][f.id] = parseFloat(input.value.replace(',', '.'));
+            }
+        });
+        saveState();
+    };
+    
+    window.saveText = function(qid) {
+        const input = document.getElementById('input_' + qid);
+        state.answers[qid] = input.value.trim();
+        saveState();
+    };
+    
+    window.saveTextMulti = function(qid) {
+        const q = QUESTIONS.find(x => x.id === qid);
+        if (!state.answers[qid]) state.answers[qid] = {};
+        q.fields.forEach(f => {
+            const input = document.getElementById(`input_${qid}_${f.id}`);
+            if (input) {
+                state.answers[qid][f.id] = input.value.trim();
+            }
+        });
+        saveState();
+    };
+    
+    // Navigation
+    window.nextQuestion = function() {
+        const questions = getQuestionsForLevel();
+        if (state.currentQuestion < questions.length - 1) {
+            state.currentQuestion++;
+            renderQuestion();
+            saveState();
+        } else {
+            submitQuiz();
+        }
+    };
+    
+    window.prevQuestion = function() {
+        if (state.currentQuestion > 0) {
+            state.currentQuestion--;
+            renderQuestion();
+            saveState();
+        }
+    };
+    
+    // Overview
+    window.showOverview = function() {
+        const questions = getQuestionsForLevel();
+        const grid = document.getElementById('overviewGrid');
+        grid.innerHTML = questions.map((q, i) => {
+            const answered = state.answers[q.id] !== undefined;
+            const current = i === state.currentQuestion;
+            return `<div class="overview-item ${answered ? 'answered' : ''} ${current ? 'current' : ''}"
+                        onclick="jumpToQuestion(${i})">${i + 1}</div>`;
+        }).join('');
+        document.getElementById('overviewModal').classList.add('active');
+    };
+    
+    window.closeOverview = function() {
+        document.getElementById('overviewModal').classList.remove('active');
+    };
+    
+    window.jumpToQuestion = function(idx) {
+        state.currentQuestion = idx;
+        closeOverview();
+        renderQuestion();
+        saveState();
+    };
+    
+    // ═══════════════════════════════════════════════════════════════
+    // TIMER
+    // ═══════════════════════════════════════════════════════════════
+    function startTimer() {
+        const endTime = state.startTime + CONFIG.TEST_DURATION * 60 * 1000;
+        
+        timerInterval = setInterval(() => {
+            const remaining = Math.max(0, endTime - Date.now());
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+            
+            if (remaining < 5 * 60 * 1000) {
+                timerEl.classList.add('warning');
+            }
+            
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                submitQuiz();
+            }
+        }, 1000);
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // SUBMISSION
+    // ═══════════════════════════════════════════════════════════════
+    function submitQuiz() {
+        if (state.submitted) return;
+        
+        clearInterval(timerInterval);
+        state.submitted = true;
+        
+        // Calculate score
+        const { totalEarned, maxPoints } = calculateScore();
+        
+        // Generate submission code
+        submissionCode = generateSubmissionCode(totalEarned, maxPoints);
+        
+        // Mark as submitted
+        markAsSubmitted(totalEarned, maxPoints);
+        
+        // Show result
+        showResult(totalEarned, maxPoints);
+    }
+    
+    function calculateScore() {
+        const questions = getQuestionsForLevel();
+        let totalEarned = 0;
+        const maxPoints = CONFIG.LEVELS[state.level].points;
+        
+        questions.forEach(q => {
+            const answer = state.answers[q.id];
+            const earned = evaluateAnswer(q, answer);
+            totalEarned += earned;
+        });
+        
+        return { totalEarned, maxPoints };
+    }
+    
+    function evaluateAnswer(q, answer) {
+        if (answer === undefined || answer === null) return 0;
+        
+        switch (q.type) {
+            case 'mc':
+                return answer === q.correct ? q.points : 0;
+                
+            case 'dropdown':
+                let dropdownScore = 0;
+                const pointsPerBlank = q.points / q.blanks.length;
+                q.blanks.forEach(b => {
+                    if (answer && answer[b.id] === b.correct) {
+                        dropdownScore += pointsPerBlank;
+                    }
+                });
+                return Math.round(dropdownScore * 10) / 10;
+                
+            case 'multicheck':
+                if (!Array.isArray(answer)) return 0;
+                let checkScore = 0;
+                const correctOptions = q.options.filter(o => o.correct).map(o => o.id);
+                const pointsPerCorrect = q.points / correctOptions.length;
+                correctOptions.forEach(id => {
+                    if (answer.includes(id)) checkScore += pointsPerCorrect;
+                });
+                // Penalty for wrong selections
+                answer.forEach(id => {
+                    if (!correctOptions.includes(id)) checkScore -= pointsPerCorrect;
+                });
+                return Math.max(0, Math.round(checkScore * 10) / 10);
+                
+            case 'number':
+                if (!answer || answer.value === undefined) return 0;
+                if (Math.abs(answer.value - q.correctValue) <= q.tolerance) {
+                    return q.points;
+                }
+                return 0;
+                
+            case 'multi-number':
+                if (!answer) return 0;
+                let numScore = 0;
+                const pointsPerField = q.points / q.fields.length;
+                q.fields.forEach(f => {
+                    if (answer[f.id] !== undefined && 
+                        Math.abs(answer[f.id] - f.correctValue) <= f.tolerance) {
+                        numScore += pointsPerField;
+                    }
+                });
+                return Math.round(numScore * 10) / 10;
+                
+            case 'text':
+                if (!answer) return 0;
+                const normalizedAnswer = answer.toLowerCase().replace(/\s/g, '').replace(',', '.');
+                const isCorrect = q.correct.some(c => 
+                    normalizedAnswer === c.toLowerCase().replace(/\s/g, '').replace(',', '.')
+                );
+                return isCorrect ? q.points : 0;
+                
+            case 'text-multi':
+                if (!answer) return 0;
+                let textScore = 0;
+                const pointsPerText = q.points / q.fields.length;
+                q.fields.forEach(f => {
+                    if (answer[f.id]) {
+                        const norm = answer[f.id].toLowerCase().replace(/\s/g, '');
+                        const correct = f.correct.some(c => 
+                            norm === c.toLowerCase().replace(/\s/g, '')
+                        );
+                        if (correct) textScore += pointsPerText;
+                    }
+                });
+                return Math.round(textScore * 10) / 10;
+                
+            default:
+                return 0;
+        }
+    }
+    
+    function generateSubmissionCode(earned, max) {
+        const data = {
+            v: CONFIG.VERSION,
+            s: state.seat,
+            l: state.level,
+            e: earned,
+            m: max,
+            t: Date.now(),
+            a: state.answers
+        };
+        return LZString.compressToEncodedURIComponent(JSON.stringify(data));
+    }
+    
+    function markAsSubmitted(earned, max) {
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
+            submitted: true,
+            version: CONFIG.VERSION,
+            seat: state.seat,
+            level: state.level,
+            answers: state.answers,
+            submissionCode: submissionCode,
+            totalEarned: earned,
+            maxPoints: max,
+            startTime: state.startTime
+        }));
+    }
+    
+    function showResult(earned, max) {
+        showScreen('resultScreen');
+        
+        // Generate QR Code
+        document.getElementById('qrcode').innerHTML = '';
+        new QRCode(document.getElementById('qrcode'), {
+            text: submissionCode,
+            width: 256,
+            height: 256,
+            colorDark: '#000000',
+            colorLight: '#ffffff'
+        });
+        
+        document.getElementById('textCode').textContent = submissionCode;
+        
+        // Start unlock timer
+        startUnlockTimer();
+    }
+    
+    function showResultAfterReload() {
+        const saved = loadState();
+        if (!saved) return;
+        
+        submissionCode = saved.submissionCode || '';
+        
+        if (saved.totalEarned !== undefined) {
+            showScreen('resultScreen');
+            
+            document.getElementById('qrcode').innerHTML = '';
+            if (submissionCode) {
+                new QRCode(document.getElementById('qrcode'), {
+                    text: submissionCode,
+                    width: 256,
+                    height: 256
+                });
+            }
+            document.getElementById('textCode').textContent = submissionCode || 'Nicht verfügbar';
+            
+            startUnlockTimer();
+        }
+    }
+    
+    function startUnlockTimer() {
+        unlockRemaining = CONFIG.UNLOCK_TIME;
+        updateUnlockDisplay();
+        
+        unlockInterval = setInterval(() => {
+            unlockRemaining--;
+            updateUnlockDisplay();
+            
+            if (unlockRemaining <= 0) {
+                clearInterval(unlockInterval);
+                showFeedback();
+            }
+        }, 1000);
+    }
+    
+    function updateUnlockDisplay() {
+        const mins = Math.floor(unlockRemaining / 60);
+        const secs = unlockRemaining % 60;
+        document.getElementById('unlockTimer').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    }
+    
+    window.tryUnlock = function() {
+        const code = document.getElementById('unlockInput').value.toUpperCase();
+        if (code === CONFIG.UNLOCK_CODE) {
+            clearInterval(unlockInterval);
+            showFeedback();
+        } else {
+            alert('Falscher Code!');
+        }
+    };
+    
+    // ═══════════════════════════════════════════════════════════════
+    // FEEDBACK
+    // ═══════════════════════════════════════════════════════════════
+    function showFeedback() {
+        showScreen('feedbackScreen');
+        
+        const questions = getQuestionsForLevel();
+        const maxPoints = CONFIG.LEVELS[state.level].points;
+        let totalEarned = 0;
+        
+        let feedbackHTML = '';
+        
+        questions.forEach((q, i) => {
+            const answer = state.answers[q.id];
+            const earned = evaluateAnswer(q, answer);
+            totalEarned += earned;
+            
+            const statusClass = earned === q.points ? 'correct' : earned > 0 ? 'partial' : 'wrong';
+            
+            feedbackHTML += `
+                <div class="feedback-item ${statusClass}">
+                    <div class="question-header">
+                        <span class="question-id">Frage ${i + 1}: ${q.id}</span>
+                        <span class="question-points">${earned}/${q.points} P</span>
+                    </div>
+                    <div class="question-text">${q.question}</div>
+                    ${q.svg ? `<div class="circuit-container">${q.svg}</div>` : ''}
+                    <div class="your-answer">
+                        <strong>Deine Antwort:</strong> ${formatAnswer(q, answer)}
+                    </div>
+                    <div class="solution-box">
+                        <strong>✓ Lösung:</strong><br>${q.solution}
+                    </div>
+                </div>
+            `;
+        });
+        
+        document.getElementById('feedbackContainer').innerHTML = feedbackHTML;
+        document.getElementById('earnedPoints').textContent = totalEarned;
+        document.getElementById('maxPoints').textContent = maxPoints;
+        
+        // Calculate grade
+        const percent = (totalEarned / maxPoints) * 100;
+        const grade = GRADE_SCALE.find(g => percent >= g.percent) || { np: 0 };
+        document.getElementById('gradeDisplay').textContent = grade.np + ' NP';
+        
+        // QR on feedback screen
+        document.getElementById('feedbackCode').textContent = submissionCode || 'Nicht verfügbar';
+        document.getElementById('feedbackQR').innerHTML = '';
+        if (submissionCode) {
+            new QRCode(document.getElementById('feedbackQR'), {
+                text: submissionCode,
+                width: 80,
+                height: 80
+            });
+        }
+    }
+    
+    function formatAnswer(q, answer) {
+        if (answer === undefined || answer === null) return '<em>Keine Antwort</em>';
+        
+        switch (q.type) {
+            case 'mc':
+                const opt = q.options.find(o => o.letter === answer);
+                return opt ? `${answer}) ${opt.text}` : answer;
+                
+            case 'dropdown':
+                return Object.entries(answer).map(([k, v]) => v || '-').join('; ');
+                
+            case 'multicheck':
+                return answer.join(', ') || '-';
+                
+            case 'number':
+                return answer.value !== undefined ? `${answer.value} ${q.unit}` : '-';
+                
+            case 'multi-number':
+                return q.fields.map(f => `${f.label}=${answer[f.id] || '?'} ${f.unit}`).join(', ');
+                
+            case 'text':
+                return answer || '-';
+                
+            case 'text-multi':
+                return Object.values(answer).join('; ') || '-';
+                
+            default:
+                return JSON.stringify(answer);
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // RESET
+    // ═══════════════════════════════════════════════════════════════
+    window.showResetModal = function() {
+        document.getElementById('resetModal').classList.add('active');
+        document.getElementById('resetInput').value = '';
+    };
+    
+    window.closeResetModal = function() {
+        document.getElementById('resetModal').classList.remove('active');
+    };
+    
+    window.confirmReset = function() {
+        const code = document.getElementById('resetInput').value;
+        if (code === CONFIG.RESET_CODE) {
+            localStorage.removeItem(CONFIG.STORAGE_KEY);
+            location.reload();
+        } else {
+            alert('Falscher Code!');
+        }
+    };
+    
+    // ═══════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═══════════════════════════════════════════════════════════════
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+    
+    function saveState() {
+        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify({
+            seat: state.seat,
+            level: state.level,
+            currentQuestion: state.currentQuestion,
+            answers: state.answers,
+            submitted: state.submitted,
+            startTime: state.startTime,
+            submissionCode: submissionCode
+        }));
+    }
+    
+    function loadState() {
+        const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
+        return saved ? JSON.parse(saved) : null;
+    }
+    
+    // Start
+    init();
+    </script>
+</body>
+</html>
