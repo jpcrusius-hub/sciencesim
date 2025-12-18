@@ -94,8 +94,8 @@ sciencesim/
 ```
 
 **Live-URLs:**
-- Quiz: `https://[username].github.io/sciencesim/quiz/physik/klasse7-kraefte/`
-- Decoder: `https://[username].github.io/sciencesim/quiz/physik/klasse7-kraefte/decoder.html`
+- Quiz: `https://jpcrusius-hub.github.io/sciencesim/quiz/physik/klasse7-kraefte/`
+- Decoder: `https://jpcrusius-hub.github.io/sciencesim/quiz/physik/klasse7-kraefte/decoder.html`
 
 ## Bewertungsskala (14-NP)
 

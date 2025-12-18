@@ -116,26 +116,26 @@ body {
     height: auto;
 }
 
-.card-footer {
-    border-top: 1px solid #ddd;
-    padding-top: 5mm;
+.card-levels {
+    display: flex;
+    justify-content: center;
+    gap: 8mm;
+    padding: 3mm 0;
+    font-size: 14pt;
 }
 
-.card-footer .name-label {
-    font-size: 9pt;
-    color: #666;
-    margin-bottom: 2mm;
+.card-levels .level {
+    padding: 1mm 3mm;
+}
+
+.card-footer {
+    border-top: 1px solid #ddd;
+    padding-top: 3mm;
 }
 
 .card-footer .name-line {
     border-bottom: 1px solid #333;
     height: 8mm;
-}
-
-.card-footer .date {
-    font-size: 8pt;
-    color: #999;
-    margin-top: 2mm;
 }
 
 /* Print: 6 cards per page (3x2) */
@@ -165,13 +165,12 @@ body {
         <h1>📇 Platzkarten – Kraft und ihre Wirkungen (K7)</h1>
         <button onclick="window.print()">🖨️ Drucken (5 Seiten à 6 Karten)</button>
         <p>30 Platzkarten mit QR-Code zum Quiz. Auf Karton drucken und ausschneiden.</p>
-        <p><strong>Tipp:</strong> Die QR-Codes verlinken direkt zum Quiz.</p>
     </div>
     
     <div class="cards-container" id="cardsContainer"></div>
 
 <script>
-const QUIZ_URL = 'https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/';
+const QUIZ_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/physik/klasse7-kraefte/';
 const TITLE = 'Kräfte K7';
 
 document.addEventListener('DOMContentLoaded', generateCards);
@@ -193,10 +192,13 @@ function generateCards() {
             <div class="card-qr">
                 <div id="qr-${seat}"></div>
             </div>
+            <div class="card-levels">
+                <span class="level">⭐</span>
+                <span class="level">⭐⭐</span>
+                <span class="level">⭐⭐⭐</span>
+            </div>
             <div class="card-footer">
-                <div class="name-label">Name:</div>
                 <div class="name-line"></div>
-                <div class="date">${new Date().toLocaleDateString('de-DE')}</div>
             </div>
         `;
         
