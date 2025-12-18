@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR-Codes & Links – Kräfte K7</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 1.5em;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.section {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.section h2 {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.qr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.qr-item {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #eee;
+    background: #fafafa;
+}
+
+.qr-item h3 {
+    font-size: 1em;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.qr-item .qr-code {
+    margin: 15px auto;
+}
+
+.qr-item .url {
+    font-size: 0.75em;
+    color: #666;
+    word-break: break-all;
+    background: #fff;
+    padding: 8px;
+    border: 1px solid #ddd;
+    margin-top: 10px;
+}
+
+.qr-item a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 15px;
+    background: #2c5aa0;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.qr-item a:hover {
+    background: #1e4a8a;
+}
+
+.codes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.codes-table th,
+.codes-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.codes-table th {
+    background: #f5f5f5;
+}
+
+.codes-table code {
+    background: #f0f0f0;
+    padding: 2px 6px;
+    font-family: monospace;
+}
+
+.info-box {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.info-box h3 {
+    font-size: 0.95em;
+    margin-bottom: 8px;
+    color: #1565c0;
+}
+
+.info-box ul {
+    margin-left: 20px;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.info-box li {
+    margin-bottom: 5px;
+}
+
+.print-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 20px;
+}
+
+.print-btn:hover {
+    background: #f5f5f5;
+}
+
+@media print {
+    body { background: #fff; }
+    .print-btn { display: none; }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 QR-Codes & Links</h1>
+        <p class="subtitle">Mini-Stundenleistung: Kraft und ihre Wirkungen – Klasse 7</p>
+        
+        <div class="info-box">
+            <h3>📋 Schnellübersicht</h3>
+            <ul>
+                <li><strong>Quiz-URL:</strong> <code>https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/</code></li>
+                <li><strong>Decoder-URL:</strong> <code>https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/decoder.html</code></li>
+                <li><strong>Reset-Code:</strong> <code>2718</code></li>
+                <li><strong>Dauer:</strong> 30 Minuten</li>
+                <li><strong>Niveaus:</strong> ★ (26P) · ★★ (34P) · ★★★ (44P)</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>📱 QR-Codes zum Projizieren/Drucken</h2>
+            <div class="qr-grid">
+                <div class="qr-item">
+                    <h3>🎓 Schüler-Quiz</h3>
+                    <div class="qr-code" id="qr-quiz"></div>
+                    <div class="url">https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/</div>
+                    <a href="https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/" target="_blank">Öffnen →</a>
+                </div>
+                
+                <div class="qr-item">
+                    <h3>📊 Lehrer-Decoder</h3>
+                    <div class="qr-code" id="qr-decoder"></div>
+                    <div class="url">https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/decoder.html</div>
+                    <a href="https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/decoder.html" target="_blank">Öffnen →</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>⚙️ Wichtige Codes</h2>
+            <table class="codes-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Verwendung</th>
+                        <th>Wer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>2718</code></td>
+                        <td>Quiz zurücksetzen (bei Problemen)</td>
+                        <td>Nur Lehrkraft</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>📄 Materialien</h2>
+            <table class="codes-table">
+                <thead>
+                    <tr>
+                        <th>Datei</th>
+                        <th>Beschreibung</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>index.html</code></td>
+                        <td>Schüler-Quiz (iPad/Tablet/PC)</td>
+                        <td><a href="index.html">Öffnen</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>decoder.html</code></td>
+                        <td>Lehrer-Auswertung mit QR-Scanner</td>
+                        <td><a href="decoder.html">Öffnen</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>platzkarten.html</code></td>
+                        <td>30 Platzkarten zum Drucken (5 Seiten)</td>
+                        <td><a href="platzkarten.html">Öffnen</a></td>
+                    </tr>
+                    <tr>
+                        <td><code>aufgaben-druck.html</code></td>
+                        <td>Aufgabenübersicht (2 Seiten A4)</td>
+                        <td><a href="aufgaben-druck.html">Öffnen</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>📝 Ablauf im Unterricht</h2>
+            <table class="codes-table">
+                <thead>
+                    <tr>
+                        <th>Schritt</th>
+                        <th>Aktion</th>
+                        <th>Zeit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>QR-Code projizieren oder Platzkarten verteilen</td>
+                        <td>1 min</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>SuS wählen Niveau (★/★★/★★★) und Sitzplatz</td>
+                        <td>1 min</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Quiz bearbeiten (Timer läuft automatisch)</td>
+                        <td>30 min</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>SuS geben ab → QR-Code erscheint</td>
+                        <td>–</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Lehrkraft scannt QR-Codes mit Decoder</td>
+                        <td>2-3 min</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>CSV-Export für Notenbuch</td>
+                        <td>–</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <button class="print-btn" onclick="window.print()">🖨️ Diese Seite drucken</button>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    new QRCode(document.getElementById('qr-quiz'), {
+        text: 'https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/',
+        width: 150,
+        height: 150,
+        correctLevel: QRCode.CorrectLevel.M
+    });
+    
+    new QRCode(document.getElementById('qr-decoder'), {
+        text: 'https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/decoder.html',
+        width: 150,
+        height: 150,
+        correctLevel: QRCode.CorrectLevel.M
+    });
+});
+</script>
+</body>
+</html>

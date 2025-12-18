@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mini-Stundenleistung Kräfte – Klasse 7</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+/* ═══════════════════════════════════════════════════════════════
+   SCIENCESIM QUIZ STYLES - Kraft und ihre Wirkungen Klasse 7
+   3-Sterne-System (★ = 27P, ★★ = 35P, ★★★ = 45P)
+═══════════════════════════════════════════════════════════════ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER / MENÜLEISTE (PERSISTENT!)
+═══════════════════════════════════════════════════════════════ */
+
+.quiz-header {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.timer {
+    font-size: 1.3em;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.timer.warning { color: #e65100; }
+.timer.critical { color: #c62828; animation: pulse 1s infinite; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.niveau-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.niveau-badge.stern1 { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
+.niveau-badge.stern2 { background: #e3f2fd; color: #1565c0; border: 1px solid #64b5f6; }
+.niveau-badge.stern3 { background: #f3e5f5; color: #7b1fa2; border: 1px solid #ba68c8; }
+
+.reset-btn {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.reset-btn:hover { background: #f5f5f5; }
+
+.progress-bar {
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #2c5aa0;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.85em;
+    color: #666;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUFGABEN-NAVIGATION
+═══════════════════════════════════════════════════════════════ */
+
+.question-nav {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.question-nav h3 {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.nav-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.nav-btn {
+    min-width: 50px;
+    height: 38px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.8em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    padding: 4px 8px;
+}
+
+.nav-btn:hover { background: #f5f5f5; }
+.nav-btn.active { border-color: #2c5aa0; background: #e3f2fd; }
+.nav-btn.answered { background: #e8f5e9; border-color: #81c784; }
+
+.nav-btn .q-num { font-weight: 600; }
+.nav-btn .q-level { font-size: 0.75em; color: #888; }
+.nav-btn .q-level.star1 { color: #ff9800; }
+.nav-btn .q-level.star2 { color: #2196f3; }
+.nav-btn .q-level.star3 { color: #9c27b0; }
+
+/* ═══════════════════════════════════════════════════════════════
+   AUFGABEN-KARTE
+═══════════════════════════════════════════════════════════════ */
+
+.question-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.question-title {
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.question-title .level-star {
+    margin-left: 6px;
+}
+
+.level-star.star1 { color: #ff9800; }
+.level-star.star2 { color: #2196f3; }
+.level-star.star3 { color: #9c27b0; }
+
+.question-points {
+    background: #f5f5f5;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.question-text {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.question-hint {
+    font-size: 0.85em;
+    color: #666;
+    font-style: italic;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background: #f9f9f9;
+    border-left: 3px solid #2c5aa0;
+}
+
+/* Wortbank */
+.wordbank {
+    background: #f0f7ff;
+    border: 1px solid #bbdefb;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.wordbank-title {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #1565c0;
+    margin-bottom: 5px;
+}
+
+.wordbank-words {
+    font-size: 0.95em;
+    color: #333;
+}
+
+/* Lückentext */
+.fill-blank-container {
+    line-height: 2.2;
+}
+
+.fill-blank-container select {
+    padding: 4px 8px;
+    font-size: 0.95em;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fff;
+    min-width: 140px;
+}
+
+.fill-blank-container select:focus {
+    outline: none;
+    border-color: #2c5aa0;
+}
+
+/* Tabellen */
+.assignment-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+.assignment-table th,
+.assignment-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.assignment-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.assignment-table td:not(:first-child) {
+    text-align: center;
+    width: 120px;
+}
+
+.assignment-table input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.assignment-table select {
+    padding: 6px 10px;
+    font-size: 0.9em;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    min-width: 80px;
+}
+
+/* Multiple Choice (Checkboxen) */
+.mc-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mc-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.mc-option:hover { background: #f9f9f9; border-color: #bbb; }
+.mc-option.selected { background: #e3f2fd; border-color: #2196f3; }
+
+.mc-option input[type="checkbox"],
+.mc-option input[type="radio"] {
+    margin-top: 2px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.mc-option label {
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Multi-Part Aufgaben */
+.multi-part-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.part-section {
+    padding: 15px;
+    background: #fafafa;
+    border: 1px solid #eee;
+}
+
+.part-label {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.part-intro {
+    font-style: italic;
+    color: #555;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.calc-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.calc-input input[type="text"] {
+    padding: 10px 15px;
+    font-size: 1.1em;
+    border: 1px solid #ccc;
+    width: 120px;
+    text-align: center;
+}
+
+.calc-input input:focus {
+    outline: none;
+    border-color: #2c5aa0;
+}
+
+.calc-input select {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+}
+
+.dropdown-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dropdown-row label {
+    min-width: 200px;
+}
+
+.dropdown-row select {
+    padding: 8px 12px;
+    font-size: 0.95em;
+    border: 1px solid #ccc;
+    min-width: 200px;
+}
+
+/* Diagramm-Container */
+.diagram-container {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.diagram-container svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Matching */
+.matching-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.matching-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.matching-table td:first-child {
+    width: 50%;
+    background: #f9f9f9;
+}
+
+.matching-table select {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.95em;
+    border: 1px solid #ccc;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NAVIGATION BUTTONS
+═══════════════════════════════════════════════════════════════ */
+
+.nav-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.nav-controls button {
+    padding: 12px 24px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+}
+
+.nav-controls button:hover { background: #f5f5f5; }
+.nav-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.nav-controls .submit-btn {
+    background: #2c5aa0;
+    color: #fff;
+    border-color: #2c5aa0;
+}
+
+.nav-controls .submit-btn:hover { background: #1e4a8a; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SETUP SCREEN
+═══════════════════════════════════════════════════════════════ */
+
+.setup-screen {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 30px;
+    text-align: center;
+}
+
+.setup-screen h1 {
+    font-size: 1.4em;
+    margin-bottom: 5px;
+}
+
+.setup-screen .subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.niveau-selection {
+    margin-bottom: 30px;
+}
+
+.niveau-selection h2 {
+    font-size: 1em;
+    margin-bottom: 15px;
+}
+
+.niveau-cards {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.niveau-card {
+    width: 140px;
+    padding: 20px 15px;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.niveau-card:hover { border-color: #999; }
+.niveau-card.selected { border-color: #2c5aa0; background: #f0f7ff; }
+
+.niveau-card .symbol {
+    font-size: 2em;
+    margin-bottom: 8px;
+}
+
+.niveau-card.stern1 .symbol { color: #ff9800; }
+.niveau-card.stern2 .symbol { color: #2196f3; }
+.niveau-card.stern3 .symbol { color: #9c27b0; }
+
+.niveau-card .name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.niveau-card .desc {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.niveau-card .points {
+    font-size: 0.8em;
+    color: #888;
+    margin-top: 5px;
+}
+
+.seat-selection {
+    margin-bottom: 30px;
+}
+
+.seat-selection h2 {
+    font-size: 1em;
+    margin-bottom: 15px;
+}
+
+.seat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.seat-btn {
+    padding: 10px 5px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.seat-btn:hover { background: #f5f5f5; }
+.seat-btn.selected { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
+
+.start-btn {
+    padding: 15px 40px;
+    font-size: 1.1em;
+    background: #2c5aa0;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.start-btn:hover { background: #1e4a8a; }
+.start-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════════════════════
+   FEEDBACK SCREEN
+═══════════════════════════════════════════════════════════════ */
+
+.feedback-screen {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+}
+
+.result-header {
+    text-align: center;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.result-header .name-field {
+    margin-bottom: 10px;
+}
+
+.result-header .name-field input {
+    border: none;
+    border-bottom: 1px solid #333;
+    font-size: 1em;
+    width: 200px;
+    text-align: center;
+}
+
+.result-header .meta {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.result-header .grade {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.result-header .grade.stern1 { color: #e65100; }
+.result-header .grade.stern2 { color: #1565c0; }
+.result-header .grade.stern3 { color: #7b1fa2; }
+
+.result-header .score {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+
+.result-header .details {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.submission-box {
+    background: #f5f5f5;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.submission-box h3 {
+    font-size: 0.9em;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+#qrcode {
+    flex-shrink: 0;
+}
+
+.submission-code {
+    flex: 1;
+    min-width: 200px;
+}
+
+.submission-code .code {
+    font-family: monospace;
+    font-size: 0.75em;
+    word-break: break-all;
+    background: #fff;
+    padding: 8px;
+    border: 1px solid #ddd;
+    max-height: 60px;
+    overflow: auto;
+}
+
+.copy-btn {
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.copy-btn:hover { background: #eee; }
+
+/* Feedback für einzelne Fragen */
+.feedback-question {
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.feedback-question.correct { border-left: 4px solid #4caf50; }
+.feedback-question.incorrect { border-left: 4px solid #f44336; }
+.feedback-question.not-scored { 
+    border-left: 4px solid #9e9e9e;
+    background: #fafafa;
+}
+
+.feedback-question-header {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9f9f9;
+}
+
+.feedback-question.not-scored .feedback-question-header {
+    background: #f0f0f0;
+}
+
+.feedback-question-header .status {
+    font-weight: 600;
+}
+
+.feedback-question-header .status.correct { color: #2e7d32; }
+.feedback-question-header .status.incorrect { color: #c62828; }
+.feedback-question-header .status.not-scored { color: #757575; }
+
+.feedback-question-header .points {
+    font-size: 0.9em;
+}
+
+.feedback-question-body {
+    padding: 15px;
+}
+
+.feedback-answer {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f5f5f5;
+}
+
+.feedback-answer .your-answer {
+    margin-bottom: 5px;
+}
+
+.feedback-answer .correct-answer {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.feedback-detail {
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.feedback-detail .correct-item { color: #2e7d32; }
+.feedback-detail .incorrect-item { color: #c62828; }
+
+/* Punkteübersicht */
+.score-summary {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.score-summary h3 {
+    font-size: 1em;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.score-row:last-child { border-bottom: none; }
+.score-row.total { font-weight: 600; background: #fff; padding: 12px; margin: 10px -15px -15px; }
+.score-row.not-scored { color: #888; font-style: italic; }
+
+/* Print */
+.print-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
+}
+
+.print-btn:hover { background: #f5f5f5; }
+
+@media print {
+    body { background: #fff; }
+    .quiz-header, .nav-controls, .print-btn, .copy-btn { display: none; }
+    .feedback-screen { border: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════════ */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: #fff;
+    padding: 25px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal-content h3 { margin-bottom: 15px; }
+.modal-content p { margin-bottom: 20px; color: #666; }
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.2em;
+    text-align: center;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 10px 25px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+}
+
+.modal-btn:hover { background: #f5f5f5; }
+.modal-btn.confirm { background: #2c5aa0; color: #fff; border-color: #2c5aa0; }
+.modal-btn.danger { background: #c62828; color: #fff; border-color: #c62828; }
+
+/* Screens */
+.screen { display: none; }
+.screen.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ═══════════════════════════════════════════════════════════════
+             SETUP SCREEN
+        ═══════════════════════════════════════════════════════════════ -->
+        <div id="setupScreen" class="screen active">
+            <div class="setup-screen">
+                <h1>📋 Mini-Stundenleistung: Kraft und ihre Wirkungen</h1>
+                <p class="subtitle">Klasse 7 · Physik · 30 Minuten</p>
+                
+                <div class="niveau-selection">
+                    <h2>⚡ Niveau wählen:</h2>
+                    <div class="niveau-cards">
+                        <div class="niveau-card stern1" data-niveau="stern1" onclick="selectNiveau('stern1')">
+                            <div class="symbol">★</div>
+                            <div class="name">Stern 1</div>
+                            <div class="desc">BR-Niveau</div>
+                            <div class="points">max. 26 P</div>
+                        </div>
+                        <div class="niveau-card stern2" data-niveau="stern2" onclick="selectNiveau('stern2')">
+                            <div class="symbol">★★</div>
+                            <div class="name">Stern 2</div>
+                            <div class="desc">MR-Niveau</div>
+                            <div class="points">max. 34 P</div>
+                        </div>
+                        <div class="niveau-card stern3" data-niveau="stern3" onclick="selectNiveau('stern3')">
+                            <div class="symbol">★★★</div>
+                            <div class="name">Stern 3</div>
+                            <div class="desc">GY-Niveau</div>
+                            <div class="points">max. 44 P</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="seat-selection">
+                    <h2>📍 Sitzplatz wählen:</h2>
+                    <div class="seat-grid" id="seatGrid"></div>
+                </div>
+                
+                <button class="start-btn" id="startBtn" onclick="startQuiz()" disabled>Quiz starten</button>
+            </div>
+        </div>
+        
+        <!-- ═══════════════════════════════════════════════════════════════
+             QUIZ SCREEN
+        ═══════════════════════════════════════════════════════════════ -->
+        <div id="quizScreen" class="screen">
+            <div class="quiz-header">
+                <div class="header-top">
+                    <div class="timer" id="timerDisplay">⏱️ 10:00</div>
+                    <div class="niveau-badge" id="niveauBadge">★★ MR</div>
+                    <button class="reset-btn" onclick="showModal('resetModal')">⟳ Reset</button>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">Fortschritt: 0/9 Aufgaben</div>
+            </div>
+            
+            <div class="question-nav">
+                <h3>Aufgaben-Übersicht:</h3>
+                <div class="nav-buttons" id="navButtons"></div>
+            </div>
+            
+            <div id="questionContainer"></div>
+            
+            <div class="nav-controls">
+                <button id="prevBtn" onclick="prevQuestion()">← Zurück</button>
+                <button id="nextBtn" onclick="nextQuestion()">Weiter →</button>
+                <button id="submitBtn" class="submit-btn" onclick="showModal('submitModal')" style="display:none">Abgeben</button>
+            </div>
+        </div>
+        
+        <!-- ═══════════════════════════════════════════════════════════════
+             FEEDBACK SCREEN
+        ═══════════════════════════════════════════════════════════════ -->
+        <div id="feedbackScreen" class="screen">
+            <div class="feedback-screen">
+                <div class="result-header">
+                    <div class="name-field">
+                        Name: <input type="text" id="studentName" placeholder="_______________">
+                    </div>
+                    <div class="meta">
+                        Platz: <span id="resultSeat">P00</span> · Datum: <span id="resultDate"></span>
+                    </div>
+                    <div class="grade" id="resultGrade">11 NP</div>
+                    <div class="score" id="resultScore">18 / 22 Punkte (81,8%)</div>
+                    <div class="details" id="resultDetails">
+                        Niveau: ★★ (MR) · Bearbeitungszeit: 8:45 von 10:00
+                    </div>
+                </div>
+                
+                <div class="submission-box">
+                    <h3>📤 Abgabe-Code (für Lehrkraft)</h3>
+                    <div id="qrcode"></div>
+                    <div class="submission-code">
+                        <div class="code" id="textCode"></div>
+                        <button class="copy-btn" onclick="copyCode()">📋 Code kopieren</button>
+                    </div>
+                </div>
+                
+                <div id="feedbackQuestions"></div>
+                
+                <div class="score-summary" id="scoreSummary"></div>
+                
+                <button class="print-btn" onclick="window.print()">🖨️ Als PDF speichern</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         MODALS
+    ═══════════════════════════════════════════════════════════════ -->
+    <div class="modal" id="submitModal">
+        <div class="modal-content">
+            <h3>Quiz abgeben?</h3>
+            <p>Nach der Abgabe kannst du keine Antworten mehr ändern.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="closeModal('submitModal')">Abbrechen</button>
+                <button class="modal-btn confirm" onclick="submitQuiz()">Ja, abgeben</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <h3>Quiz zurücksetzen?</h3>
+            <p>Gib den Lehrer-Code ein:</p>
+            <input type="text" id="resetCodeInput" placeholder="Code">
+            <div class="modal-buttons">
+                <button class="modal-btn" onclick="closeModal('resetModal')">Abbrechen</button>
+                <button class="modal-btn danger" onclick="tryReset()">Zurücksetzen</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURATION
+// ═══════════════════════════════════════════════════════════════
+
+const CONFIG = {
+    VERSION: 1.0,
+    STORAGE_KEY_PREFIX: 'quiz_v1_kraefte_k7_',
+    TEST_DURATION: 30,  // Minuten
+    RESET_CODE: '2718',
+    
+    LEVELS: {
+        'stern1': { name: 'Stern 1', symbol: '★', description: 'BR', color: '#ff9800', maxLevel: 1, maxPoints: 26 },
+        'stern2': { name: 'Stern 2', symbol: '★★', description: 'MR', color: '#2196f3', maxLevel: 2, maxPoints: 34 },
+        'stern3': { name: 'Stern 3', symbol: '★★★', description: 'GY', color: '#9c27b0', maxLevel: 3, maxPoints: 44 }
+    },
+    
+    GRADE_SCALE: [
+        { np: 14, percent: 100 },
+        { np: 13, percent: 96 },
+        { np: 12, percent: 90.67 },
+        { np: 11, percent: 86 },
+        { np: 10, percent: 80 },
+        { np: 9, percent: 73.33 },
+        { np: 8, percent: 66.67 },
+        { np: 7, percent: 60 },
+        { np: 6, percent: 53.33 },
+        { np: 5, percent: 46.67 },
+        { np: 4, percent: 40 },
+        { np: 3, percent: 33.33 },
+        { np: 2, percent: 26.67 },
+        { np: 1, percent: 20 },
+        { np: 0, percent: 0 }
+    ]
+};
+
+// ═══════════════════════════════════════════════════════════════
+// QUESTIONS
+// ═══════════════════════════════════════════════════════════════
+
+const QUESTIONS = [
+    // ═══════════════════════════════════════════════════════════
+    // A1: LÜCKENTEXT (10 P) - Level ★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A1',
+        type: 'fill-in-blank',
+        level: 1,
+        points: 10,
+        afb: 1,
+        title: 'Lückentext Grundwissen',
+        text: 'Ergänze den Lückentext. Wähle die passenden Wörter aus.',
+        wordbank: ['Pfeil', 'Newton', 'Betrag', 'Kraftmesser', 'F', 'verformen', 'Angriffspunkt', 'Richtung', 'Geschwindigkeit', 'Kraft'],
+        blanks: [
+            { id: 1, before: 'Eine ', after: ' gibt an, wie stark ein Körper auf einen anderen einwirkt.', correct: 'Kraft' },
+            { id: 2, before: 'Das Formelzeichen für die Kraft ist ', after: ' .', correct: 'F' },
+            { id: 3, before: 'Die Einheit der Kraft heißt ', after: ' (Kurzzeichen: N).', correct: 'Newton' },
+            { id: 4, before: 'Man misst Kräfte mit einem ', after: ' (auch: Federkraftmesser).', correct: 'Kraftmesser' },
+            { id: 5, before: 'Kräfte können einen Körper ', after: ' oder seine Bewegung ändern.', correct: 'verformen' },
+            { id: 6, before: 'Bei einer Bewegungsänderung kann sich die ', after: ' oder die ', correct: 'Richtung', altCorrect: 'Geschwindigkeit' },
+            { id: 7, before: '', after: ' ändern.', correct: 'Geschwindigkeit', altCorrect: 'Richtung' },
+            { id: 8, before: 'Um eine Kraft vollständig zu beschreiben, braucht man drei Angaben: ', after: ' , Richtung und ', correct: 'Betrag' },
+            { id: 9, before: '', after: ' .', correct: 'Angriffspunkt' },
+            { id: 10, before: 'In Zeichnungen stellt man Kräfte durch einen ', after: ' dar.', correct: 'Pfeil' }
+        ]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A2: KRAFTWIRKUNGEN ZUORDNEN (6 P) - Level ★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A2',
+        type: 'table-radio',
+        level: 1,
+        points: 6,
+        afb: 1,
+        title: 'Kraftwirkungen zuordnen',
+        text: 'Ordne die Beispiele der richtigen Kraftwirkung zu. Wähle pro Zeile EINE Antwort.',
+        columns: ['Verformung', 'Bewegungsänderung'],
+        rows: [
+            { text: 'Ein Torwart fängt den Ball.', correct: 1 },
+            { text: 'Ein Auto bremst an der Ampel.', correct: 1 },
+            { text: 'Du drückst einen Schwamm zusammen.', correct: 0 },
+            { text: 'Ein Fußballer schießt den ruhenden Ball.', correct: 1 },
+            { text: 'Du verbiegst einen Löffel.', correct: 0 },
+            { text: 'Ein Radfahrer fährt um die Kurve.', correct: 1 }
+        ]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A3: VERFORMUNGSARTEN (5 P) - Level ★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A3',
+        type: 'table-dropdown',
+        level: 1,
+        points: 5,
+        afb: 1,
+        title: 'Verformungsarten',
+        text: 'Ordne die Beispiele der richtigen Verformungsart zu.',
+        hint: 'E = elastisch (kehrt zurück) · P = plastisch (bleibt verformt) · Z = Zerstörung (kaputt)',
+        options: ['–', 'E', 'P', 'Z'],
+        rows: [
+            { text: 'Ein Gummiband wird gedehnt und springt zurück.', correct: 'E' },
+            { text: 'Eine Getränkedose wird eingedrückt und bleibt verbeult.', correct: 'P' },
+            { text: 'Ein Glas fällt auf den Boden und zerbricht.', correct: 'Z' },
+            { text: 'Ein Sprungbrett biegt sich und schwingt zurück.', correct: 'E' },
+            { text: 'Knete wird geformt und behält die neue Form.', correct: 'P' }
+        ]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A4: KRAFTPFEIL-GRUNDLAGEN (3 P) - Level ★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A4',
+        type: 'matching-dropdown',
+        level: 1,
+        points: 3,
+        afb: 1,
+        title: 'Kraftpfeil-Grundlagen',
+        text: 'Was zeigen die verschiedenen Eigenschaften eines Kraftpfeils? Ordne richtig zu.',
+        hasDiagram: true,
+        options: ['–', 'Angriffspunkt der Kraft', 'Betrag (Stärke) der Kraft', 'Richtung der Kraft'],
+        pairs: [
+            { left: 'Länge des Pfeils', correct: 'Betrag (Stärke) der Kraft' },
+            { left: 'Richtung des Pfeils', correct: 'Richtung der Kraft' },
+            { left: 'Anfangspunkt des Pfeils', correct: 'Angriffspunkt der Kraft' }
+        ]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A5: BEWEGUNGSÄNDERUNG (2 P) - Level ★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A5',
+        type: 'mc-multiple',
+        level: 1,
+        points: 2,
+        afb: 1,
+        title: 'Bewegungsänderung genauer',
+        text: 'Welche zwei Arten der Bewegungsänderung gibt es? Kreuze die zwei richtigen Antworten an.',
+        options: [
+            'Änderung der Masse',
+            'Änderung der Geschwindigkeit',
+            'Änderung der Farbe',
+            'Änderung der Bewegungsrichtung'
+        ],
+        correct: [1, 3]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A6: TAUZIEHEN INTERPRETIEREN (4 P) - Level ★★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A6',
+        type: 'multi-part',
+        level: 2,
+        points: 4,
+        afb: 2,
+        title: 'Kraftpfeile interpretieren',
+        text: 'Zwei Schüler ziehen an einem Seil. Die Kraftpfeile zeigen ihre Zugkräfte.',
+        hasDiagram: true,
+        diagramId: 'tauziehen-80-60',
+        parts: [
+            { id: 'a', label: 'a) Wie groß ist die resultierende Kraft?', type: 'calc', points: 2, accepted: [{ value: 20, unit: 'N', tolerance: 0.5 }], unitOptions: ['N', 'kg', 'm'] },
+            { id: 'b', label: 'b) In welche Richtung bewegt sich das Seil?', type: 'dropdown', points: 1, options: ['–', 'nach links', 'nach rechts', 'es bewegt sich nicht'], correct: 'nach links' },
+            { id: 'c', label: 'c) Wer "gewinnt" das Tauziehen?', type: 'dropdown', points: 1, options: ['–', 'Schüler A', 'Schüler B', 'keiner (unentschieden)'], correct: 'Schüler A' }
+        ]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A7: KRÄFTE GLEICHE RICHTUNG (4 P) - Level ★★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A7',
+        type: 'multi-part',
+        level: 2,
+        points: 4,
+        afb: 2,
+        title: 'Kräfte in gleicher Richtung',
+        text: 'Zwei Pferde ziehen gemeinsam eine Kutsche. Beide ziehen in die gleiche Richtung.',
+        hasDiagram: true,
+        diagramId: 'pferde-600-600',
+        parts: [
+            { id: 'a', label: 'a) Berechne die resultierende Kraft.', type: 'calc', points: 2, accepted: [{ value: 1200, unit: 'N', tolerance: 1 }], unitOptions: ['N', 'kg', 'm'] },
+            { id: 'b1', label: 'b) Pfeillänge in Kästchen:', type: 'dropdown', points: 1, options: ['–', '3 Kästchen', '4 Kästchen', '5 Kästchen', '6 Kästchen', '12 Kästchen'], correct: '6 Kästchen' },
+            { id: 'b2', label: 'Richtung:', type: 'dropdown', points: 1, options: ['–', 'nach rechts', 'nach links'], correct: 'nach rechts' }
+        ]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A8: KRÄFTEGLEICHGEWICHT (5 P) - Level ★★★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A8',
+        type: 'multi-part',
+        level: 3,
+        points: 5,
+        afb: 3,
+        title: 'Tauziehen-Analyse',
+        text: 'Beim Tauziehen stehen sich zwei Teams gegenüber.',
+        intro: 'Situation: Team A zieht mit insgesamt 500 N nach links. Team B zieht mit insgesamt 500 N nach rechts.',
+        parts: [
+            { id: 'a', label: 'a) Berechne die resultierende Kraft.', type: 'calc', points: 2, accepted: [{ value: 0, unit: 'N', tolerance: 0.1 }], unitOptions: ['N', 'kg', 'm'] },
+            { id: 'b1', label: 'b) Das Seil:', type: 'dropdown', points: 1, options: ['–', 'bewegt sich nach links', 'bewegt sich nach rechts', 'bewegt sich nicht', 'wird zerrissen'], correct: 'bewegt sich nicht' },
+            { id: 'b2', label: 'Begründung:', type: 'dropdown', points: 1, options: ['–', 'Die Kräfte heben sich gegenseitig auf', 'Team A ist stärker', 'Team B ist stärker', 'Beide Teams sind müde'], correct: 'Die Kräfte heben sich gegenseitig auf' },
+            { id: 'c', label: 'c) Wie nennt man diesen Zustand in der Physik?', type: 'dropdown', points: 1, options: ['–', 'Kräftegleichgewicht', 'Kraftübertragung', 'Kraftverstärkung', 'Kraftumwandlung'], correct: 'Kräftegleichgewicht' }
+        ]
+    },
+    
+    // ═══════════════════════════════════════════════════════════
+    // A9: ALLTAG BEGRÜNDEN (5 P) - Level ★★★
+    // ═══════════════════════════════════════════════════════════
+    {
+        id: 'A9',
+        type: 'multi-part',
+        level: 3,
+        points: 5,
+        afb: 3,
+        title: 'Kraftwirkungen im Alltag',
+        text: 'Erkläre bei jedem Beispiel, welche Kraftwirkung auftritt.',
+        parts: [
+            { id: 'a_intro', type: 'label', text: 'a) Ein Autofahrer fährt mit gleichbleibender Geschwindigkeit um eine Kurve.' },
+            { id: 'a1', label: 'Kraftwirkung:', type: 'dropdown', points: 1, options: ['–', 'Verformung', 'Bewegungsänderung', 'keine Kraftwirkung'], correct: 'Bewegungsänderung' },
+            { id: 'a2', label: 'Was ändert sich?', type: 'dropdown', points: 1, options: ['–', 'die Richtung', 'die Geschwindigkeit', 'die Masse', 'nichts'], correct: 'die Richtung' },
+            { id: 'b_intro', type: 'label', text: 'b) Ein Ball wird auf ein Trampolin geworfen. Das Sprungtuch gibt nach und der Ball wird wieder hochgeworfen.' },
+            { id: 'b1', label: 'Kraftwirkung 1 (Sprungtuch gibt nach):', type: 'dropdown', points: 1, options: ['–', 'Verformung', 'Bewegungsänderung', 'Zerstörung'], correct: 'Verformung' },
+            { id: 'b2', label: 'Art der Verformung:', type: 'dropdown', points: 1, options: ['–', 'elastisch', 'plastisch', 'keine'], correct: 'elastisch' },
+            { id: 'b3', label: 'Kraftwirkung 2 (Ball wird hochgeworfen):', type: 'dropdown', points: 1, options: ['–', 'Verformung', 'Bewegungsänderung', 'Zerstörung'], correct: 'Bewegungsänderung' }
+        ]
+    }
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+
+let state = {
+    niveau: null,
+    seat: null,
+    answers: {},
+    currentQuestion: 0,
+    startTime: null,
+    timeRemaining: CONFIG.TEST_DURATION * 60,
+    submitted: false
+};
+
+let timerInterval = null;
+let submissionCode = '';
+let gradedAnswers = [];
+let totalEarned = 0;
+let totalPossible = 0;
+
+// ═══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', init);
+
+function init() {
+    generateSeatGrid();
+    
+    const saved = loadState();
+    if (saved && saved.submitted) {
+        state = saved;
+        submissionCode = saved.submissionCode || '';
+        gradedAnswers = saved.gradedAnswers || [];
+        totalEarned = saved.totalEarned || 0;
+        totalPossible = saved.totalPossible || 0;
+        showFeedbackScreen();
+    } else if (saved && saved.startTime) {
+        state = saved;
+        showQuizScreen();
+        startTimer();
+    } else {
+        showScreen('setupScreen');
+    }
+}
+
+function generateSeatGrid() {
+    const grid = document.getElementById('seatGrid');
+    grid.innerHTML = '';
+    for (let i = 1; i <= 30; i++) {
+        const seat = String(i).padStart(2, '0');
+        const btn = document.createElement('button');
+        btn.className = 'seat-btn';
+        btn.textContent = `P${seat}`;
+        btn.onclick = () => selectSeat(`P${seat}`);
+        grid.appendChild(btn);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETUP FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function selectNiveau(niveau) {
+    state.niveau = niveau;
+    document.querySelectorAll('.niveau-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`[data-niveau="${niveau}"]`).classList.add('selected');
+    checkStartReady();
+}
+
+function selectSeat(seat) {
+    state.seat = seat;
+    document.querySelectorAll('.seat-btn').forEach(b => b.classList.remove('selected'));
+    event.target.classList.add('selected');
+    checkStartReady();
+}
+
+function checkStartReady() {
+    document.getElementById('startBtn').disabled = !(state.niveau && state.seat);
+}
+
+function startQuiz() {
+    if (!state.niveau || !state.seat) return;
+    
+    state.startTime = Date.now();
+    state.timeRemaining = CONFIG.TEST_DURATION * 60;
+    state.currentQuestion = 0;
+    state.answers = {};
+    state.submitted = false;
+    
+    saveState();
+    showQuizScreen();
+    startTimer();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function showQuizScreen() {
+    showScreen('quizScreen');
+    updateHeader();
+    buildNavButtons();
+    renderQuestion();
+}
+
+function updateHeader() {
+    const level = CONFIG.LEVELS[state.niveau];
+    const badge = document.getElementById('niveauBadge');
+    badge.textContent = `${level.symbol} ${level.description}`;
+    badge.className = `niveau-badge ${state.niveau}`;
+    
+    updateTimer();
+    updateProgress();
+}
+
+function buildNavButtons() {
+    const container = document.getElementById('navButtons');
+    container.innerHTML = '';
+    
+    QUESTIONS.forEach((q, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'nav-btn';
+        const levelClass = `star${q.level}`;
+        btn.innerHTML = `<span class="q-num">A${i + 1}</span><span class="q-level ${levelClass}">${getLevelStars(q.level)}</span>`;
+        btn.onclick = () => goToQuestion(i);
+        container.appendChild(btn);
+    });
+    
+    updateNavButtons();
+}
+
+function getLevelStars(level) {
+    return '★'.repeat(level);
+}
+
+function updateNavButtons() {
+    const buttons = document.querySelectorAll('.nav-btn');
+    buttons.forEach((btn, i) => {
+        btn.classList.remove('active', 'answered');
+        if (i === state.currentQuestion) btn.classList.add('active');
+        if (isQuestionAnswered(QUESTIONS[i])) btn.classList.add('answered');
+    });
+}
+
+function isQuestionAnswered(q) {
+    const answer = state.answers[q.id];
+    if (!answer) return false;
+    
+    if (q.type === 'fill-in-blank') {
+        return Object.keys(answer).some(k => answer[k] && answer[k] !== '–');
+    }
+    if (q.type === 'table-radio' || q.type === 'table-dropdown') {
+        return Object.keys(answer).some(k => answer[k] !== undefined && answer[k] !== '–');
+    }
+    if (q.type === 'matching-dropdown') {
+        return Object.keys(answer).some(k => answer[k] && answer[k] !== '–');
+    }
+    if (q.type === 'mc-multiple') {
+        return answer.length > 0;
+    }
+    if (q.type === 'multi-part') {
+        return Object.keys(answer).some(k => {
+            const v = answer[k];
+            if (typeof v === 'object') return v.value && v.value !== '';
+            return v && v !== '–' && v !== '';
+        });
+    }
+    return false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER QUESTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function renderQuestion() {
+    const q = QUESTIONS[state.currentQuestion];
+    const container = document.getElementById('questionContainer');
+    
+    const levelClass = `star${q.level}`;
+    const levelStars = getLevelStars(q.level);
+    
+    let html = `
+        <div class="question-card">
+            <div class="question-header">
+                <span class="question-title">
+                    ${q.title}
+                    <span class="level-star ${levelClass}">(${levelStars})</span>
+                </span>
+                <span class="question-points">${q.points} P</span>
+            </div>
+            <div class="question-text">${q.text}</div>
+    `;
+    
+    if (q.hint) {
+        html += `<div class="question-hint">${q.hint}</div>`;
+    }
+    
+    if (q.intro) {
+        html += `<div class="question-hint">${q.intro}</div>`;
+    }
+    
+    // Render diagram if present
+    if (q.hasDiagram) {
+        html += renderDiagram(q);
+    }
+    
+    // Render question type
+    switch (q.type) {
+        case 'fill-in-blank':
+            html += renderFillInBlank(q);
+            break;
+        case 'table-radio':
+            html += renderTableRadio(q);
+            break;
+        case 'table-dropdown':
+            html += renderTableDropdown(q);
+            break;
+        case 'matching-dropdown':
+            html += renderMatchingDropdown(q);
+            break;
+        case 'mc-multiple':
+            html += renderMCMultiple(q);
+            break;
+        case 'multi-part':
+            html += renderMultiPart(q);
+            break;
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+    
+    // Navigation buttons
+    const isLast = state.currentQuestion === QUESTIONS.length - 1;
+    document.getElementById('prevBtn').disabled = state.currentQuestion === 0;
+    document.getElementById('nextBtn').style.display = isLast ? 'none' : 'inline-block';
+    document.getElementById('submitBtn').style.display = isLast ? 'inline-block' : 'none';
+    
+    updateNavButtons();
+}
+
+function renderDiagram(q) {
+    if (q.id === 'A4') {
+        return `
+            <div class="diagram-container">
+                <svg width="400" height="100" viewBox="0 0 400 100">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#2c5aa0"/>
+                        </marker>
+                    </defs>
+                    <!-- Kraftpfeil -->
+                    <circle cx="50" cy="50" r="6" fill="#2c5aa0"/>
+                    <line x1="50" y1="50" x2="300" y2="50" stroke="#2c5aa0" stroke-width="4" marker-end="url(#arrowhead)"/>
+                    <!-- Beschriftungen -->
+                    <text x="50" y="85" font-size="12" fill="#666" text-anchor="middle">Anfangspunkt</text>
+                    <text x="175" y="35" font-size="12" fill="#666" text-anchor="middle">Länge</text>
+                    <text x="175" y="70" font-size="12" fill="#666" text-anchor="middle">→ Richtung</text>
+                    <!-- Längenmarkierung -->
+                    <line x1="50" y1="25" x2="50" y2="30" stroke="#999" stroke-width="1"/>
+                    <line x1="300" y1="25" x2="300" y2="30" stroke="#999" stroke-width="1"/>
+                    <line x1="50" y1="27" x2="300" y2="27" stroke="#999" stroke-width="1"/>
+                </svg>
+            </div>
+        `;
+    }
+    
+    if (q.diagramId === 'tauziehen-80-60') {
+        return `
+            <div class="diagram-container">
+                <svg width="500" height="130" viewBox="0 0 500 130">
+                    <defs>
+                        <marker id="arrowLeft" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#e65100"/>
+                        </marker>
+                        <marker id="arrowRight" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#1565c0"/>
+                        </marker>
+                    </defs>
+                    <!-- Seilmitte -->
+                    <circle cx="250" cy="50" r="8" fill="#333"/>
+                    <!-- Pfeil A (nach links, 80N = 4 Einheiten à 40px) -->
+                    <line x1="250" y1="50" x2="90" y2="50" stroke="#e65100" stroke-width="5" marker-end="url(#arrowLeft)"/>
+                    <text x="170" y="35" font-size="14" fill="#e65100" font-weight="bold">80 N</text>
+                    <text x="50" y="55" font-size="12" fill="#e65100">Schüler A</text>
+                    <!-- Pfeil B (nach rechts, 60N = 3 Einheiten à 40px) -->
+                    <line x1="250" y1="50" x2="370" y2="50" stroke="#1565c0" stroke-width="5" marker-end="url(#arrowRight)"/>
+                    <text x="310" y="35" font-size="14" fill="#1565c0" font-weight="bold">60 N</text>
+                    <text x="380" y="55" font-size="12" fill="#1565c0">Schüler B</text>
+                    <!-- Maßstab -->
+                    <line x1="170" y1="100" x2="210" y2="100" stroke="#333" stroke-width="3"/>
+                    <line x1="170" y1="95" x2="170" y2="105" stroke="#333" stroke-width="2"/>
+                    <line x1="210" y1="95" x2="210" y2="105" stroke="#333" stroke-width="2"/>
+                    <text x="250" y="104" font-size="11" fill="#666">= 20 N</text>
+                </svg>
+            </div>
+        `;
+    }
+    
+    if (q.diagramId === 'pferde-600-600') {
+        return `
+            <div class="diagram-container">
+                <svg width="480" height="160" viewBox="0 0 480 160">
+                    <defs>
+                        <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#2e7d32"/>
+                        </marker>
+                        <!-- Raster-Muster -->
+                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ccc" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <!-- Raster-Hintergrund -->
+                    <rect x="40" y="10" width="400" height="120" fill="url(#grid)" stroke="#ccc"/>
+                    <!-- Beschriftung links -->
+                    <text x="30" y="45" font-size="11" fill="#666" text-anchor="end">Pferd 1:</text>
+                    <text x="30" y="85" font-size="11" fill="#666" text-anchor="end">Pferd 2:</text>
+                    <!-- Pfeil Pferd 1 (600N = 3 Kästchen à 40px = 120px) -->
+                    <line x1="40" y1="40" x2="160" y2="40" stroke="#2e7d32" stroke-width="5" marker-end="url(#arrowGreen)"/>
+                    <text x="175" y="45" font-size="13" fill="#2e7d32" font-weight="bold">600 N</text>
+                    <!-- Pfeil Pferd 2 (600N = 3 Kästchen à 40px = 120px) -->
+                    <line x1="40" y1="80" x2="160" y2="80" stroke="#2e7d32" stroke-width="5" marker-end="url(#arrowGreen)"/>
+                    <text x="175" y="85" font-size="13" fill="#2e7d32" font-weight="bold">600 N</text>
+                    <!-- Maßstab (1 Kästchen = 200N) -->
+                    <rect x="40" y="135" width="40" height="15" fill="#f5f5f5" stroke="#333" stroke-width="1"/>
+                    <text x="90" y="147" font-size="11" fill="#666">= 200 N (1 Kästchen)</text>
+                    <!-- Hinweis: Resultierende = 6 Kästchen -->
+                    <text x="300" y="147" font-size="10" fill="#888" font-style="italic">Resultierende: ? Kästchen</text>
+                </svg>
+            </div>
+        `;
+    }
+    
+    return '';
+}
+
+function renderFillInBlank(q) {
+    const answer = state.answers[q.id] || {};
+    
+    // Shuffle wordbank
+    const shuffled = [...q.wordbank].sort(() => Math.random() - 0.5);
+    
+    let html = `
+        <div class="wordbank">
+            <div class="wordbank-title">WORTBANK:</div>
+            <div class="wordbank-words">${shuffled.join(' · ')}</div>
+        </div>
+        <div class="fill-blank-container">
+    `;
+    
+    q.blanks.forEach(blank => {
+        const selected = answer[blank.id] || '–';
+        const options = ['–', ...q.wordbank].map(w => 
+            `<option value="${w}" ${selected === w ? 'selected' : ''}>${w}</option>`
+        ).join('');
+        
+        html += `${blank.before}<select onchange="updateFillBlank('${q.id}', ${blank.id}, this.value)">${options}</select>${blank.after} `;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function renderTableRadio(q) {
+    const answer = state.answers[q.id] || {};
+    
+    let html = `<table class="assignment-table"><thead><tr><th>Beispiel</th>`;
+    q.columns.forEach(col => {
+        html += `<th>${col}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    
+    q.rows.forEach((row, i) => {
+        html += `<tr><td>${row.text}</td>`;
+        q.columns.forEach((col, j) => {
+            const checked = answer[i] === j ? 'checked' : '';
+            html += `<td><input type="radio" name="${q.id}_row${i}" ${checked} onchange="updateTableRadio('${q.id}', ${i}, ${j})"></td>`;
+        });
+        html += '</tr>';
+    });
+    
+    html += '</tbody></table>';
+    return html;
+}
+
+function renderTableDropdown(q) {
+    const answer = state.answers[q.id] || {};
+    
+    let html = `<table class="assignment-table"><thead><tr><th>Beispiel</th><th>Auswahl</th></tr></thead><tbody>`;
+    
+    q.rows.forEach((row, i) => {
+        const selected = answer[i] || '–';
+        const options = q.options.map(opt => 
+            `<option value="${opt}" ${selected === opt ? 'selected' : ''}>${opt}</option>`
+        ).join('');
+        
+        html += `<tr><td>${row.text}</td><td><select onchange="updateTableDropdown('${q.id}', ${i}, this.value)">${options}</select></td></tr>`;
+    });
+    
+    html += '</tbody></table>';
+    return html;
+}
+
+function renderMatchingDropdown(q) {
+    const answer = state.answers[q.id] || {};
+    
+    let html = `<table class="matching-table">`;
+    
+    q.pairs.forEach((pair, i) => {
+        const selected = answer[i] || '–';
+        const options = q.options.map(opt => 
+            `<option value="${opt}" ${selected === opt ? 'selected' : ''}>${opt}</option>`
+        ).join('');
+        
+        html += `<tr><td>${pair.left}</td><td><select onchange="updateMatchingDropdown('${q.id}', ${i}, this.value)">${options}</select></td></tr>`;
+    });
+    
+    html += '</table>';
+    return html;
+}
+
+function renderMCMultiple(q) {
+    const answer = state.answers[q.id] || [];
+    
+    let html = '<div class="mc-options">';
+    
+    q.options.forEach((opt, i) => {
+        const checked = answer.includes(i);
+        const selectedClass = checked ? 'selected' : '';
+        html += `
+            <div class="mc-option ${selectedClass}" onclick="toggleMCMultiple('${q.id}', ${i})">
+                <input type="checkbox" ${checked ? 'checked' : ''}>
+                <label>${opt}</label>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+function renderMultiPart(q) {
+    const answer = state.answers[q.id] || {};
+    
+    let html = '<div class="multi-part-container">';
+    
+    q.parts.forEach(part => {
+        if (part.type === 'label') {
+            html += `<div class="part-intro">${part.text}</div>`;
+            return;
+        }
+        
+        html += `<div class="part-section"><div class="part-label">${part.label}</div>`;
+        
+        if (part.type === 'calc') {
+            const val = answer[part.id] || { value: '', unit: part.unitOptions[0] };
+            const unitOptions = part.unitOptions.map(u => 
+                `<option value="${u}" ${val.unit === u ? 'selected' : ''}>${u}</option>`
+            ).join('');
+            
+            html += `
+                <div class="calc-input">
+                    <input type="text" value="${val.value}" placeholder="Wert" oninput="updateMultiPartCalc('${q.id}', '${part.id}', this.value)">
+                    <select onchange="updateMultiPartCalcUnit('${q.id}', '${part.id}', this.value)">${unitOptions}</select>
+                </div>
+            `;
+        } else if (part.type === 'dropdown') {
+            const selected = answer[part.id] || '–';
+            const options = part.options.map(opt => 
+                `<option value="${opt}" ${selected === opt ? 'selected' : ''}>${opt}</option>`
+            ).join('');
+            
+            html += `<select onchange="updateMultiPartDropdown('${q.id}', '${part.id}', this.value)">${options}</select>`;
+        }
+        
+        html += '</div>';
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UPDATE FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+function updateFillBlank(qId, blankId, value) {
+    if (!state.answers[qId]) state.answers[qId] = {};
+    state.answers[qId][blankId] = value;
+    saveState();
+    updateProgress();
+    updateNavButtons();
+}
+
+function updateTableRadio(qId, rowIdx, colIdx) {
+    if (!state.answers[qId]) state.answers[qId] = {};
+    state.answers[qId][rowIdx] = colIdx;
+    saveState();
+    updateProgress();
+    updateNavButtons();
+}
+
+function updateTableDropdown(qId, rowIdx, value) {
+    if (!state.answers[qId]) state.answers[qId] = {};
+    state.answers[qId][rowIdx] = value;
+    saveState();
+    updateProgress();
+    updateNavButtons();
+}
+
+function updateMatchingDropdown(qId, pairIdx, value) {
+    if (!state.answers[qId]) state.answers[qId] = {};
+    state.answers[qId][pairIdx] = value;
+    saveState();
+    updateProgress();
+    updateNavButtons();
+}
+
+function toggleMCMultiple(qId, optIdx) {
+    if (!state.answers[qId]) state.answers[qId] = [];
+    const idx = state.answers[qId].indexOf(optIdx);
+    if (idx > -1) {
+        state.answers[qId].splice(idx, 1);
+    } else {
+        state.answers[qId].push(optIdx);
+    }
+    saveState();
+    renderQuestion();
+    updateProgress();
+}
+
+function updateMultiPartCalc(qId, partId, value) {
+    if (!state.answers[qId]) state.answers[qId] = {};
+    if (!state.answers[qId][partId]) state.answers[qId][partId] = { value: '', unit: '' };
+    state.answers[qId][partId].value = value;
+    saveState();
+    updateProgress();
+    updateNavButtons();
+}
+
+function updateMultiPartCalcUnit(qId, partId, unit) {
+    if (!state.answers[qId]) state.answers[qId] = {};
+    if (!state.answers[qId][partId]) state.answers[qId][partId] = { value: '', unit: '' };
+    state.answers[qId][partId].unit = unit;
+    saveState();
+}
+
+function updateMultiPartDropdown(qId, partId, value) {
+    if (!state.answers[qId]) state.answers[qId] = {};
+    state.answers[qId][partId] = value;
+    saveState();
+    updateProgress();
+    updateNavButtons();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+
+function prevQuestion() {
+    if (state.currentQuestion > 0) {
+        state.currentQuestion--;
+        renderQuestion();
+    }
+}
+
+function nextQuestion() {
+    if (state.currentQuestion < QUESTIONS.length - 1) {
+        state.currentQuestion++;
+        renderQuestion();
+    }
+}
+
+function goToQuestion(index) {
+    state.currentQuestion = index;
+    renderQuestion();
+}
+
+function updateProgress() {
+    const answered = QUESTIONS.filter(q => isQuestionAnswered(q)).length;
+    const total = QUESTIONS.length;
+    const percent = (answered / total) * 100;
+    
+    document.getElementById('progressFill').style.width = `${percent}%`;
+    document.getElementById('progressText').textContent = `Fortschritt: ${answered}/${total} Aufgaben`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════════════
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        state.timeRemaining--;
+        updateTimer();
+        
+        if (state.timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            submitQuiz();
+        }
+        
+        if (state.timeRemaining % 10 === 0) {
+            saveState();
+        }
+    }, 1000);
+}
+
+function updateTimer() {
+    const minutes = Math.floor(state.timeRemaining / 60);
+    const seconds = state.timeRemaining % 60;
+    const display = `⏱️ ${minutes}:${String(seconds).padStart(2, '0')}`;
+    
+    const timerEl = document.getElementById('timerDisplay');
+    timerEl.textContent = display;
+    timerEl.className = 'timer';
+    
+    if (state.timeRemaining <= 60) {
+        timerEl.classList.add('critical');
+    } else if (state.timeRemaining <= 180) {
+        timerEl.classList.add('warning');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUBMISSION & GRADING
+// ═══════════════════════════════════════════════════════════════
+
+function submitQuiz() {
+    closeModal('submitModal');
+    if (timerInterval) clearInterval(timerInterval);
+    
+    const elapsed = CONFIG.TEST_DURATION * 60 - state.timeRemaining;
+    const result = calculateScore();
+    
+    totalEarned = result.earned;
+    totalPossible = result.possible;
+    gradedAnswers = result.gradedAnswers;
+    
+    submissionCode = generateSubmissionCode(elapsed);
+    
+    state.submitted = true;
+    saveState();
+    
+    showFeedbackScreen();
+}
+
+function calculateScore() {
+    const maxLevel = CONFIG.LEVELS[state.niveau].maxLevel;
+    let earned = 0;
+    let possible = 0;
+    const graded = [];
+    
+    QUESTIONS.forEach(q => {
+        const isScored = q.level <= maxLevel;
+        const answer = state.answers[q.id];
+        const result = gradeQuestion(q, answer);
+        
+        if (isScored) {
+            possible += q.points;
+            earned += result.earned;
+        }
+        
+        graded.push({
+            id: q.id,
+            title: q.title,
+            level: q.level,
+            points: q.points,
+            scored: isScored,
+            earned: result.earned,
+            details: result.details
+        });
+    });
+    
+    return { earned, possible, gradedAnswers: graded };
+}
+
+function gradeQuestion(q, answer) {
+    if (!answer) return { earned: 0, details: [] };
+    
+    let earned = 0;
+    let details = [];
+    
+    switch (q.type) {
+        case 'fill-in-blank':
+            q.blanks.forEach(blank => {
+                const userAns = answer[blank.id];
+                const isCorrect = userAns === blank.correct || (blank.altCorrect && userAns === blank.altCorrect);
+                if (isCorrect) earned += 1;
+                details.push({ label: `Lücke ${blank.id}`, user: userAns || '–', correct: blank.correct, isCorrect });
+            });
+            break;
+            
+        case 'table-radio':
+            q.rows.forEach((row, i) => {
+                const userAns = answer[i];
+                const isCorrect = userAns === row.correct;
+                if (isCorrect) earned += 1;
+                details.push({ label: row.text.substring(0, 30) + '...', user: userAns !== undefined ? q.columns[userAns] : '–', correct: q.columns[row.correct], isCorrect });
+            });
+            break;
+            
+        case 'table-dropdown':
+            q.rows.forEach((row, i) => {
+                const userAns = answer[i];
+                const isCorrect = userAns === row.correct;
+                if (isCorrect) earned += 1;
+                details.push({ label: row.text.substring(0, 30) + '...', user: userAns || '–', correct: row.correct, isCorrect });
+            });
+            break;
+            
+        case 'matching-dropdown':
+            q.pairs.forEach((pair, i) => {
+                const userAns = answer[i];
+                const isCorrect = userAns === pair.correct;
+                if (isCorrect) earned += 1;
+                details.push({ label: pair.left, user: userAns || '–', correct: pair.correct, isCorrect });
+            });
+            break;
+            
+        case 'mc-multiple':
+            const correctSet = new Set(q.correct);
+            const userSet = new Set(answer);
+            q.correct.forEach(idx => {
+                if (userSet.has(idx)) earned += 1;
+            });
+            // Penalty for wrong selections (but not below 0)
+            answer.forEach(idx => {
+                if (!correctSet.has(idx)) earned = Math.max(0, earned - 0.5);
+            });
+            earned = Math.round(earned);
+            details.push({ 
+                label: 'Auswahl', 
+                user: answer.map(i => q.options[i].substring(0, 20)).join(', ') || '–', 
+                correct: q.correct.map(i => q.options[i].substring(0, 20)).join(', '), 
+                isCorrect: earned === q.points 
+            });
+            break;
+            
+        case 'multi-part':
+            q.parts.forEach(part => {
+                if (part.type === 'label') return;
+                
+                const userAns = answer[part.id];
+                let isCorrect = false;
+                let userDisplay = '–';
+                let correctDisplay = '';
+                
+                if (part.type === 'calc') {
+                    if (userAns && userAns.value !== '') {
+                        const numVal = parseFloat(String(userAns.value).replace(',', '.'));
+                        userDisplay = `${userAns.value} ${userAns.unit}`;
+                        
+                        for (const acc of part.accepted) {
+                            if (userAns.unit.toLowerCase() === acc.unit.toLowerCase() && 
+                                Math.abs(numVal - acc.value) <= acc.tolerance) {
+                                isCorrect = true;
+                                break;
+                            }
+                        }
+                    }
+                    correctDisplay = `${part.accepted[0].value} ${part.accepted[0].unit}`;
+                } else if (part.type === 'dropdown') {
+                    userDisplay = userAns || '–';
+                    isCorrect = userAns === part.correct;
+                    correctDisplay = part.correct;
+                }
+                
+                if (isCorrect) earned += part.points;
+                details.push({ label: part.label, user: userDisplay, correct: correctDisplay, isCorrect, points: part.points });
+            });
+            break;
+    }
+    
+    return { earned, details };
+}
+
+function generateSubmissionCode(elapsed) {
+    const data = {
+        v: CONFIG.VERSION,
+        n: state.niveau,
+        s: state.seat,
+        a: state.answers,
+        e: totalEarned,
+        p: totalPossible,
+        t: elapsed,
+        d: new Date().toISOString().split('T')[0]
+    };
+    
+    return LZString.compressToEncodedURIComponent(JSON.stringify(data));
+}
+
+function calculateGrade(earned, possible) {
+    if (possible === 0) return 0;
+    const percent = (earned / possible) * 100;
+    
+    for (const grade of CONFIG.GRADE_SCALE) {
+        if (percent >= grade.percent) return grade.np;
+    }
+    return 0;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FEEDBACK SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+function showFeedbackScreen() {
+    showScreen('feedbackScreen');
+    
+    const level = CONFIG.LEVELS[state.niveau];
+    const grade = calculateGrade(totalEarned, totalPossible);
+    const percent = totalPossible > 0 ? ((totalEarned / totalPossible) * 100).toFixed(1) : 0;
+    const elapsed = CONFIG.TEST_DURATION * 60 - state.timeRemaining;
+    const elapsedMin = Math.floor(elapsed / 60);
+    const elapsedSec = elapsed % 60;
+    
+    document.getElementById('resultSeat').textContent = state.seat;
+    document.getElementById('resultDate').textContent = new Date().toLocaleDateString('de-DE');
+    
+    const gradeEl = document.getElementById('resultGrade');
+    gradeEl.textContent = `${level.symbol} ${grade} NP`;
+    gradeEl.className = `grade ${state.niveau}`;
+    
+    document.getElementById('resultScore').textContent = `${totalEarned} / ${totalPossible} Punkte (${percent}%)`;
+    document.getElementById('resultDetails').textContent = 
+        `Niveau: ${level.symbol} (${level.description}) · Bearbeitungszeit: ${elapsedMin}:${String(elapsedSec).padStart(2, '0')} von ${CONFIG.TEST_DURATION}:00`;
+    
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+    if (submissionCode) {
+        new QRCode(qrContainer, {
+            text: submissionCode,
+            width: 150,
+            height: 150,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+    
+    document.getElementById('textCode').textContent = submissionCode || 'Nicht verfügbar';
+    
+    renderFeedbackQuestions();
+    renderScoreSummary();
+}
+
+function renderFeedbackQuestions() {
+    const container = document.getElementById('feedbackQuestions');
+    container.innerHTML = '';
+    
+    gradedAnswers.forEach((ga, i) => {
+        const isFullyCorrect = ga.earned === QUESTIONS[i].points;
+        const statusClass = ga.scored ? (isFullyCorrect ? 'correct' : 'incorrect') : 'not-scored';
+        const statusIcon = ga.scored ? (isFullyCorrect ? '✅' : '❌') : (ga.earned > 0 ? '✓' : '✗');
+        const pointsText = ga.scored ? `${ga.earned} / ${ga.points} P` : '[nicht gew.]';
+        
+        let detailsHtml = '';
+        if (ga.details && ga.details.length > 0) {
+            detailsHtml = '<div class="feedback-detail">';
+            ga.details.forEach(d => {
+                const itemClass = d.isCorrect ? 'correct-item' : 'incorrect-item';
+                detailsHtml += `<div class="${itemClass}">• ${d.label}: ${d.user} ${d.isCorrect ? '✓' : `→ ${d.correct}`}</div>`;
+            });
+            detailsHtml += '</div>';
+        }
+        
+        container.innerHTML += `
+            <div class="feedback-question ${statusClass}">
+                <div class="feedback-question-header">
+                    <span class="status ${statusClass}">${statusIcon} A${i + 1}: ${ga.title} (${getLevelStars(ga.level)})</span>
+                    <span class="points">${pointsText}</span>
+                </div>
+                <div class="feedback-question-body">
+                    ${detailsHtml}
+                </div>
+            </div>
+        `;
+    });
+}
+
+function renderScoreSummary() {
+    const container = document.getElementById('scoreSummary');
+    const maxLevel = CONFIG.LEVELS[state.niveau].maxLevel;
+    
+    const byLevel = { 1: { earned: 0, possible: 0, ids: [] }, 2: { earned: 0, possible: 0, ids: [] }, 3: { earned: 0, possible: 0, ids: [] } };
+    
+    gradedAnswers.forEach((ga, i) => {
+        byLevel[ga.level].ids.push(`A${i + 1}`);
+        if (ga.scored) {
+            byLevel[ga.level].possible += ga.points;
+            byLevel[ga.level].earned += ga.earned;
+        }
+    });
+    
+    let html = '<h3>📊 Punkteübersicht</h3>';
+    
+    for (let level = 1; level <= 3; level++) {
+        const data = byLevel[level];
+        if (data.ids.length === 0) continue;
+        
+        const isScored = level <= maxLevel;
+        const rowClass = isScored ? '' : 'not-scored';
+        const pointsText = isScored ? `${data.earned} / ${data.possible} P` : '[nicht gewertet]';
+        
+        html += `
+            <div class="score-row ${rowClass}">
+                <span>${'★'.repeat(level)} Aufgaben (${data.ids.join(', ')})</span>
+                <span>${pointsText}</span>
+            </div>
+        `;
+    }
+    
+    html += `
+        <div class="score-row total">
+            <span>GESAMT (für ${CONFIG.LEVELS[state.niveau].symbol})</span>
+            <span>${totalEarned} / ${totalPossible} P</span>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════════
+
+function getStorageKey() {
+    return CONFIG.STORAGE_KEY_PREFIX + (state.niveau || 'default');
+}
+
+function saveState() {
+    const data = {
+        version: CONFIG.VERSION,
+        niveau: state.niveau,
+        seat: state.seat,
+        answers: state.answers,
+        currentQuestion: state.currentQuestion,
+        startTime: state.startTime,
+        timeRemaining: state.timeRemaining,
+        submitted: state.submitted,
+        submissionCode: submissionCode,
+        gradedAnswers: gradedAnswers,
+        totalEarned: totalEarned,
+        totalPossible: totalPossible
+    };
+    
+    localStorage.setItem(getStorageKey(), JSON.stringify(data));
+}
+
+function loadState() {
+    for (const niveau of Object.keys(CONFIG.LEVELS)) {
+        const key = CONFIG.STORAGE_KEY_PREFIX + niveau;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                if (data.version === CONFIG.VERSION) return data;
+            } catch (e) {}
+        }
+    }
+    return null;
+}
+
+function clearState() {
+    for (const niveau of Object.keys(CONFIG.LEVELS)) {
+        localStorage.removeItem(CONFIG.STORAGE_KEY_PREFIX + niveau);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+}
+
+function showModal(modalId) {
+    document.getElementById(modalId).classList.add('active');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+    if (modalId === 'resetModal') {
+        document.getElementById('resetCodeInput').value = '';
+    }
+}
+
+function tryReset() {
+    const code = document.getElementById('resetCodeInput').value;
+    if (code === CONFIG.RESET_CODE) {
+        clearState();
+        if (timerInterval) clearInterval(timerInterval);
+        state = { niveau: null, seat: null, answers: {}, currentQuestion: 0, startTime: null, timeRemaining: CONFIG.TEST_DURATION * 60, submitted: false };
+        submissionCode = '';
+        gradedAnswers = [];
+        totalEarned = 0;
+        totalPossible = 0;
+        closeModal('resetModal');
+        showScreen('setupScreen');
+    } else {
+        alert('Falscher Code!');
+    }
+}
+
+function copyCode() {
+    navigator.clipboard.writeText(submissionCode).then(() => {
+        alert('Code kopiert!');
+    }).catch(() => {
+        const textArea = document.createElement('textarea');
+        textArea.value = submissionCode;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('Code kopiert!');
+    });
+}
+</script>
+</body>
+</html>

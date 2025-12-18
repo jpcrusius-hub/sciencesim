@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoder – Kräfte Klasse 7</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.input-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.input-section h2 {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: 1px solid #ddd;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    background: #2c5aa0;
+    color: #fff;
+    border-color: #2c5aa0;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+#qr-reader {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.camera-select {
+    margin-bottom: 15px;
+}
+
+.camera-select label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.camera-select select {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+}
+
+.manual-input {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.manual-input textarea {
+    flex: 1;
+    min-width: 300px;
+    height: 80px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 0.85em;
+    border: 1px solid #ccc;
+}
+
+.manual-input button {
+    padding: 10px 20px;
+    background: #2c5aa0;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.manual-input button:hover {
+    background: #1e4a8a;
+}
+
+.results-section {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.results-section h2 {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-box {
+    background: #f5f5f5;
+    padding: 15px 20px;
+    text-align: center;
+    min-width: 120px;
+}
+
+.stat-box .value {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #2c5aa0;
+}
+
+.stat-box .label {
+    font-size: 0.85em;
+    color: #666;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.results-table th,
+.results-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.results-table th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+.results-table tr:hover {
+    background: #f9f9f9;
+}
+
+.niveau-cell.stern1 { color: #e65100; font-weight: 600; }
+.niveau-cell.stern2 { color: #1565c0; font-weight: 600; }
+.niveau-cell.stern3 { color: #7b1fa2; font-weight: 600; }
+
+.grade-cell {
+    font-weight: 600;
+}
+
+.delete-btn {
+    padding: 4px 8px;
+    background: #f44336;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+.delete-btn:hover {
+    background: #d32f2f;
+}
+
+.export-btn {
+    padding: 8px 15px;
+    background: #4caf50;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.export-btn:hover {
+    background: #388e3c;
+}
+
+.clear-btn {
+    padding: 8px 15px;
+    background: #f44336;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.clear-btn:hover {
+    background: #d32f2f;
+}
+
+.status-message {
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 3px;
+}
+
+.status-message.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #81c784;
+}
+
+.status-message.error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.status-message.warning {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffb74d;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+@media (max-width: 600px) {
+    .stats {
+        flex-direction: column;
+    }
+    
+    .stat-box {
+        width: 100%;
+    }
+    
+    .results-table {
+        font-size: 0.8em;
+    }
+    
+    .results-table th,
+    .results-table td {
+        padding: 6px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Decoder – Kräfte Klasse 7</h1>
+        
+        <div class="input-section">
+            <h2>📥 Ergebnis einlesen</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('qr')">📷 QR-Code scannen</button>
+                <button class="tab-btn" onclick="showTab('manual')">⌨️ Code eingeben</button>
+            </div>
+            
+            <div id="statusMessage"></div>
+            
+            <div id="qrTab" class="tab-content active">
+                <div class="camera-select">
+                    <label for="cameraSelect">Kamera auswählen:</label>
+                    <select id="cameraSelect" onchange="switchCamera()">
+                        <option value="">Wird geladen...</option>
+                    </select>
+                </div>
+                <div id="qr-reader"></div>
+            </div>
+            
+            <div id="manualTab" class="tab-content">
+                <div class="manual-input">
+                    <textarea id="manualCode" placeholder="Code hier einfügen..."></textarea>
+                    <button onclick="decodeManual()">Dekodieren</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-section">
+            <h2>
+                <span>📋 Ergebnisse (<span id="resultCount">0</span>)</span>
+                <span>
+                    <button class="export-btn" onclick="exportCSV()">📥 CSV Export</button>
+                    <button class="clear-btn" onclick="clearResults()">🗑️ Alle löschen</button>
+                </span>
+            </h2>
+            
+            <div class="stats" id="statsContainer">
+                <div class="stat-box">
+                    <div class="value" id="statCount">0</div>
+                    <div class="label">Abgaben</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="statAvgGrade">–</div>
+                    <div class="label">Ø Note</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="statAvgPercent">–</div>
+                    <div class="label">Ø Prozent</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value" id="statBest">–</div>
+                    <div class="label">Beste Note</div>
+                </div>
+            </div>
+            
+            <div id="resultsContainer">
+                <div class="empty-state">Noch keine Ergebnisse eingelesen.</div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURATION - MUSS MIT index.html ÜBEREINSTIMMEN!
+// ═══════════════════════════════════════════════════════════════
+
+const CONFIG = {
+    VERSION: 1.0,
+    
+    LEVELS: {
+        'stern1': { name: 'Stern 1', symbol: '★', description: 'BR', maxPoints: 26 },
+        'stern2': { name: 'Stern 2', symbol: '★★', description: 'MR', maxPoints: 34 },
+        'stern3': { name: 'Stern 3', symbol: '★★★', description: 'GY', maxPoints: 44 }
+    },
+    
+    // MAX_POINTS muss mit TOTAL_POINTS in index.html übereinstimmen
+    MAX_POINTS: {
+        'stern1': 26,
+        'stern2': 34,
+        'stern3': 44
+    },
+    
+    GRADE_SCALE: [
+        { np: 14, percent: 100 },
+        { np: 13, percent: 96 },
+        { np: 12, percent: 90.67 },
+        { np: 11, percent: 86 },
+        { np: 10, percent: 80 },
+        { np: 9, percent: 73.33 },
+        { np: 8, percent: 66.67 },
+        { np: 7, percent: 60 },
+        { np: 6, percent: 53.33 },
+        { np: 5, percent: 46.67 },
+        { np: 4, percent: 40 },
+        { np: 3, percent: 33.33 },
+        { np: 2, percent: 26.67 },
+        { np: 1, percent: 20 },
+        { np: 0, percent: 0 }
+    ]
+};
+
+// QUESTIONS - Muss mit index.html übereinstimmen für detaillierte Auswertung
+const QUESTIONS = [
+    { id: 'A1', title: 'Lückentext Grundwissen', level: 1, points: 10 },
+    { id: 'A2', title: 'Kraftwirkungen zuordnen', level: 1, points: 6 },
+    { id: 'A3', title: 'Verformungsarten', level: 1, points: 5 },
+    { id: 'A4', title: 'Kraftpfeil-Grundlagen', level: 1, points: 3 },
+    { id: 'A5', title: 'Bewegungsänderung genauer', level: 1, points: 2 },
+    { id: 'A6', title: 'Kraftpfeile interpretieren', level: 2, points: 4 },
+    { id: 'A7', title: 'Kräfte in gleicher Richtung', level: 2, points: 4 },
+    { id: 'A8', title: 'Tauziehen-Analyse', level: 3, points: 5 },
+    { id: 'A9', title: 'Kraftwirkungen im Alltag', level: 3, points: 5 }
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+
+let results = [];
+let html5QrCode = null;
+let cameras = [];
+let currentCameraId = null;
+
+// ═══════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', init);
+
+function init() {
+    loadResults();
+    renderResults();
+    initQRScanner();
+}
+
+async function initQRScanner() {
+    try {
+        cameras = await Html5Qrcode.getCameras();
+        const select = document.getElementById('cameraSelect');
+        
+        if (cameras && cameras.length > 0) {
+            select.innerHTML = cameras.map((cam, i) => 
+                `<option value="${cam.id}">${cam.label || `Kamera ${i + 1}`}</option>`
+            ).join('');
+            
+            // Prefer back camera
+            const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rück'));
+            currentCameraId = backCam ? backCam.id : cameras[0].id;
+            select.value = currentCameraId;
+            
+            startScanner();
+        } else {
+            select.innerHTML = '<option value="">Keine Kamera gefunden</option>';
+            showStatus('Keine Kamera verfügbar. Nutze die manuelle Eingabe.', 'warning');
+        }
+    } catch (err) {
+        console.error('Camera init error:', err);
+        showStatus('Kamera-Zugriff verweigert. Nutze die manuelle Eingabe.', 'error');
+    }
+}
+
+async function startScanner() {
+    if (!currentCameraId) return;
+    
+    if (html5QrCode) {
+        try {
+            await html5QrCode.stop();
+        } catch (e) {}
+    }
+    
+    html5QrCode = new Html5Qrcode("qr-reader");
+    
+    try {
+        await html5QrCode.start(
+            currentCameraId,
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            onScanSuccess,
+            () => {}
+        );
+    } catch (err) {
+        console.error('Scanner start error:', err);
+        showStatus('Scanner konnte nicht gestartet werden.', 'error');
+    }
+}
+
+async function switchCamera() {
+    currentCameraId = document.getElementById('cameraSelect').value;
+    await startScanner();
+}
+
+function onScanSuccess(decodedText) {
+    processCode(decodedText);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB HANDLING
+// ═══════════════════════════════════════════════════════════════
+
+function showTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
+    document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+    document.getElementById(`${tabId}Tab`).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DECODING
+// ═══════════════════════════════════════════════════════════════
+
+function decodeManual() {
+    const code = document.getElementById('manualCode').value.trim();
+    if (code) {
+        processCode(code);
+        document.getElementById('manualCode').value = '';
+    }
+}
+
+function processCode(code) {
+    try {
+        const json = LZString.decompressFromEncodedURIComponent(code);
+        if (!json) throw new Error('Dekomprimierung fehlgeschlagen');
+        
+        const data = JSON.parse(json);
+        
+        if (data.v !== CONFIG.VERSION) {
+            showStatus(`Warnung: Version ${data.v} (erwartet: ${CONFIG.VERSION})`, 'warning');
+        }
+        
+        // Check for duplicates
+        const duplicate = results.find(r => r.seat === data.s && r.niveau === data.n && r.date === data.d);
+        if (duplicate) {
+            showStatus(`⚠️ Duplikat: ${data.s} (${CONFIG.LEVELS[data.n].symbol}) wurde bereits eingelesen!`, 'warning');
+            return;
+        }
+        
+        const result = {
+            id: Date.now(),
+            seat: data.s,
+            niveau: data.n,
+            earned: data.e,
+            possible: data.p,
+            time: data.t,
+            date: data.d,
+            answers: data.a,
+            timestamp: new Date().toISOString()
+        };
+        
+        result.percent = result.possible > 0 ? ((result.earned / result.possible) * 100) : 0;
+        result.grade = calculateGrade(result.percent);
+        
+        results.push(result);
+        saveResults();
+        renderResults();
+        
+        const level = CONFIG.LEVELS[data.n];
+        showStatus(`✅ ${data.s} (${level.symbol}): ${data.e}/${data.p} P = ${result.grade} NP`, 'success');
+        
+    } catch (err) {
+        console.error('Decode error:', err);
+        showStatus('❌ Ungültiger Code!', 'error');
+    }
+}
+
+function calculateGrade(percent) {
+    for (const grade of CONFIG.GRADE_SCALE) {
+        if (percent >= grade.percent) return grade.np;
+    }
+    return 0;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESULTS MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+function renderResults() {
+    const container = document.getElementById('resultsContainer');
+    document.getElementById('resultCount').textContent = results.length;
+    
+    if (results.length === 0) {
+        container.innerHTML = '<div class="empty-state">Noch keine Ergebnisse eingelesen.</div>';
+        updateStats();
+        return;
+    }
+    
+    // Sort by seat
+    const sorted = [...results].sort((a, b) => a.seat.localeCompare(b.seat));
+    
+    let html = `
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Platz</th>
+                    <th>Niveau</th>
+                    <th>Punkte</th>
+                    <th>Prozent</th>
+                    <th>Note</th>
+                    <th>Zeit</th>
+                    <th>Datum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    sorted.forEach(r => {
+        const level = CONFIG.LEVELS[r.niveau];
+        const timeMin = Math.floor(r.time / 60);
+        const timeSec = r.time % 60;
+        
+        html += `
+            <tr>
+                <td><strong>${r.seat}</strong></td>
+                <td class="niveau-cell ${r.niveau}">${level.symbol}</td>
+                <td>${r.earned} / ${r.possible}</td>
+                <td>${r.percent.toFixed(1)}%</td>
+                <td class="grade-cell">${r.grade} NP</td>
+                <td>${timeMin}:${String(timeSec).padStart(2, '0')}</td>
+                <td>${r.date}</td>
+                <td><button class="delete-btn" onclick="deleteResult(${r.id})">×</button></td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    
+    updateStats();
+}
+
+function updateStats() {
+    document.getElementById('statCount').textContent = results.length;
+    
+    if (results.length === 0) {
+        document.getElementById('statAvgGrade').textContent = '–';
+        document.getElementById('statAvgPercent').textContent = '–';
+        document.getElementById('statBest').textContent = '–';
+        return;
+    }
+    
+    const avgGrade = results.reduce((sum, r) => sum + r.grade, 0) / results.length;
+    const avgPercent = results.reduce((sum, r) => sum + r.percent, 0) / results.length;
+    const bestGrade = Math.max(...results.map(r => r.grade));
+    
+    document.getElementById('statAvgGrade').textContent = avgGrade.toFixed(1);
+    document.getElementById('statAvgPercent').textContent = avgPercent.toFixed(1) + '%';
+    document.getElementById('statBest').textContent = bestGrade + ' NP';
+}
+
+function deleteResult(id) {
+    if (confirm('Ergebnis wirklich löschen?')) {
+        results = results.filter(r => r.id !== id);
+        saveResults();
+        renderResults();
+    }
+}
+
+function clearResults() {
+    if (confirm('Alle Ergebnisse löschen?')) {
+        results = [];
+        saveResults();
+        renderResults();
+        showStatus('Alle Ergebnisse gelöscht.', 'success');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════
+
+function exportCSV() {
+    if (results.length === 0) {
+        showStatus('Keine Ergebnisse zum Exportieren.', 'warning');
+        return;
+    }
+    
+    const headers = ['Platz', 'Niveau', 'Niveau_Symbol', 'Punkte_Erreicht', 'Punkte_Moeglich', 'Prozent', 'Note_NP', 'Zeit_Sekunden', 'Datum'];
+    
+    const rows = results.map(r => {
+        const level = CONFIG.LEVELS[r.niveau];
+        return [
+            r.seat,
+            r.niveau,
+            level.symbol,
+            r.earned,
+            r.possible,
+            r.percent.toFixed(1),
+            r.grade,
+            r.time,
+            r.date
+        ];
+    });
+    
+    const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
+    
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kraefte_k7_ergebnisse_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    showStatus('CSV exportiert!', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════════════════════════════
+
+function saveResults() {
+    localStorage.setItem('quiz_decoder_kraefte_k7_results', JSON.stringify(results));
+}
+
+function loadResults() {
+    try {
+        const saved = localStorage.getItem('quiz_decoder_kraefte_k7_results');
+        if (saved) {
+            results = JSON.parse(saved);
+        }
+    } catch (e) {
+        results = [];
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════════
+
+function showStatus(message, type) {
+    const container = document.getElementById('statusMessage');
+    container.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+    
+    setTimeout(() => {
+        container.innerHTML = '';
+    }, 5000);
+}
+</script>
+</body>
+</html>

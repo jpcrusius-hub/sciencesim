@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgaben – Kräfte K7</title>
+    <style>
+@media print {
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .page-break {
+        page-break-before: always;
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    line-height: 1.4;
+    background: #fff;
+}
+
+.controls {
+    background: #f5f5f5;
+    padding: 15px;
+    margin: 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.controls button {
+    padding: 10px 25px;
+    font-size: 1em;
+    background: #2c5aa0;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.container {
+    max-width: 180mm;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 5mm;
+    padding-bottom: 3mm;
+    border-bottom: 2px solid #333;
+}
+
+.header h1 {
+    font-size: 14pt;
+    margin-bottom: 2mm;
+}
+
+.header .meta {
+    font-size: 9pt;
+    color: #666;
+}
+
+.name-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5mm;
+    padding: 3mm;
+    background: #f5f5f5;
+    font-size: 10pt;
+}
+
+.name-row span {
+    display: inline-block;
+}
+
+.name-row .field {
+    border-bottom: 1px solid #333;
+    min-width: 40mm;
+    display: inline-block;
+}
+
+.task {
+    margin-bottom: 5mm;
+    padding: 3mm;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2mm;
+    padding-bottom: 2mm;
+    border-bottom: 1px solid #eee;
+}
+
+.task-title {
+    font-weight: 700;
+    font-size: 10pt;
+}
+
+.task-level {
+    font-size: 9pt;
+    padding: 1mm 3mm;
+    background: #f0f0f0;
+}
+
+.task-level.star1 { background: #fff3e0; color: #e65100; }
+.task-level.star2 { background: #e3f2fd; color: #1565c0; }
+.task-level.star3 { background: #f3e5f5; color: #7b1fa2; }
+
+.task-points {
+    font-size: 9pt;
+    color: #666;
+}
+
+.task-text {
+    font-size: 10pt;
+    margin-bottom: 2mm;
+}
+
+.task-hint {
+    font-size: 9pt;
+    font-style: italic;
+    color: #666;
+    margin-bottom: 2mm;
+    padding: 2mm;
+    background: #f9f9f9;
+}
+
+.wordbank {
+    font-size: 9pt;
+    padding: 2mm;
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    margin-bottom: 2mm;
+    text-align: center;
+}
+
+.blanks {
+    font-size: 10pt;
+    line-height: 2.2;
+}
+
+.blank {
+    display: inline-block;
+    min-width: 25mm;
+    border-bottom: 1px solid #333;
+    text-align: center;
+    margin: 0 1mm;
+}
+
+table.assignment {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin-top: 2mm;
+}
+
+table.assignment th,
+table.assignment td {
+    border: 1px solid #ddd;
+    padding: 2mm;
+    text-align: left;
+}
+
+table.assignment th {
+    background: #f5f5f5;
+    font-weight: 600;
+}
+
+table.assignment td:not(:first-child) {
+    text-align: center;
+    width: 25mm;
+}
+
+.checkbox {
+    display: inline-block;
+    width: 4mm;
+    height: 4mm;
+    border: 1px solid #333;
+    margin-right: 2mm;
+}
+
+.diagram-placeholder {
+    border: 1px dashed #ccc;
+    padding: 5mm;
+    text-align: center;
+    color: #999;
+    font-size: 9pt;
+    margin: 2mm 0;
+    min-height: 25mm;
+}
+
+.answer-space {
+    margin-top: 2mm;
+}
+
+.answer-line {
+    border-bottom: 1px solid #ddd;
+    height: 8mm;
+    margin-bottom: 1mm;
+}
+
+.calc-space {
+    min-height: 20mm;
+    border: 1px solid #eee;
+    margin-top: 2mm;
+}
+
+.footer {
+    margin-top: 10mm;
+    padding-top: 3mm;
+    border-top: 1px solid #ddd;
+    font-size: 8pt;
+    color: #666;
+    text-align: center;
+}
+
+.mc-options {
+    margin-top: 2mm;
+}
+
+.mc-option {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2mm;
+    font-size: 9pt;
+}
+
+.mc-option .checkbox {
+    margin-top: 1mm;
+    flex-shrink: 0;
+}
+
+.part {
+    margin-top: 3mm;
+    padding-left: 3mm;
+    border-left: 2px solid #eee;
+}
+
+.part-label {
+    font-weight: 600;
+    font-size: 9pt;
+    margin-bottom: 1mm;
+}
+    </style>
+</head>
+<body>
+    <div class="controls no-print">
+        <button onclick="window.print()">🖨️ Drucken (2 Seiten A4)</button>
+    </div>
+    
+    <div class="container">
+        <!-- SEITE 1 -->
+        <div class="header">
+            <h1>Mini-Stundenleistung: Kraft und ihre Wirkungen</h1>
+            <div class="meta">Physik Klasse 7 · 30 Minuten · Hilfsmittel: keine</div>
+        </div>
+        
+        <div class="name-row">
+            <span>Name: <span class="field"></span></span>
+            <span>Klasse: <span class="field" style="min-width:15mm"></span></span>
+            <span>Platz: <span class="field" style="min-width:15mm"></span></span>
+            <span>Datum: <span class="field" style="min-width:25mm"></span></span>
+        </div>
+        
+        <!-- A1 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A1: Lückentext Grundwissen</span>
+                <span class="task-level star1">★</span>
+                <span class="task-points">10 P</span>
+            </div>
+            <div class="task-text">Ergänze den Lückentext mit den passenden Wörtern aus der Wortbank.</div>
+            <div class="wordbank">
+                <strong>WORTBANK:</strong> Pfeil · Newton · Betrag · Kraftmesser · F · verformen · Angriffspunkt · Richtung · Geschwindigkeit · Kraft
+            </div>
+            <div class="blanks">
+                Eine <span class="blank"></span> gibt an, wie stark ein Körper auf einen anderen einwirkt.
+                Das Formelzeichen für die Kraft ist <span class="blank" style="min-width:15mm"></span> .
+                Die Einheit der Kraft heißt <span class="blank"></span> (Kurzzeichen: N).
+                Man misst Kräfte mit einem <span class="blank"></span> (auch: Federkraftmesser).
+                Kräfte können einen Körper <span class="blank"></span> oder seine Bewegung ändern.
+                Bei einer Bewegungsänderung kann sich die <span class="blank"></span> oder die <span class="blank"></span> ändern.
+                Um eine Kraft vollständig zu beschreiben, braucht man drei Angaben: <span class="blank"></span> , Richtung und <span class="blank"></span> .
+                In Zeichnungen stellt man Kräfte durch einen <span class="blank"></span> dar.
+            </div>
+        </div>
+        
+        <!-- A2 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A2: Kraftwirkungen zuordnen</span>
+                <span class="task-level star1">★</span>
+                <span class="task-points">6 P</span>
+            </div>
+            <div class="task-text">Ordne die Beispiele der richtigen Kraftwirkung zu. Kreuze pro Zeile EINE Antwort an.</div>
+            <table class="assignment">
+                <thead>
+                    <tr>
+                        <th>Beispiel</th>
+                        <th>Verformung</th>
+                        <th>Bewegungs-änderung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Ein Torwart fängt den Ball.</td><td><span class="checkbox"></span></td><td><span class="checkbox"></span></td></tr>
+                    <tr><td>Ein Auto bremst an der Ampel.</td><td><span class="checkbox"></span></td><td><span class="checkbox"></span></td></tr>
+                    <tr><td>Du drückst einen Schwamm zusammen.</td><td><span class="checkbox"></span></td><td><span class="checkbox"></span></td></tr>
+                    <tr><td>Ein Fußballer schießt den ruhenden Ball.</td><td><span class="checkbox"></span></td><td><span class="checkbox"></span></td></tr>
+                    <tr><td>Du verbiegst einen Löffel.</td><td><span class="checkbox"></span></td><td><span class="checkbox"></span></td></tr>
+                    <tr><td>Ein Radfahrer fährt um die Kurve.</td><td><span class="checkbox"></span></td><td><span class="checkbox"></span></td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- A3 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A3: Verformungsarten</span>
+                <span class="task-level star1">★</span>
+                <span class="task-points">5 P</span>
+            </div>
+            <div class="task-text">Ordne die Beispiele der richtigen Verformungsart zu: E (elastisch), P (plastisch) oder Z (Zerstörung).</div>
+            <div class="task-hint">E = elastisch (kehrt zurück) · P = plastisch (bleibt verformt) · Z = Zerstörung (kaputt)</div>
+            <table class="assignment">
+                <thead>
+                    <tr><th>Beispiel</th><th>E / P / Z</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Ein Gummiband wird gedehnt und springt zurück.</td><td><span class="blank" style="min-width:10mm"></span></td></tr>
+                    <tr><td>Eine Getränkedose wird eingedrückt und bleibt verbeult.</td><td><span class="blank" style="min-width:10mm"></span></td></tr>
+                    <tr><td>Ein Glas fällt auf den Boden und zerbricht.</td><td><span class="blank" style="min-width:10mm"></span></td></tr>
+                    <tr><td>Ein Sprungbrett biegt sich und schwingt zurück.</td><td><span class="blank" style="min-width:10mm"></span></td></tr>
+                    <tr><td>Knete wird geformt und behält die neue Form.</td><td><span class="blank" style="min-width:10mm"></span></td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- A4 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A4: Kraftpfeil-Grundlagen</span>
+                <span class="task-level star1">★</span>
+                <span class="task-points">3 P</span>
+            </div>
+            <div class="task-text">Was zeigen die verschiedenen Eigenschaften eines Kraftpfeils? Ordne richtig zu.</div>
+            <table class="assignment">
+                <thead>
+                    <tr><th>Eigenschaft des Pfeils</th><th>zeigt...</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Länge des Pfeils</td><td style="min-width:50mm"><span class="blank" style="min-width:45mm"></span></td></tr>
+                    <tr><td>Richtung des Pfeils</td><td><span class="blank" style="min-width:45mm"></span></td></tr>
+                    <tr><td>Anfangspunkt des Pfeils</td><td><span class="blank" style="min-width:45mm"></span></td></tr>
+                </tbody>
+            </table>
+            <div class="task-hint" style="margin-top:2mm">Auswahl: Angriffspunkt der Kraft · Betrag (Stärke) der Kraft · Richtung der Kraft</div>
+        </div>
+        
+        <!-- A5 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A5: Bewegungsänderung genauer</span>
+                <span class="task-level star1">★</span>
+                <span class="task-points">2 P</span>
+            </div>
+            <div class="task-text">Welche zwei Arten der Bewegungsänderung gibt es? Kreuze die zwei richtigen Antworten an.</div>
+            <div class="mc-options">
+                <div class="mc-option"><span class="checkbox"></span> Änderung der Masse</div>
+                <div class="mc-option"><span class="checkbox"></span> Änderung der Geschwindigkeit</div>
+                <div class="mc-option"><span class="checkbox"></span> Änderung der Farbe</div>
+                <div class="mc-option"><span class="checkbox"></span> Änderung der Bewegungsrichtung</div>
+            </div>
+        </div>
+        
+        <!-- SEITE 2 -->
+        <div class="page-break"></div>
+        
+        <!-- A6 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A6: Kraftpfeile interpretieren</span>
+                <span class="task-level star2">★★</span>
+                <span class="task-points">4 P</span>
+            </div>
+            <div class="task-text">Zwei Schüler ziehen an einem Seil. Die Kraftpfeile zeigen ihre Zugkräfte.</div>
+            <div class="diagram-placeholder">
+                ◀━━━━━━━━━━ ● ━━━━━━━▶<br>
+                <span style="color:#e65100">←80 N</span> Schüler A &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Schüler B <span style="color:#1565c0">60 N→</span><br>
+                <small>Maßstab: |━━━| = 20 N</small>
+            </div>
+            <div class="part">
+                <div class="part-label">a) Wie groß ist die resultierende Kraft? (2 P)</div>
+                <div class="answer-space">Antwort: <span class="blank" style="min-width:20mm"></span> <span class="blank" style="min-width:10mm"></span></div>
+            </div>
+            <div class="part">
+                <div class="part-label">b) In welche Richtung bewegt sich das Seil? (1 P)</div>
+                <div class="answer-space"><span class="blank" style="min-width:40mm"></span></div>
+            </div>
+            <div class="part">
+                <div class="part-label">c) Wer "gewinnt" das Tauziehen? (1 P)</div>
+                <div class="answer-space"><span class="blank" style="min-width:40mm"></span></div>
+            </div>
+        </div>
+        
+        <!-- A7 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A7: Kräfte in gleicher Richtung</span>
+                <span class="task-level star2">★★</span>
+                <span class="task-points">4 P</span>
+            </div>
+            <div class="task-text">Zwei Pferde ziehen gemeinsam eine Kutsche. Beide ziehen in die gleiche Richtung.</div>
+            <div class="diagram-placeholder" style="font-family: monospace; text-align: left; padding-left: 20mm;">
+                <small>Raster: 1 Kästchen = 200 N</small><br><br>
+                Pferd 1: |▓▓▓|▓▓▓|▓▓▓|→ 600 N<br>
+                Pferd 2: |▓▓▓|▓▓▓|▓▓▓|→ 600 N<br><br>
+                <small>Maßstab: |___| = 200 N = 1 Kästchen</small>
+            </div>
+            <div class="part">
+                <div class="part-label">a) Berechne die resultierende Kraft. (2 P)</div>
+                <div class="answer-space">Antwort: <span class="blank" style="min-width:20mm"></span> <span class="blank" style="min-width:10mm"></span></div>
+            </div>
+            <div class="part">
+                <div class="part-label">b) Wie lang muss der Kraftpfeil für die resultierende Kraft sein? (2 P)</div>
+                <div class="answer-space">
+                    Länge: <span class="blank" style="min-width:20mm"></span> Kästchen &nbsp;&nbsp;&nbsp;
+                    Richtung: <span class="blank" style="min-width:25mm"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- A8 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A8: Tauziehen-Analyse</span>
+                <span class="task-level star3">★★★</span>
+                <span class="task-points">5 P</span>
+            </div>
+            <div class="task-text">Beim Tauziehen stehen sich zwei Teams gegenüber.</div>
+            <div class="task-hint">Situation: Team A zieht mit insgesamt 500 N nach links. Team B zieht mit insgesamt 500 N nach rechts.</div>
+            <div class="part">
+                <div class="part-label">a) Berechne die resultierende Kraft. (2 P)</div>
+                <div class="answer-space">Antwort: <span class="blank" style="min-width:20mm"></span> <span class="blank" style="min-width:10mm"></span></div>
+            </div>
+            <div class="part">
+                <div class="part-label">b) Was passiert mit dem Seil? (2 P)</div>
+                <div class="answer-space">
+                    Das Seil: <span class="blank" style="min-width:40mm"></span><br>
+                    Begründung: <span class="blank" style="min-width:60mm"></span>
+                </div>
+            </div>
+            <div class="part">
+                <div class="part-label">c) Wie nennt man diesen Zustand in der Physik? (1 P)</div>
+                <div class="answer-space"><span class="blank" style="min-width:40mm"></span></div>
+            </div>
+        </div>
+        
+        <!-- A9 -->
+        <div class="task">
+            <div class="task-header">
+                <span class="task-title">A9: Kraftwirkungen im Alltag</span>
+                <span class="task-level star3">★★★</span>
+                <span class="task-points">5 P</span>
+            </div>
+            <div class="task-text">Erkläre bei jedem Beispiel, welche Kraftwirkung auftritt.</div>
+            <div class="part">
+                <div class="part-label">a) Ein Autofahrer fährt mit gleichbleibender Geschwindigkeit um eine Kurve. (2 P)</div>
+                <div class="answer-space">
+                    Kraftwirkung: <span class="blank" style="min-width:35mm"></span><br>
+                    Was ändert sich? <span class="blank" style="min-width:35mm"></span>
+                </div>
+            </div>
+            <div class="part">
+                <div class="part-label">b) Ein Ball wird auf ein Trampolin geworfen. Das Sprungtuch gibt nach und der Ball wird wieder hochgeworfen. (3 P)</div>
+                <div class="answer-space">
+                    Kraftwirkung 1 (Sprungtuch gibt nach): <span class="blank" style="min-width:30mm"></span><br>
+                    Art der Verformung: <span class="blank" style="min-width:30mm"></span><br>
+                    Kraftwirkung 2 (Ball wird hochgeworfen): <span class="blank" style="min-width:30mm"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Punkteverteilung: ★ = 26 P (A1–A5) · ★★ = 34 P (A1–A7) · ★★★ = 44 P (A1–A9)
+        </div>
+    </div>
+</body>
+</html>

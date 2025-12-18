@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platzkarten – Kräfte K7</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+@media print {
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+.controls {
+    background: #fff;
+    padding: 20px;
+    margin: 20px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.controls h1 {
+    font-size: 1.3em;
+    margin-bottom: 15px;
+}
+
+.controls button {
+    padding: 12px 30px;
+    font-size: 1em;
+    background: #2c5aa0;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    margin: 5px;
+}
+
+.controls button:hover {
+    background: #1e4a8a;
+}
+
+.controls p {
+    margin-top: 10px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10mm;
+    padding: 20px;
+    max-width: 210mm;
+    margin: 0 auto;
+}
+
+.card {
+    background: #fff;
+    border: 2px solid #333;
+    padding: 8mm;
+    text-align: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    height: 85mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-header {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5mm;
+}
+
+.card-header .title {
+    font-size: 10pt;
+    color: #666;
+    margin-bottom: 2mm;
+}
+
+.card-header .seat {
+    font-size: 28pt;
+    font-weight: 700;
+    color: #2c5aa0;
+}
+
+.card-qr {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3mm 0;
+}
+
+.card-qr canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.card-footer {
+    border-top: 1px solid #ddd;
+    padding-top: 5mm;
+}
+
+.card-footer .name-label {
+    font-size: 9pt;
+    color: #666;
+    margin-bottom: 2mm;
+}
+
+.card-footer .name-line {
+    border-bottom: 1px solid #333;
+    height: 8mm;
+}
+
+.card-footer .date {
+    font-size: 8pt;
+    color: #999;
+    margin-top: 2mm;
+}
+
+/* Print: 6 cards per page (3x2) */
+@media print {
+    .cards-container {
+        padding: 0;
+        gap: 5mm;
+    }
+    
+    .card {
+        height: 90mm;
+        border-width: 1px;
+    }
+    
+    .card:nth-child(6n+1) {
+        page-break-before: auto;
+    }
+    
+    .card:nth-child(6n) {
+        page-break-after: always;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="controls no-print">
+        <h1>📇 Platzkarten – Kraft und ihre Wirkungen (K7)</h1>
+        <button onclick="window.print()">🖨️ Drucken (5 Seiten à 6 Karten)</button>
+        <p>30 Platzkarten mit QR-Code zum Quiz. Auf Karton drucken und ausschneiden.</p>
+        <p><strong>Tipp:</strong> Die QR-Codes verlinken direkt zum Quiz.</p>
+    </div>
+    
+    <div class="cards-container" id="cardsContainer"></div>
+
+<script>
+const QUIZ_URL = 'https://phwulf.github.io/sciencesim/quiz/physik/klasse7-kraefte/';
+const TITLE = 'Kräfte K7';
+
+document.addEventListener('DOMContentLoaded', generateCards);
+
+function generateCards() {
+    const container = document.getElementById('cardsContainer');
+    
+    for (let i = 1; i <= 30; i++) {
+        const seat = String(i).padStart(2, '0');
+        const seatId = `P${seat}`;
+        
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div class="card-header">
+                <div class="title">${TITLE}</div>
+                <div class="seat">${seatId}</div>
+            </div>
+            <div class="card-qr">
+                <div id="qr-${seat}"></div>
+            </div>
+            <div class="card-footer">
+                <div class="name-label">Name:</div>
+                <div class="name-line"></div>
+                <div class="date">${new Date().toLocaleDateString('de-DE')}</div>
+            </div>
+        `;
+        
+        container.appendChild(card);
+        
+        // Generate QR code
+        new QRCode(document.getElementById(`qr-${seat}`), {
+            text: QUIZ_URL,
+            width: 80,
+            height: 80,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+}
+</script>
+</body>
+</html>
