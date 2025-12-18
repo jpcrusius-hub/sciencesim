@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Elektrik - QR-Poster</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        @media print { .no-print { display: none; } }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            text-align: center;
+        }
+        
+        .print-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .poster {
+            max-width: 600px;
+            margin: 0 auto;
+            border: 3px solid #1976D2;
+            border-radius: 20px;
+            padding: 30px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        
+        .poster h1 {
+            color: #1976D2;
+            font-size: 2.5em;
+            margin: 0 0 10px 0;
+        }
+        
+        .poster .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .qr-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .qr-box h2 {
+            margin: 0 0 15px 0;
+            font-size: 1.3em;
+        }
+        
+        .qr-box.quiz h2 { color: #4CAF50; }
+        .qr-box.decoder h2 { color: #FF9800; }
+        
+        .qr-box .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .qr-box .qr {
+            margin: 15px 0;
+        }
+        
+        .qr-box .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .info-box {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .info-box h3 {
+            margin: 0 0 15px 0;
+            color: #1976D2;
+        }
+        
+        .info-box table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .info-box td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-box td:first-child {
+            font-weight: bold;
+            width: 40%;
+        }
+        
+        .footer {
+            margin-top: 20px;
+            font-size: 0.8em;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="print-btn" onclick="window.print()">🖨️ Poster drucken (A4)</button>
+    </div>
+    
+    <div class="poster">
+        <h1>⚡ Quiz Elektrik</h1>
+        <div class="subtitle">Stromstärke & Spannung – Klasse 8</div>
+        
+        <div class="qr-container">
+            <div class="qr-box quiz">
+                <div class="icon">🎮</div>
+                <h2>Quiz starten</h2>
+                <div class="qr" id="qrQuiz"></div>
+                <div class="label">Für Schüler</div>
+            </div>
+            
+            <div class="qr-box decoder">
+                <div class="icon">📊</div>
+                <h2>Auswertung</h2>
+                <div class="qr" id="qrDecoder"></div>
+                <div class="label">Für Lehrkräfte</div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>📋 Niveaustufen</h3>
+            <table>
+                <tr><td>⭐ Stern 1</td><td>38 Punkte · 45 min</td></tr>
+                <tr><td>⭐⭐ Stern 2</td><td>54 Punkte · 45 min</td></tr>
+                <tr><td>⭐⭐⭐ Stern 3</td><td>65 Punkte · 60 min</td></tr>
+            </table>
+        </div>
+        
+        <div class="footer">
+            sciencesim/quiz/elektrik-stromstaerke-spannung-8
+        </div>
+    </div>
+    
+    <script>
+        const QUIZ_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/';
+        const DECODER_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/decoder.html';
+        
+        new QRCode(document.getElementById('qrQuiz'), {
+            text: QUIZ_URL,
+            width: 180,
+            height: 180,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        
+        new QRCode(document.getElementById('qrDecoder'), {
+            text: DECODER_URL,
+            width: 180,
+            height: 180,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage[european,siunitx]{circuitikz}
+\usepackage{xcolor}
+\begin{document}
+\begin{circuitikz}[scale=0.6, transform shape]
+    \draw (0,0) to[american voltage source, l_=$230\,\mathrm{V}$] (0,2) -- (0.5,2);
+    \ctikzset{bipoles/length=0.5cm}
+    \draw (0.5,2) to[lamp] (1.5,2) to[lamp] (2.5,2) to[lamp] (3.5,2);
+    \node at (4.5,2) {$\cdots$};
+    \draw (5.5,2) to[lamp] (6.5,2) to[lamp] (7.5,2);
+    \draw (7.5,2) -- (7.5,0) -- (0,0);
+    \node[below] at (4,0.3) {\scriptsize 20 Lampen in Reihe};
+    \node[above, red] at (1,2.3) {$U_{\text{L}} = \,?$};
+\end{circuitikz}
+\end{document}

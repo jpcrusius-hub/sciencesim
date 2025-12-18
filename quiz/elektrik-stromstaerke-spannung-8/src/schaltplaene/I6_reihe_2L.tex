@@ -1,0 +1,16 @@
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage[european,siunitx]{circuitikz}
+\usepackage{xcolor}
+\begin{document}
+\begin{circuitikz}[scale=0.8, transform shape]
+    \draw (0,0) to[battery1] (0,2) -- (1,2);
+    \draw (1,2) to[lamp] (3,2);
+    \draw (3,2) to[lamp] (5,2);
+    \draw (5,2) -- (5,0) -- (0,0);
+    \node[above] at (2,2.3) {$I_1 = 0{,}4\,\mathrm{A}$};
+    \node[above, red] at (4,2.3) {$I_2 = \,?$};
+    \draw[->, thick] (0.3,0.3) -- (0.3,0.8);
+    \node[left, red] at (0.2,0.55) {$I_{\text{ges}} = \,?$};
+\end{circuitikz}
+\end{document}

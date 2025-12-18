@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Elektrik - Übersicht</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1 { color: #1976D2; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f5f5f5; }
+        .code { font-family: monospace; background: #fff3e0; padding: 5px 10px; border-radius: 4px; }
+        .link { color: #1976D2; }
+        .section { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .qr-section { 
+            display: flex; 
+            gap: 40px; 
+            justify-content: center; 
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        .qr-box {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .qr-box h3 { margin: 0 0 15px 0; color: #1976D2; }
+        .qr-box .url { 
+            font-size: 0.7em; 
+            color: #666; 
+            word-break: break-all; 
+            max-width: 200px;
+            margin-top: 10px;
+        }
+        @media print { 
+            .no-print { display: none; } 
+            .section { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ Quiz Elektrik - Übersicht</h1>
+    
+    <div class="section">
+        <h2>📱 QR-Codes</h2>
+        <div class="qr-section">
+            <div class="qr-box">
+                <h3>🎮 Quiz (Schüler)</h3>
+                <div id="qrQuiz"></div>
+                <div class="url">https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/</div>
+            </div>
+            <div class="qr-box">
+                <h3>📊 Decoder (Lehrer)</h3>
+                <div id="qrDecoder"></div>
+                <div class="url">https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/decoder.html</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>🔗 Links</h2>
+        <table>
+            <tr><th>Datei</th><th>Beschreibung</th><th>URL</th></tr>
+            <tr>
+                <td><a href="../index.html" class="link">index.html</a></td>
+                <td>Quiz für Schüler</td>
+                <td><code style="font-size:0.8em;">...sciencesim/quiz/elektrik-stromstaerke-spannung-8/</code></td>
+            </tr>
+            <tr>
+                <td><a href="../decoder.html" class="link">decoder.html</a></td>
+                <td>Auswertung für Lehrkräfte</td>
+                <td><code style="font-size:0.8em;">...sciencesim/quiz/elektrik-stromstaerke-spannung-8/decoder.html</code></td>
+            </tr>
+            <tr>
+                <td><a href="sitzplatzkarten.html" class="link">sitzplatzkarten.html</a></td>
+                <td>Druckvorlage P01-P30</td>
+                <td>Lokal / docs/</td>
+            </tr>
+            <tr>
+                <td><a href="qr-poster.html" class="link">qr-poster.html</a></td>
+                <td>QR-Poster für Klassenraum</td>
+                <td>Lokal / docs/</td>
+            </tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>🔐 Codes</h2>
+        <table>
+            <tr><th>Code</th><th>Funktion</th></tr>
+            <tr><td><span class="code">3141</span></td><td>Quiz zurücksetzen (Lehrer)</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>📊 Niveaustufen</h2>
+        <table>
+            <tr><th>Niveau</th><th>Punkte</th><th>Zeit</th><th>Aufgaben</th></tr>
+            <tr><td>⭐ Stern 1</td><td>38 P</td><td>45 min</td><td>nur (*)</td></tr>
+            <tr><td>⭐⭐ Stern 2</td><td>54 P</td><td>45 min</td><td>(*) und (**)</td></tr>
+            <tr><td>⭐⭐⭐ Stern 3</td><td>65 P</td><td>60 min</td><td>alle</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>📋 Aufgaben Teil I: Stromstärke</h2>
+        <table>
+            <tr><th>Nr.</th><th>Titel</th><th>P</th><th>Niv.</th></tr>
+            <tr><td>I.1</td><td>Definition Stromstärke</td><td>5</td><td>*</td></tr>
+            <tr><td>I.2a</td><td>Umrechnungen A ↔ mA</td><td>3</td><td>*</td></tr>
+            <tr><td>I.2b</td><td>Umrechnungen (schwieriger)</td><td>3</td><td>**</td></tr>
+            <tr><td>I.3</td><td>Messgerät Stromstärke</td><td>3</td><td>*</td></tr>
+            <tr><td>I.4</td><td>Regel Reihenschaltung</td><td>1</td><td>*</td></tr>
+            <tr><td>I.5</td><td>Regel Parallelschaltung</td><td>1</td><td>*</td></tr>
+            <tr><td>I.6</td><td>Reihenschaltung 2 Lampen</td><td>2</td><td>*</td></tr>
+            <tr><td>I.7</td><td>Parallelschaltung 2 Lampen</td><td>1</td><td>*</td></tr>
+            <tr><td>I.8</td><td>Parallelschaltung 3 Lampen</td><td>1</td><td>*</td></tr>
+            <tr><td>I.9</td><td>I₂ gesucht</td><td>1</td><td>**</td></tr>
+            <tr><td>I.10</td><td>Parallelschaltung mit mA</td><td>2</td><td>**</td></tr>
+            <tr><td>I.11</td><td>I₃ berechnen</td><td>1</td><td>**</td></tr>
+            <tr><td>I.12</td><td>Gemischte Schaltung</td><td>2</td><td>***</td></tr>
+            <tr><td>I.13</td><td>Verschachtelte Schaltung</td><td>3</td><td>***</td></tr>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h2>📋 Aufgaben Teil II: Spannung</h2>
+        <table>
+            <tr><th>Nr.</th><th>Titel</th><th>P</th><th>Niv.</th></tr>
+            <tr><td>II.1</td><td>Definition Spannung</td><td>4</td><td>*</td></tr>
+            <tr><td>II.2a</td><td>Umrechnungen V/mV/kV</td><td>4</td><td>*</td></tr>
+            <tr><td>II.2b</td><td>Umrechnungen (schwieriger)</td><td>3</td><td>**</td></tr>
+            <tr><td>II.2c</td><td>Umrechnungen mit MV</td><td>2</td><td>***</td></tr>
+            <tr><td>II.3</td><td>Spannungswerte zuordnen</td><td>4</td><td>*</td></tr>
+            <tr><td>II.4</td><td>Messgerät Spannung</td><td>3</td><td>*</td></tr>
+            <tr><td>II.5</td><td>Regeln Spannung</td><td>2</td><td>*</td></tr>
+            <tr><td>II.6</td><td>Reihenschaltung 2 Lampen</td><td>1</td><td>*</td></tr>
+            <tr><td>II.7</td><td>Parallelschaltung 2 Lampen</td><td>2</td><td>*</td></tr>
+            <tr><td>II.8</td><td>Reihenschaltung 3 Lampen</td><td>1</td><td>*</td></tr>
+            <tr><td>II.9</td><td>Gemischt: 1 + 2 parallel</td><td>2</td><td>**</td></tr>
+            <tr><td>II.10</td><td>Zwei Reihen parallel</td><td>2</td><td>**</td></tr>
+            <tr><td>II.11</td><td>Gemischt: 2 parallel + 1</td><td>2</td><td>**</td></tr>
+            <tr><td>II.12</td><td>Lichterkette</td><td>1</td><td>***</td></tr>
+            <tr><td>II.13</td><td>Profi-Schaltung</td><td>3</td><td>***</td></tr>
+        </table>
+    </div>
+    
+    <script>
+        const QUIZ_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/';
+        const DECODER_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/decoder.html';
+        
+        new QRCode(document.getElementById('qrQuiz'), {
+            text: QUIZ_URL,
+            width: 150,
+            height: 150,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        
+        new QRCode(document.getElementById('qrDecoder'), {
+            text: DECODER_URL,
+            width: 150,
+            height: 150,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    </script>
+</body>
+</html>

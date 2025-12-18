@@ -1,0 +1,14 @@
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage[european,siunitx]{circuitikz}
+\usepackage{xcolor}
+\begin{document}
+\begin{circuitikz}[scale=0.8, transform shape]
+    \draw (0,0) to[battery1, l_=$12\,\mathrm{V}$] (0,2.5) -- (1,2.5);
+    \draw (1,2.5) to[lamp] (3,2.5);
+    \draw (3,2.5) to[lamp] (5,2.5);
+    \draw (5,2.5) -- (5,0) -- (0,0);
+    \node[above] at (2,2.8) {$U_1 = 5\,\mathrm{V}$};
+    \node[above, red] at (4,2.8) {$U_2 = \,?$};
+\end{circuitikz}
+\end{document}

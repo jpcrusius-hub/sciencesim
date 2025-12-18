@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Sitzplatzkarten P01-P30</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @page { size: A4; margin: 10mm; }
+        @media print { .no-print { display: none; } }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .info { background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .card {
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            page-break-inside: avoid;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .card-id { font-size: 2em; font-weight: bold; color: #1976D2; }
+        .card-qr { width: 60px; height: 60px; }
+        .card-name { 
+            border-bottom: 2px solid #333; 
+            margin: 5px 10px; 
+            padding-bottom: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .card-niveau {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 1.1em;
+        }
+        .niveau-option { 
+            padding: 5px 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+        }
+        .card-url {
+            font-size: 0.5em;
+            color: #999;
+            word-break: break-all;
+        }
+        .print-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        h1 { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <h1>🪑 Sitzplatzkarten für Quiz Elektrik</h1>
+        <div class="info">
+            <p><strong>Anleitung:</strong> Drucken Sie diese Seite aus und schneiden Sie die Karten aus. 
+            Schüler schreiben ihren Namen auf die Karte und kreisen ihr Niveau ein.</p>
+            <p><strong>QR-Code:</strong> Führt direkt zum Quiz</p>
+        </div>
+        <button class="print-btn" onclick="window.print()">🖨️ Karten drucken (10 Seiten für 30 Karten)</button>
+    </div>
+    
+    <div class="grid" id="cardGrid"></div>
+    
+    <script>
+        const QUIZ_URL = 'https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/';
+        
+        const grid = document.getElementById('cardGrid');
+        
+        for (let i = 1; i <= 30; i++) {
+            const id = 'P' + String(i).padStart(2, '0');
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-id">${id}</div>
+                    <div class="card-qr" id="qr${i}"></div>
+                </div>
+                <div class="card-name">Name: _________________</div>
+                <div class="card-niveau">
+                    <span class="niveau-option">⭐</span>
+                    <span class="niveau-option">⭐⭐</span>
+                    <span class="niveau-option">⭐⭐⭐</span>
+                </div>
+                <div class="card-url">Quiz: sciencesim/.../elektrik-stromstaerke-spannung-8/</div>
+            `;
+            grid.appendChild(card);
+            
+            // QR-Code generieren
+            new QRCode(document.getElementById('qr' + i), {
+                text: QUIZ_URL,
+                width: 60,
+                height: 60,
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        }
+    </script>
+</body>
+</html>

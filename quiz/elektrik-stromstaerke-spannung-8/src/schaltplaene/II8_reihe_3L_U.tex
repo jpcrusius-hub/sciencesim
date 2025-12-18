@@ -1,0 +1,16 @@
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage[european,siunitx]{circuitikz}
+\usepackage{xcolor}
+\begin{document}
+\begin{circuitikz}[scale=0.7, transform shape]
+    \draw (0,0) to[battery1, l_=$12\,\mathrm{V}$] (0,2.5) -- (0.5,2.5);
+    \draw (0.5,2.5) to[lamp] (2.5,2.5);
+    \draw (2.5,2.5) to[lamp] (4.5,2.5);
+    \draw (4.5,2.5) to[lamp] (6.5,2.5);
+    \draw (6.5,2.5) -- (6.5,0) -- (0,0);
+    \node[above] at (1.5,2.8) {$U_1 = 3\,\mathrm{V}$};
+    \node[above] at (3.5,2.8) {$U_2 = 5\,\mathrm{V}$};
+    \node[above, red] at (5.5,2.8) {$U_3 = \,?$};
+\end{circuitikz}
+\end{document}

@@ -1,0 +1,17 @@
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage[european,siunitx]{circuitikz}
+\usepackage{xcolor}
+\begin{document}
+\begin{circuitikz}[scale=0.8, transform shape]
+    \draw (0,0) to[battery1, l_=$9\,\mathrm{V}$] (0,3) -- (1,3);
+    \ctikzset{bipoles/length=0.8cm}
+    \draw (1,3) -- (1,3.8) -- (2,3.8) to[lamp] (4,3.8) -- (4,3);
+    \draw (1,3) -- (1,2.2) -- (2,2.2) to[lamp] (4,2.2) -- (4,3);
+    \draw (4,3) -- (4,0) -- (0,0);
+    \fill (1,3) circle (2pt);
+    \fill (4,3) circle (2pt);
+    \node[right, red] at (4.2,3.8) {$U_1 = \,?$};
+    \node[right, red] at (4.2,2.2) {$U_2 = \,?$};
+\end{circuitikz}
+\end{document}

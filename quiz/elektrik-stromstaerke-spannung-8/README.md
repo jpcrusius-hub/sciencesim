@@ -1,93 +1,84 @@
-# Quiz: Stromstärke und Spannung (Klasse 8)
+# ⚡ Quiz Elektrik - Stromstärke & Spannung
 
-Interaktives HTML5-Quiz zur Elektrizitätslehre für Klasse 8 (Gesamtschule MV).
+Ein interaktives HTML5-Quiz für den Physikunterricht in Klasse 8.
+**Thema:** Elektrische Stromstärke und Spannung in Reihen- und Parallelschaltungen.
 
-## 🎯 Themenbereich
+## 🔗 Live-Links
 
-- Elektrische Stromstärke (*I*, Ampere)
-- Elektrische Spannung (*U*, Volt)
-- Messgeräte (Amperemeter, Voltmeter)
-- Reihen- und Parallelschaltung
-- Berechnungen in Schaltkreisen
+| Ressource | URL |
+|-----------|-----|
+| **Quiz** | https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/ |
+| **Decoder** | https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/decoder.html |
 
-## 📊 Struktur
+## 🎯 Features
 
-| Level | Symbol | Aufgaben | Punkte | Schwierigkeit |
-|-------|--------|----------|--------|---------------|
-| Basis | ○ | 13 | 28 P | Grundwissen |
-| Stern 1 | ★ | 12 | 30 P | Anwendung |
-| Stern 2 | ★★ | 9 | 30 P | Vertiefung |
-| Stern 3 | ★★★ | 14 | 52 P | Transfer |
-| **Gesamt** | | **48** | **140 P** | |
+- **3 Niveaustufen** in einem Quiz (⭐ Stern 1 / ⭐⭐ Stern 2 / ⭐⭐⭐ Stern 3)
+- **27 Aufgaben** zu Definitionen, Umrechnungen, Schaltungsberechnungen
+- **15 Schaltbilder** (inline als SVG eingebettet)
+- **Offline-fähig** - keine Internetverbindung nötig
+- **QR-Code-Auswertung** für schnelles Scannen
+- **Automatische Musterlösung** nach Abgabe
+- **PDF-Export** der Auswertung
 
-## 🎮 Aufgabentypen
+## 📊 Niveaustufen
 
-- Multiple Choice (mc)
-- Dropdown-Auswahl (dropdown)
-- Mehrfachauswahl (multicheck)
-- Zahleneingabe (number)
-- Mehrfach-Zahleneingabe (multi-number)
-- Texteingabe (text, text-multi)
+| Niveau | Punkte | Zeit | Bewertete Aufgaben |
+|--------|--------|------|--------------------|
+| ⭐ Stern 1 | 38 P | 45 min | nur (*) Aufgaben |
+| ⭐⭐ Stern 2 | 54 P | 45 min | (*) und (**) |
+| ⭐⭐⭐ Stern 3 | 65 P | 60 min | alle Aufgaben |
 
-## 📱 Dateien
-
-| Datei | Beschreibung | Zielgruppe |
-|-------|--------------|------------|
-| `index.html` | Schüler-Quiz | Schüler |
-| `decoder.html` | Auswertungs-Tool | Lehrkraft |
-
-## 🚀 Nutzung
+## 🚀 Quick Start
 
 ### Für Schüler
-1. `index.html` im Browser öffnen (oder via GitHub Pages)
-2. Platznummer wählen
-3. Schwierigkeitsstufe auswählen
-4. Quiz bearbeiten (45 min Timer)
-5. Abgeben → QR-Code zeigen
+1. QR-Code scannen oder Link öffnen
+2. Niveau wählen
+3. Sitzplatz wählen (P01-P30)
+4. Quiz bearbeiten
+5. Abgeben → Musterlösung ansehen
 
 ### Für Lehrkräfte
-1. `decoder.html` öffnen
-2. QR-Code scannen ODER Code manuell eingeben
-3. Automatische Auswertung mit Notenpunkten (14-NP-Skala)
+1. `decoder.html` öffnen (oder QR-Code scannen)
+2. Kamera wählen (Dokumentenkamera empfohlen)
+3. QR-Codes der Schüler scannen
+4. Ergebnisse als CSV exportieren
+
+## 📁 Dateistruktur
+
+```
+quiz/elektrik-stromstaerke-spannung-8/
+├── index.html              # Das Quiz (445 KB, SVGs eingebettet)
+├── decoder.html            # Auswertungstool für Lehrkräfte
+├── README.md               # Diese Datei
+├── docs/
+│   ├── sitzplatzkarten.html   # 🪑 Druckvorlage P01-P30 mit QR
+│   ├── qr-poster.html         # 📋 Poster für Klassenraum
+│   ├── uebersicht.html        # Aufgabenübersicht + QR-Codes
+│   ├── KONZEPT.md             # Didaktisches Konzept
+│   └── LEHRER_INFO.md         # Hinweise für Lehrkräfte
+├── src/
+│   ├── build_diagrams.sh      # Build-Script für SVGs
+│   └── schaltplaene/          # 15 LaTeX-Quelldateien
+└── svg/                       # 15 Schaltbilder als SVG
+```
 
 ## 🔐 Codes
 
 | Code | Funktion |
 |------|----------|
-| `STROM` | Unlock (vorzeitige Abgabe freischalten) |
-| `3141` | Reset (Fortschritt löschen) |
+| `3141` | Quiz zurücksetzen (Lehrer-Code) |
 
-## ⚙️ Technische Details
+## 📄 Druckmaterialien
 
-- **Bewertung:** 14-NP-Skala (Klasse 8 MV)
-- **Timer:** 45 Minuten pro Level
-- **Speicherung:** localStorage (Fortschritt bleibt erhalten)
-- **QR-Code:** LZ-String komprimierte Ergebnisdaten
-- **Offline:** Funktioniert ohne Server (nur CDN für Libraries)
+- **[sitzplatzkarten.html](docs/sitzplatzkarten.html)** - 30 Platzkarten mit QR-Code
+- **[qr-poster.html](docs/qr-poster.html)** - Poster zum Aufhängen im Klassenraum
+- **[uebersicht.html](docs/uebersicht.html)** - Komplette Aufgabenübersicht
 
-### Externe Abhängigkeiten (CDN)
-- `lz-string` (Komprimierung)
-- `qrcodejs` (QR-Code Generierung)
-- `html5-qrcode` (QR-Code Scanner im Decoder)
+## 📄 Lizenz
 
-## 📋 Lehrplanbezug
-
-**Rahmenplan Physik MV, Klasse 7-10:**
-- Elektrischer Stromkreis
-- Elektrische Grundgrößen
-- Schaltungen
-
-## 🖥️ GitHub Pages
-
-Nach dem Push ist das Quiz erreichbar unter:
-```
-https://jpcrusius-hub.github.io/sciencesim/quiz/elektrik-stromstaerke-spannung-8/
-```
-
-## 📝 Lizenz
-
-Erstellt für den Physikunterricht. Verwendung im schulischen Kontext gestattet.
+MIT License - Frei verwendbar für Bildungszwecke.
 
 ---
 
-*Erstellt mit dem ScienceSim Quiz-System*
+**Rahmenplan-Bezug:** Physik Klasse 8, Elektrizitätslehre  
+**Bundesland:** Mecklenburg-Vorpommern
