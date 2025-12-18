@@ -747,51 +747,6 @@ body {
 .feedback-detail .correct-item { color: #2e7d32; }
 .feedback-detail .incorrect-item { color: #c62828; }
 
-/* Aufgabenstellung im Feedback */
-.feedback-task {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 12px;
-    font-size: 0.95em;
-}
-
-.feedback-task .task-text {
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-
-.feedback-task .task-intro {
-    background: #fff3cd;
-    border-left: 3px solid #ffc107;
-    padding: 8px 12px;
-    margin: 8px 0;
-    font-size: 0.9em;
-}
-
-.feedback-task .task-items {
-    margin-top: 8px;
-    padding-left: 10px;
-}
-
-.feedback-task .task-item {
-    padding: 3px 0;
-    font-size: 0.9em;
-    color: #555;
-}
-
-.feedback-detail {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #ddd;
-}
-
-.feedback-detail .correct-answer {
-    color: #2e7d32;
-    font-weight: 600;
-}
-
 /* Punkteübersicht */
 .score-summary {
     background: #f9f9f9;
@@ -2119,74 +2074,17 @@ function renderFeedbackQuestions() {
     container.innerHTML = '';
     
     gradedAnswers.forEach((ga, i) => {
-        const q = QUESTIONS[i];
-        const isFullyCorrect = ga.earned === q.points;
+        const isFullyCorrect = ga.earned === QUESTIONS[i].points;
         const statusClass = ga.scored ? (isFullyCorrect ? 'correct' : 'incorrect') : 'not-scored';
         const statusIcon = ga.scored ? (isFullyCorrect ? '✅' : '❌') : (ga.earned > 0 ? '✓' : '✗');
         const pointsText = ga.scored ? `${ga.earned} / ${ga.points} P` : '[nicht gew.]';
         
-        // Aufgabenstellung zusammenbauen
-        let taskHtml = '<div class="feedback-task">';
-        taskHtml += `<div class="task-text">📝 <strong>Aufgabe:</strong> ${q.text}</div>`;
-        
-        // Intro-Text bei multi-part Aufgaben
-        if (q.intro) {
-            taskHtml += `<div class="task-intro"><em>${q.intro}</em></div>`;
-        }
-        
-        // Bei table-radio/table-dropdown: Zeilen als Kontext anzeigen
-        if (q.type === 'table-radio' || q.type === 'table-dropdown') {
-            if (q.rows && q.rows.length > 0) {
-                taskHtml += '<div class="task-items">';
-                q.rows.forEach((row, idx) => {
-                    taskHtml += `<div class="task-item">${idx + 1}. ${row.text}</div>`;
-                });
-                taskHtml += '</div>';
-            }
-        }
-        
-        // Bei matching-dropdown: Paare anzeigen
-        if (q.type === 'matching-dropdown' && q.pairs) {
-            taskHtml += '<div class="task-items">';
-            q.pairs.forEach(pair => {
-                taskHtml += `<div class="task-item">• ${pair.left} → ?</div>`;
-            });
-            taskHtml += '</div>';
-        }
-        
-        // Bei MC-multiple: Optionen anzeigen
-        if (q.type === 'mc-multiple' && q.options) {
-            taskHtml += '<div class="task-items">';
-            q.options.forEach((opt, idx) => {
-                const isCorrect = q.correct.includes(idx);
-                const marker = isCorrect ? '✓' : '';
-                taskHtml += `<div class="task-item">☐ ${opt} ${marker}</div>`;
-            });
-            taskHtml += '</div>';
-        }
-        
-        // Bei multi-part: Teilaufgaben-Texte anzeigen
-        if (q.type === 'multi-part' && q.parts) {
-            taskHtml += '<div class="task-items">';
-            q.parts.forEach(part => {
-                if (part.type === 'label') {
-                    taskHtml += `<div class="task-item"><em>${part.text}</em></div>`;
-                } else if (part.label) {
-                    taskHtml += `<div class="task-item">• ${part.label}</div>`;
-                }
-            });
-            taskHtml += '</div>';
-        }
-        
-        taskHtml += '</div>';
-        
-        // Details (Schülerantwort vs. richtige Antwort)
         let detailsHtml = '';
         if (ga.details && ga.details.length > 0) {
-            detailsHtml = '<div class="feedback-detail"><strong>Deine Antworten:</strong>';
+            detailsHtml = '<div class="feedback-detail">';
             ga.details.forEach(d => {
                 const itemClass = d.isCorrect ? 'correct-item' : 'incorrect-item';
-                detailsHtml += `<div class="${itemClass}">• ${d.label}: <strong>${d.user}</strong> ${d.isCorrect ? '✓' : `→ <span class="correct-answer">${d.correct}</span>`}</div>`;
+                detailsHtml += `<div class="${itemClass}">• ${d.label}: ${d.user} ${d.isCorrect ? '✓' : `→ ${d.correct}`}</div>`;
             });
             detailsHtml += '</div>';
         }
@@ -2198,7 +2096,6 @@ function renderFeedbackQuestions() {
                     <span class="points">${pointsText}</span>
                 </div>
                 <div class="feedback-question-body">
-                    ${taskHtml}
                     ${detailsHtml}
                 </div>
             </div>
